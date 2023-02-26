@@ -13,7 +13,7 @@ export default function Login() {
     var userName = document.getElementById("LoginUserName").value;
     var Password = document.getElementById("LoginPassword").value;
     
-    // Envoi de la demande POST à votre serveur Flask
+    // POST à votre serveur Flask
     axios.post("/login", {
       userName: userName,
       Password: Password,
