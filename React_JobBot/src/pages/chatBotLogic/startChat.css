@@ -1,0 +1,22 @@
+.chatWindow {
+  text-align: center;
+  background-color: whitesmoke;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  }
+
+  .react-chatbot-kit-chat-inner-container, .react-chatbot-kit-chat-input-container{
+    width: 700px;
+  }
+  .react-chatbot-kit-chat-inner-container {
+    height: 500px;
+  }
+
+  .react-chatbot-kit-chat-container{
+    position: relative;
+    right: 190px;
+  }
+
+  
