@@ -13,7 +13,7 @@ export default function Login() {
     var userName = document.getElementById("LoginUserName").value;
     var Password = document.getElementById("LoginPassword").value;
     
-    // POST à votre serveur Flask
+    // Envoi de la demande POST à votre serveur Flask
     axios.post("/login", {
       userName: userName,
       Password: Password,
@@ -23,12 +23,22 @@ export default function Login() {
     })
       .then((response) => {
         if (response.data.success) {
-          navigate("/./startChat", {
-            state: {
-              name: userName,
-            },
-          });
-        } else {
+          if (response.data.message === "Admin login success"){
+            navigate("/./viewChatFlow", {
+              state: {
+                name: userName,
+              },
+            });
+          }
+          else {
+            navigate("/./startChat", {
+              state: {
+                name: userName,
+              },
+            });
+          }
+        }
+        else {
           document.getElementById("loginfail").innerHTML =
             response.data.message;
         }
@@ -42,10 +52,10 @@ export default function Login() {
     <div className="login">
       <div className="loginWrapper">
         <div className="loginLeft">
-          <h3 className="loginLogo">JobBot</h3>
+          <h3 className="loginLogo">JOBOT</h3>
           <h2 className="loginLogo1">Login</h2>
           <span className="loginDesc">
-            With JobBot find your dream job in seconds
+            With JOBOT find your dream job in seconds
           </span>
         </div>
         <div className="loginRight">

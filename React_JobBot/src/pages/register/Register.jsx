@@ -24,7 +24,10 @@ export default function Register() {
     })
       .then((response) => {
         if (response.data.success) {
-          navigate("/.", { state: { successMessage: response.data.message } });
+          document.getElementById("registersuccess").innerHTML = response.data.message;
+          setTimeout(() => {
+            navigate("/.", { state: { successMessage: response.data.message } });
+          }, 2500);
         } else {
           document.getElementById("registerfail").innerHTML = response.data.message;
         }
@@ -37,10 +40,10 @@ export default function Register() {
     <div className="login">
       <div className="loginWrapper">
         <div className="loginLeft">
-          <h3 className="loginLogo">JobBot</h3>
+          <h3 className="loginLogo">JOBOT</h3>
           <h2 className="loginLogo1">Register</h2>
           <span className="loginDesc">
-            With JobBot find your dream job in seconds
+            With JOBOT find your dream job in seconds
           </span>
         </div>
         <div className="loginRight">
@@ -56,6 +59,7 @@ export default function Register() {
               id="RegisterPassword"
             />
             <div id="registerfail"></div>
+            <div id="registersuccess"></div>
             <button className="loginButton" onClick={RegisterAccount}>
               Sign up
             </button>
