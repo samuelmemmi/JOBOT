@@ -4,6 +4,7 @@ class FetchText{
     constructor(){
         this.head=chatFlow;
         this.selected={}
+        this.historyChat=[]
     }
 
     setNextResponse(node){
@@ -20,6 +21,14 @@ class FetchText{
 
     getSelected(){
         return this.selected;
+    }
+
+    setHistoryChat(historyChat){
+        this.historyChat=historyChat;
+    }
+
+    getHistoryChat(){
+        return this.historyChat;
     }
 }
 

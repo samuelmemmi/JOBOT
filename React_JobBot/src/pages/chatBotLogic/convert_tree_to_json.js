@@ -6,6 +6,7 @@ var displayingAdaptedJobs;
 var areas={
   title: "",
   text: "In which areas are you interested?",
+  options:["South", "North", "Central","All"],
   children:
   [
     {
@@ -16,6 +17,7 @@ var areas={
         jobTypes={
           title: "next question",
           text: "Select job types",
+          options: ["Full time", "Part time"],
           children:
           [
             {
@@ -136,8 +138,8 @@ var chatFlow = {
   [
     {
       title: "field",
-      text:"Select a field for job (Multiple fields)",
-      options:["Healthcare", "Marketing", "Education", "Human Resources", "Finance & Accounting", "Engineering", "Other"],
+      text:"Select a field for job",
+      options:["Healthcare", "Marketing", "Arts & Design", "Human Resources", "Finance & Accounting", "Engineering", "Other"],
       children:
       [
         {
@@ -156,18 +158,19 @@ var chatFlow = {
         {
           title: "user selected fields",
           text: "Select a job title at this field (Multiple jobs)",
-          options:[{Healthcare:["A","B"],Marketing:["C","D"],Education:["E","F"],'Human Resources':["H","I"],'Finance & Accounting':["J","K"],Engineering:["L","M"]}],
+          options:[{Healthcare:["A","B","Other"],Marketing:["C","D","Other"],"Arts & Design":["E","F","Other"],'Human Resources':["H","I","Other"],'Finance & Accounting':["J","K","Other"],Engineering:["L","M","Other"]}],
           children:
           [
             specificCompany={
               title: "user selected job titles",
               text: "Great! Do you have any specific companies that you would like to work at? (Multiple companies)",
+              options:[{Healthcare:["Clalit","Maccabi","Israeli Defense Forces","Super Pharm","Novartis","I am open to any company"],Marketing:["Yupulse","InspHire","Teva Pharmaceuticals","RYB Technologies","CPS Jobs","I am open to any company"],"Arts & Design":["Yupulse","InspHire","Teva Pharmaceuticals","RYB Technologies","CPS Jobs","I am open to any company"],'Human Resources':["Yupulse","InspHire","Teva Pharmaceuticals","RYB Technologies","CPS Jobs","I am open to any company"],'Finance & Accounting':["Yupulse","InspHire","Teva Pharmaceuticals","RYB Technologies","CPS Jobs","Other"],Engineering:["Yupulse","InspHire","Teva Pharmaceuticals","RYB Technologies","CPS Jobs","Other"]}],
               children:
               [
                 {
                   title: "user selected specific companies",
                   text: "Excellent, we will consider priority for these companies",
-                  children: 
+                  children:
                   [
                     {...areas,title: "next question"}
                   ]

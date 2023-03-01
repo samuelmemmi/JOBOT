@@ -79,5 +79,43 @@ def get_first_jobs():
     document = collection.find_one({"company": company, "job": title, "city": city})"""
 
 
+def view_jobs():
+    # connexion to the MongoDB database
+    cluster = MongoClient("mongodb+srv://samuelmemmi:1234@cluster0.e4sf8mm.mongodb.net/?retryWrites=true"
+                          "&w=majority")
+    db = cluster["chatbot"]
+    design_jobs = ["design_full_time", "design_part_time", "design_intern", "design_junior", "design_senior"]
+
+    for design in design_jobs:
+        collection = db[design]
+        # Find all jobs in the design collection
+        documents = collection.find()
+        for document in documents:
+            print(document)
+
+    engineer_jobs = ["engineer_full_time", "engineer_part_time", "engineer_intern", "engineer_junior",
+                     "engineer_senior"]
+    finance_jobs = ["finance_full_time", "finance_part_time", "finance_intern", "finance_junior", "finance_senior"]
+    healthcare_jobs = ["healthcare_full_time", "healthcare_part_time", "healthcare_intern", "healthcare_junior",
+                       "healthcare_senior"]
+    marketing_jobs = ["marketing_full_time", "marketing_part_time", "marketing_intern", "marketing_junior",
+                      "marketing_senior"]
+    humanresources_jobs = ["humanresources_full_time", "humanresources_part_time", "humanresources_intern",
+                           "humanresources_junior", "humanresources_senior"]
+
+
+def view_clients():
+    # connexion to the MongoDB database
+    cluster = MongoClient("mongodb+srv://samuelmemmi:1234@cluster0.e4sf8mm.mongodb.net/?retryWrites=true"
+                          "&w=majority")
+    db = cluster["chatbot"]
+    collection = db["users"]
+
+    # Find all user in the collection users
+    documents = collection.find()
+    for document in documents:
+        print(document)
+
+
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
