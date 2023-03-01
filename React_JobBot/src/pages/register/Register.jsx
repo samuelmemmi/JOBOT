@@ -24,7 +24,10 @@ export default function Register() {
     })
       .then((response) => {
         if (response.data.success) {
-          navigate("/.", { state: { successMessage: response.data.message } });
+          document.getElementById("registersuccess").innerHTML = response.data.message;
+          setTimeout(() => {
+            navigate("/.", { state: { successMessage: response.data.message } });
+          }, 2500);
         } else {
           document.getElementById("registerfail").innerHTML = response.data.message;
         }
@@ -56,6 +59,7 @@ export default function Register() {
               id="RegisterPassword"
             />
             <div id="registerfail"></div>
+            <div id="registersuccess"></div>
             <button className="loginButton" onClick={RegisterAccount}>
               Sign up
             </button>
