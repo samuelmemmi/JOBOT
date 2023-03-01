@@ -23,12 +23,22 @@ export default function Login() {
     })
       .then((response) => {
         if (response.data.success) {
-          navigate("/./startChat", {
-            state: {
-              name: userName,
-            },
-          });
-        } else {
+          if (response.data.message === "Admin login success"){
+            navigate("/./register", {
+              state: {
+                name: userName,
+              },
+            });
+          }
+          else {
+            navigate("/./startChat", {
+              state: {
+                name: userName,
+              },
+            });
+          }
+        }
+        else {
           document.getElementById("loginfail").innerHTML =
             response.data.message;
         }
