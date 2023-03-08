@@ -17,7 +17,7 @@ var areas={
         jobTypes={
           title: "next question",
           text: "Select job types",
-          options: ["Full time", "Part time"],
+          options: ["Full_time", "Part_time"],
           children:
           [
             {
@@ -158,7 +158,7 @@ var chatFlow = {
         {
           title: "user selected fields",
           text: "Select a job title at this field (Multiple jobs)",
-          options:[{Healthcare:["A","B","Other"],Marketing:["C","D","Other"],"Arts & Design":["E","F","Other"],'Human Resources':["H","I","Other"],'Finance & Accounting':["J","K","Other"],Engineering:["L","M","Other"]}],
+          options:[{"Healthcare":["Registered Nurse","Nurse Practitioner","Medical Assistant", "Pharmacist", "Physical Therapist", "Patient Care Technician", "Medical Scribe", "Other"],"Marketing":["Event Coordinator","Marketing Coordinator","Public Relations", "Digital Marketing", "Brand Ambassador", "Community Manager", "Advertising", "Marketing Communications", "Other"],"Arts & Design":["Graphic Designer","Photographer","Interior Designer", "Video Editor", "Creative", "Music", "UX Designer", "Fashion", "3D", "Other"],'Human Resources':["Recruiter","Coordinator","Corporate Recruiter","Payroll Specialist","Recruiting Coordinator", "Talent Acquisition", "Technical Recruiter", "Other"],'Finance & Accounting':["Accounting","Financial Analyst","Accountant", "Controller", "Financial Advisor", "Bookkeeper", "Patient Account Representative", "Accounts Receivable", "Personal Banker", "Other"],"Engineering":["Software Engineer", "Software Developer", "Mechanical Engineer", "Electrical Engineer", "Civil Engineer", "Web Developer", "QA", "Full Stack", "Chemical Engineer", "Other"]}],
           children:
           [
             specificCompany={

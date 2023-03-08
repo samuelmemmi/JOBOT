@@ -1,3 +1,5 @@
+import axios from "axios";
+
 class ActionProvider {
   constructor(createChatBotMessage, setStateFunc) {
     this.createChatBotMessage = createChatBotMessage;
@@ -13,7 +15,7 @@ class ActionProvider {
     const message = this.createChatBotMessage(
       node.getNextResponse().children[0].children[1].text,
       {
-        widget: "jobTitles",
+        widget: "JobTitles",
       }
     );
     node.setSelected({...node.getSelected(),field:opt})
@@ -47,10 +49,11 @@ class ActionProvider {
         widget: "companies",
       }
     );
-    node.setSelected({...node.getSelected(),'job titles':opts})
+    node.setSelected({...node.getSelected(),'JobTitles':opts})
     node.setNextResponse(node.getNextResponse().children[0])
     this.addMessageToState(message);
   };
+
 
   handleCompany = (node,opts) => {
     const message1=this.createChatBotMessage(node.getNextResponse().children[0].text);
@@ -91,9 +94,34 @@ class ActionProvider {
     node.setNextResponse(node.getNextResponse().children[0])
     this.addMessageToState(message);
     //server
-    var t=console.log(node.getSelected())
+    var responses = node.getSelected()
+    axios.post("/getfirstjobs", {
+      responses: responses
+    }, {
+      headers: {
+      'Content-type': 'application/json; charset=UTF-8' } 
+    })
+    .then((response) => {
+      if (response.data.success) {
+        console.log("Server returned matching jobs:", response.data.list_jobs);
+        // Add a message for each job to the chatbot's message history
+        response.data.list_jobs.forEach((job) => {
+          const jobMessage = this.createChatBotMessage(
+            `Job title: ${job.job}\nCompany: ${job.company}\nLocation: ${job.city}`
+          );
+          this.addMessageToState(jobMessage);
+        });
+      } else {
+        console.log("Error getting matching jobs: ", response.data.message);
+      }
+    })
+    .catch((err) => {
+      console.log("Error getting matching jobs: ", err.message);
+    });
+
 
   }
+
 
   addMessageToState = (message) => {
     this.setState((prevState) =>{

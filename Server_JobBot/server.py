@@ -54,29 +54,104 @@ def register():
     return jsonify({"success": True, "message": "Your new user is created"})
 
 
+@app.route("/getfirstjobs", methods=["POST"])
 def get_first_jobs():
     # connexion to the MongoDB database
     cluster = MongoClient("mongodb+srv://samuelmemmi:1234@cluster0.e4sf8mm.mongodb.net/?retryWrites=true"
                           "&w=majority")
     db = cluster["chatbot"]
 
-    """first_list = get
-    field = first_list["job"]
-    time = first_list["time"]
-    job = field + "_" + time
+    first_list = request.json.get("responses")
+    field = first_list["field"]
+    time = first_list["job Types"]
+
+    if field == "Arts & Design":
+        field = "design"
+    if field == "Human Resources":
+        field = "humanresources"
+    if field == "Finance & Accounting":
+        field = "finance"
+    if field == "Engineering":
+        field = "engineer"
+
+    job = field.lower() + "_" + time[0].lower()
     collection = db[job]
 
-    company = first_list["com"]
-    title = first_list["title"]
-    city = first_list["city"]
+    company = first_list["companies"]
+    title = first_list["JobTitles"]
+    areas = first_list["areas"]
+    area_dict = {"South": "Ashdod", "North": "Haifa",
+                 "Central": ["Herzliya", "Jerusalem", "Netanya", "Petah Tikva", "Raanana", "Ramat Gan",
+                             "Rishon LeZiyyon", "Tel Aviv", "Tel Aviv-Yafo"],
+                 "All": ["Herzliya", "Jerusalem", "Netanya", "Petah Tikva", "Raanana", "Ramat Gan", "Rishon LeZiyyon",
+                         "Tel Aviv", "Tel Aviv-Yafo", "Ashdod", "Haifa"]}
+
+    city = area_dict[areas[0]]
 
     # Find all documents in the collection
     documents = collection.find()
-    for document in documents:
-        print(document)
+    # Create a new list of dictionaries with all fields except "id"
+    new_documents = [{k: v for k, v in doc.items() if k != "_id"} for doc in documents]
+    list_jobs = []
 
-    # Find a document with a specific ID
-    document = collection.find_one({"company": company, "job": title, "city": city})"""
+    for document in new_documents:
+
+        if len(list_jobs) < 15:
+            if "Other" in company and "Other" in title:
+                if document["city"] in city:
+                    list_jobs.append(document)
+            else:
+                if len(title) > 1 and len(company) > 1:
+                    for ti, comp in zip(title, company):
+                        if "Other" in title and "Other" not in company:
+                            if document["company"] == comp and document["city"] in city:
+                                list_jobs.append(document)
+                        elif "Other" in company and "Other" not in title:
+                            if ti.lower() in document["job"].lower() and document["city"] in city:
+                                list_jobs.append(document)
+                        else:
+                            if document["company"] == comp and ti.lower() in document["job"].lower() and document["city"] in city:
+                                list_jobs.append(document)
+
+                elif len(title) == 1 and len(company) > 1:
+                    for comp in company:
+                        if "Other" in title and "Other" not in company:
+                            if document["company"] == comp and document["city"] in city:
+                                list_jobs.append(document)
+                        elif "Other" in company and "Other" not in title:
+                            if title[0].lower() in document["job"].lower() and document["city"] in city:
+                                list_jobs.append(document)
+                        else:
+                            if document["company"] == comp and title[0].lower() in document["job"].lower() and document["city"] in city:
+                                list_jobs.append(document)
+
+                elif len(title) > 1 and len(company) == 1:
+                    for ti in title:
+                        if "Other" in title and "Other" not in company:
+                            if document["company"] == company[0] and document["city"] in city:
+                                list_jobs.append(document)
+                        elif "Other" in company and "Other" not in title:
+                            if ti.lower() in document["job"].lower() and document["city"] in city:
+                                list_jobs.append(document)
+                        else:
+                            if document["company"] == company[0] and ti.lower() in document["job"].lower() and document["city"] in city:
+                                list_jobs.append(document)
+
+                else:
+                    if title[0] == "Other" and company[0] != "Other":
+                        if document["company"] == company[0] and document["city"] in city:
+                            list_jobs.append(document)
+                    elif company[0] == "Other" and title[0] != "Other":
+                        if title[0].lower() in document["job"].lower() and document["city"] in city:
+                            list_jobs.append(document)
+                    else:
+                        if document["company"] == company[0] and title[0].lower() in document["job"].lower() and document["city"] in city:
+                            list_jobs.append(document)
+        else:
+            break
+
+    # Return the list of matching jobs to the client
+    return jsonify({"success": True, "list_jobs": list_jobs})
 
 
 def view_jobs():
