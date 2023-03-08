@@ -1,11 +1,14 @@
 import React from "react";
 import { createChatBotMessage } from "react-chatbot-kit";
 
-import Options from "./components/Options/Options";
-import Quiz from "./components/Quiz/Quiz";
-import Approval from "./components/Approval";
-import JobTitles from "./components/JobTitles";
 import dec_tree from "./getFlowText.js"
+import FieldOptions from "./components/Options/FieldOptions";
+import Quiz from "./components/Quiz/Quiz";
+import Approval from "./components/Options/Approval";
+import JobTitles from "./components/Options/JobTitles";
+import Companies from "./components/Options/Companies";
+import Areas from "./components/Options/Areas";
+import JobTypes from "./components/Options/JobTypes";
 
 
 const config = {
@@ -25,7 +28,7 @@ const config = {
   widgets: [
     {
       widgetName: "fieldOptions",
-      widgetFunc: (props) => <Options {...props} />,
+      widgetFunc: (props) => <FieldOptions {...props} />,
       props: {
         node:dec_tree
       }
@@ -66,6 +69,27 @@ const config = {
     {
       widgetName: "JobTitles",
       widgetFunc: (props) => <JobTitles {...props} />,
+      props: {
+        node:dec_tree
+      }
+    },
+    {
+      widgetName: "companies",
+      widgetFunc: (props) => <Companies {...props} />,
+      props: {
+        node:dec_tree
+      }
+    },
+    {
+      widgetName: "areas",
+      widgetFunc: (props) => <Areas {...props} />,
+      props: {
+        node:dec_tree
+      }
+    },
+    {
+      widgetName: "jobTypes",
+      widgetFunc: (props) => <JobTypes {...props} />,
       props: {
         node:dec_tree
       }

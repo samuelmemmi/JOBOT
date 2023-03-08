@@ -24,7 +24,7 @@ export default function Login() {
       .then((response) => {
         if (response.data.success) {
           if (response.data.message === "Admin login success"){
-            navigate("/./register", {
+            navigate("/./viewChatFlow", {
               state: {
                 name: userName,
               },
@@ -52,10 +52,10 @@ export default function Login() {
     <div className="login">
       <div className="loginWrapper">
         <div className="loginLeft">
-          <h3 className="loginLogo">JobBot</h3>
+          <h3 className="loginLogo">JOBOT</h3>
           <h2 className="loginLogo1">Login</h2>
           <span className="loginDesc">
-            With JobBot find your dream job in seconds
+            With JOBOT find your dream job in seconds
           </span>
         </div>
         <div className="loginRight">

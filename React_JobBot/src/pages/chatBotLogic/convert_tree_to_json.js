@@ -6,6 +6,7 @@ var displayingAdaptedJobs;
 var areas={
   title: "",
   text: "In which areas are you interested?",
+  options:["South", "North", "Central","All"],
   children:
   [
     {
@@ -16,10 +17,7 @@ var areas={
         jobTypes={
           title: "next question",
           text: "Select job types",
-<<<<<<< Updated upstream
-=======
           options: ["Full_time", "Part_time"],
->>>>>>> Stashed changes
           children:
           [
             {
@@ -140,8 +138,8 @@ var chatFlow = {
   [
     {
       title: "field",
-      text:"Select a field for job (Multiple fields)",
-      options:["Healthcare", "Marketing", "Education", "Human Resources", "Finance & Accounting", "Engineering", "Other"],
+      text:"Select a field for job",
+      options:["Healthcare", "Marketing", "Arts & Design", "Human Resources", "Finance & Accounting", "Engineering", "Other"],
       children:
       [
         {
@@ -160,26 +158,19 @@ var chatFlow = {
         {
           title: "user selected fields",
           text: "Select a job title at this field (Multiple jobs)",
-<<<<<<< Updated upstream
-          options:[{Healthcare:["A","B"],Marketing:["C","D"],Education:["E","F"],'Human Resources':["H","I"],'Finance & Accounting':["J","K"],Engineering:["L","M"]}],
-=======
           options:[{"Healthcare":["Registered Nurse","Nurse Practitioner","Medical Assistant", "Pharmacist", "Physical Therapist", "Patient Care Technician", "Medical Scribe", "Other"],"Marketing":["Event Coordinator","Marketing Coordinator","Public Relations", "Digital Marketing", "Brand Ambassador", "Community Manager", "Advertising", "Marketing Communications", "Other"],"Arts & Design":["Graphic Designer","Photographer","Interior Designer", "Video Editor", "Creative", "Music", "UX Designer", "Fashion", "3D", "Other"],'Human Resources':["Recruiter","Coordinator","Corporate Recruiter","Payroll Specialist","Recruiting Coordinator", "Talent Acquisition", "Technical Recruiter", "Other"],'Finance & Accounting':["Accounting","Financial Analyst","Accountant", "Controller", "Financial Advisor", "Bookkeeper", "Patient Account Representative", "Accounts Receivable", "Personal Banker", "Other"],"Engineering":["Software Engineer", "Software Developer", "Mechanical Engineer", "Electrical Engineer", "Civil Engineer", "Web Developer", "QA", "Full Stack", "Chemical Engineer", "Other"]}],
->>>>>>> Stashed changes
           children:
           [
             specificCompany={
               title: "user selected job titles",
               text: "Great! Do you have any specific companies that you would like to work at? (Multiple companies)",
-<<<<<<< Updated upstream
-=======
-              options:[{"Healthcare":["Clalit","Maccabi","Israeli Defense Forces","Super Pharm","Novartis","Other"],"Marketing":["Yupulse","InspHire","Teva Pharmaceuticals","RYB Technologies","GotFriends","Other"],"Arts & Design":["Yupulse","JobInfo","GotFriends","Elbit Systems","CPS Jobs","Other"],'Human Resources':["Yupulse","Placer","AppsFlyer","Solar Edge","Other"],'Finance & Accounting':["Yupulse","Deloitte","Teva Pharmaceuticals","Other"],"Engineering":["Apple","Microsoft","Amazon","Google","Facebook","Other"]}],
->>>>>>> Stashed changes
+              options:[{Healthcare:["Clalit","Maccabi","Israeli Defense Forces","Super Pharm","Novartis","I am open to any company"],Marketing:["Yupulse","InspHire","Teva Pharmaceuticals","RYB Technologies","CPS Jobs","I am open to any company"],"Arts & Design":["Yupulse","InspHire","Teva Pharmaceuticals","RYB Technologies","CPS Jobs","I am open to any company"],'Human Resources':["Yupulse","InspHire","Teva Pharmaceuticals","RYB Technologies","CPS Jobs","I am open to any company"],'Finance & Accounting':["Yupulse","InspHire","Teva Pharmaceuticals","RYB Technologies","CPS Jobs","Other"],Engineering:["Yupulse","InspHire","Teva Pharmaceuticals","RYB Technologies","CPS Jobs","Other"]}],
               children:
               [
                 {
                   title: "user selected specific companies",
                   text: "Excellent, we will consider priority for these companies",
-                  children: 
+                  children:
                   [
                     {...areas,title: "next question"}
                   ]

@@ -20,7 +20,6 @@ class ActionProvider {
     );
     node.setSelected({...node.getSelected(),field:opt})
     node.setNextResponse(node.getNextResponse().children[0].children[1])
-    console.log(node.getSelected())
     this.addMessageToState(message);
   };
 
@@ -31,10 +30,7 @@ class ActionProvider {
         widget: "approval",
       }
     );
-    // this.addNodeToState(nodes[0]);
     node.setSelected({...node.getSelected(),field:opt});
-    // var x=node.getSelected();
-    console.log("Selected Params ",node.getSelected())
     node.setNextResponse(node.getNextResponse().children[0].children[0])
     this.addMessageToState(message);
   }
@@ -44,24 +40,21 @@ class ActionProvider {
     node.setSelected({...node.getSelected(),approval:opt});
     node.setNextResponse(node.getNextResponse().children[0])
     this.addMessageToState(message);
-    console.log("SELECTED OTHER FLOW ",node.getSelected())
   }
 
   handleJobTitle = (node,opts) => {
     const message = this.createChatBotMessage(
       node.getNextResponse().children[0].text,
       {
-        widget: "",
+        widget: "companies",
       }
     );
     node.setSelected({...node.getSelected(),'JobTitles':opts})
     node.setNextResponse(node.getNextResponse().children[0])
-    console.log("In handle ",node.getSelected())
     this.addMessageToState(message);
   };
 
-<<<<<<< Updated upstream
-=======
+
   handleCompany = (node,opts) => {
     const message1=this.createChatBotMessage(node.getNextResponse().children[0].text);
     this.addMessageToState(message1);
@@ -129,11 +122,9 @@ class ActionProvider {
 
   }
 
->>>>>>> Stashed changes
+
   addMessageToState = (message) => {
     this.setState((prevState) =>{
-      // console.log(prevState.messages[prevState.messages.length-1].message+" LOOOLOOO"+x)
-      console.log("Messages ",prevState.messages);
       return {
       ...prevState,
       messages: [...prevState.messages, message],
@@ -141,13 +132,6 @@ class ActionProvider {
     });
   };
 
-//mine
-  // addNodeToState = (node) => {
-  //   this.setState((prevState) => ({
-  //     ...prevState,
-  //     nodes: [...prevState.nodes, node],
-  //   }));
-  // };
 }
 
 export default ActionProvider;
