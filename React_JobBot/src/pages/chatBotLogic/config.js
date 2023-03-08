@@ -64,7 +64,7 @@ const config = {
       // ]
     },
     {
-      widgetName: "jobTitles",
+      widgetName: "JobTitles",
       widgetFunc: (props) => <JobTitles {...props} />,
       props: {
         node:dec_tree
