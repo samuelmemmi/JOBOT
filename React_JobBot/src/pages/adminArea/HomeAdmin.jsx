@@ -25,6 +25,9 @@ function HomeAdmin() {
             <li>
                 <Link to="/jobs">Jobs</Link>
             </li>
+            <li>
+                <Link to="/users">Users</Link>
+            </li>
         </ul>
     </nav>
     </div>

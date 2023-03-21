@@ -110,11 +110,11 @@ def merge_json_files(filess, output_file):
         json.dump(result, fff)
 
 
-def insert_db(file):
+def insert_db(collec, file):
     cluster = MongoClient("mongodb+srv://samuelmemmi:1234@cluster0.e4sf8mm.mongodb.net/?retryWrites=true"
                           "&w=majority")
     db = cluster["chatbot"]
-    collection = db[file]
+    collection = db[collec]
     file = file + ".json"
     with open(file, 'r') as ffff:
         da = json.load(ffff)
@@ -229,38 +229,86 @@ if __name__ == "__main__":
     fil15 = ['marketing_senior1.json', 'marketing_senior2.json', 'marketing_senior3.json']
     merge_json_files(fil15, 'marketing_senior.json')
 
-    insert_db('design_full_time')
-    insert_db('design_intern')
-    insert_db('design_junior')
-    insert_db('design_part_time')
-    insert_db('design_senior')
+    insert_db('design_full_time', 'design_full_time')
+    insert_db('design_intern', 'design_intern')
+    insert_db('design_junior', 'design_junior')
+    insert_db('design_part_time', 'design_part_time')
+    insert_db('design_senior', 'design_senior')
 
-    insert_db('marketing_full_time')
-    insert_db('marketing_intern')
-    insert_db('marketing_junior')
-    insert_db('marketing_part_time')
-    insert_db('marketing_senior')
+    insert_db('marketing_full_time', 'marketing_full_time')
+    insert_db('marketing_intern', 'marketing_intern')
+    insert_db('marketing_junior', 'marketing_junior')
+    insert_db('marketing_part_time', 'marketing_part_time')
+    insert_db('marketing_senior', 'marketing_senior')
 
-    insert_db('healthcare_full_time')
-    insert_db('healthcare_intern')
-    insert_db('healthcare_junior')
-    insert_db('healthcare_part_time')
-    insert_db('healthcare_senior')
+    insert_db('healthcare_full_time', 'healthcare_full_time')
+    insert_db('healthcare_intern', 'healthcare_intern')
+    insert_db('healthcare_junior', 'healthcare_junior')
+    insert_db('healthcare_part_time', 'healthcare_part_time')
+    insert_db('healthcare_senior', 'healthcare_senior')
 
-    insert_db('humanresources_full_time')
-    insert_db('humanresources_intern')
-    insert_db('humanresources_junior')
-    insert_db('humanresources_part_time')
-    insert_db('humanresources_senior')
+    insert_db('humanresources_full_time', 'humanresources_full_time')
+    insert_db('humanresources_intern', 'humanresources_intern')
+    insert_db('humanresources_junior', 'humanresources_junior')
+    insert_db('humanresources_part_time', 'humanresources_part_time')
+    insert_db('humanresources_senior', 'humanresources_senior')
 
-    insert_db('engineer_full_time')
-    insert_db('engineer_intern')
-    insert_db('engineer_junior')
-    insert_db('engineer_part_time')
-    insert_db('engineer_senior')
+    insert_db('engineer_full_time', 'engineer_full_time')
+    insert_db('engineer_intern', 'engineer_intern')
+    insert_db('engineer_junior', 'engineer_junior')
+    insert_db('engineer_part_time', 'engineer_part_time')
+    insert_db('engineer_senior', 'engineer_senior')
 
-    insert_db('finance_full_time')
-    insert_db('finance_intern')
-    insert_db('finance_junior')
-    insert_db('finance_part_time')
-    insert_db('finance_senior')"""
+    insert_db('finance_full_time','finance_full_time')
+    insert_db('finance_intern','finance_intern')
+    insert_db('finance_junior','finance_junior')
+    insert_db('finance_part_time','finance_part_time')
+    insert_db('finance_senior','finance_senior')
+
+    scrap("Medical Assistant")
+    scrap("Health representative")
+    scrap("Production Scientist")
+
+    scrap("Product Marketing")
+    scrap("Data Analyst")
+    scrap("Marketing Designer")
+
+    scrap("Designer")
+    scrap("Chip Design Architect")
+    scrap("Front End Developer")
+
+    scrap("Digital Key Account")
+    scrap("Global HR Planning & Operations")
+    scrap("Talent Acquisition Specialist")
+
+    scrap("VP Finance")
+    scrap("Business Development")
+    scrap("Finance Controller")
+    
+    scrap("QA Engineer")
+    scrap("Network Engineer")
+    scrap("Software Engineer")
+
+    fil16 = ["Medical Assistant.json", "Health representative.json", "Production Scientist.json"]
+    merge_json_files(fil16, "job_healthcare.json")
+    insert_db("healthcare_full_time", "job_healthcare")"""
+
+    fil17 = ["Product Marketing.json", "Data Analyst.json", "Marketing Designer.json"]
+    merge_json_files(fil17, "job_marketing.json")
+    insert_db("marketing_full_time", "job_marketing")
+
+    fil18 = ["Designer.json", "Chip Design Architect.json", "Front End Developer.json"]
+    merge_json_files(fil18, "job_design.json")
+    insert_db("design_full_time", "job_design")
+
+    fil19 = ["Digital Key Account.json", "Global HR Planning & Operations.json", "Talent Acquisition Specialist.json"]
+    merge_json_files(fil19, "job_humanresources.json")
+    insert_db("humanresources_full_time", "job_humanresources")
+
+    fil20 = ["VP Finance.json", "Business Development.json", "Finance Controller.json"]
+    merge_json_files(fil20, "job_finance.json")
+    insert_db("finance_full_time", "job_finance")
+
+    fil21 = ["QA Engineer.json", "Network Engineer.json", "Software Engineer.json"]
+    merge_json_files(fil21, "job_engineer.json")
+    insert_db("engineer_full_time", "job_engineer")
