@@ -6,6 +6,7 @@ import "./Options.css";
 const JobTitles = (props) => {
   const [options, setOptions] = useState([]);
   const [selectedOptions, setSelectedOptions] = useState([]);
+  const [submitted,setSubmitted]=useState(false);
 
   useEffect(
     ()=>{
@@ -27,6 +28,7 @@ const JobTitles = (props) => {
     event.preventDefault();
     console.log("Selected Options: ", selectedOptions);
     // handle submission logic
+    setSubmitted(true);
     props.actionProvider.handleJobTitle(props.node,selectedOptions);
     
   };
@@ -49,7 +51,7 @@ const JobTitles = (props) => {
         }
       </label>
       <br />
-      <button type="submit" className="option-button">Submit</button>
+      <button type="submit" className="option-button" disabled={submitted}>Submit</button>
     </form>
   );
 };

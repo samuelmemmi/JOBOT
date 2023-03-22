@@ -24,7 +24,7 @@ export default function Login() {
       .then((response) => {
         if (response.data.success) {
           if (response.data.message === "Admin login success"){
-            navigate("/./viewChatFlow", {
+            navigate("/./homePageAdmin", {
               state: {
                 name: userName,
               },

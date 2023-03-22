@@ -6,7 +6,7 @@ function HomeAdmin() {
     <div>
     <h1>JOBOT Admin</h1>
     <p>
-    With JobBot find your dream job in seconds.
+    With JOBOT find your dream job in seconds.
     </p>
     <nav>
         <ul>
@@ -20,10 +20,16 @@ function HomeAdmin() {
                 <Link to="/about">About</Link>
             </li>
             <li>
-                <Link to="/startChat">Start Chat</Link>
+                <Link to="/users">Users</Link>
             </li>
             <li>
                 <Link to="/jobs">Jobs</Link>
+            </li>
+            <li>
+                <Link to="/viewChatFlow">Chat Flow</Link>
+            </li>
+            <li>
+                <Link to="/statistics">Statistics</Link>
             </li>
         </ul>
     </nav>

@@ -9,6 +9,9 @@ import JobTitles from "./components/Options/JobTitles";
 import Companies from "./components/Options/Companies";
 import Areas from "./components/Options/Areas";
 import JobTypes from "./components/Options/JobTypes";
+import Jobs from "./components/Options/Jobs";
+import EmailDisplay from "./components/Options/EmailDisplay";
+import DisplaySelectedJobs from "./components/Options/DisplaySelectedJobs";
 
 
 const config = {
@@ -90,6 +93,27 @@ const config = {
     {
       widgetName: "jobTypes",
       widgetFunc: (props) => <JobTypes {...props} />,
+      props: {
+        node:dec_tree
+      }
+    },
+    {
+      widgetName: "jobs",
+      widgetFunc: (props) => <Jobs {...props} />,
+      props: {
+        node:dec_tree
+      }
+    },
+    {
+      widgetName: "emailDisplay",
+      widgetFunc: (props) => <EmailDisplay {...props} />,
+      props: {
+        node:dec_tree
+      }
+    },
+    {
+      widgetName: "displaySelectedJobs",
+      widgetFunc: (props) => <DisplaySelectedJobs {...props} />,
       props: {
         node:dec_tree
       }
