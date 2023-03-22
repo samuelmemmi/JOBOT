@@ -32,12 +32,13 @@ var areas={
                   [
                     {
                       title: "first time the user has selected 'Nothing fits'",
-                      text: "Just a moment please, I'm looking for relevant jobs for you",
+                      text: "Just a moment please, I'm looking for relevant jobs again",
                       children:
                       [
                         {
                           title: "second time the user has selected 'Nothing fits'",
                           text: "Would you like to see jobs with an accurate match?",
+                          options: ["Yes", "No"],
                           children:
                           [
                             {
@@ -78,11 +79,13 @@ var areas={
                                         successfulEnding={
                                           title: "user selected at least 1 job",
                                           text: "Wonderful, how would you like to continute? (Multiple choice)",
+                                          options: ["Display my choices again","Email them to me"],
                                           children:
                                           [
                                             {
                                               title: "viewing additional jobs",
                                               text: "Are you interested in viewing additional jobs in our web?",
+                                              options: ["Yes","No"],
                                               children:
                                               [
                                                 {...selfJobSearch, title: "user selected 'yes' for viewing additional jobs"},
@@ -139,7 +142,7 @@ var chatFlow = {
     {
       title: "field",
       text:"Select a field for job",
-      options:["Healthcare", "Marketing", "Arts & Design", "Human Resources", "Finance & Accounting", "Engineering", "Other"],
+      options:["Engineering", "Marketing", "Human Resources", "Healthcare", "Arts & Design", "Finance & Accounting", "Other"],
       children:
       [
         {
@@ -158,13 +161,13 @@ var chatFlow = {
         {
           title: "user selected fields",
           text: "Select a job title at this field (Multiple jobs)",
-          options:[{"Healthcare":["Registered Nurse","Nurse Practitioner","Medical Assistant", "Pharmacist", "Physical Therapist", "Patient Care Technician", "Medical Scribe", "Other"],"Marketing":["Event Coordinator","Marketing Coordinator","Public Relations", "Digital Marketing", "Brand Ambassador", "Community Manager", "Advertising", "Marketing Communications", "Other"],"Arts & Design":["Graphic Designer","Photographer","Interior Designer", "Video Editor", "Creative", "Music", "UX Designer", "Fashion", "3D", "Other"],'Human Resources':["Recruiter","Coordinator","Corporate Recruiter","Payroll Specialist","Recruiting Coordinator", "Talent Acquisition", "Technical Recruiter", "Other"],'Finance & Accounting':["Accounting","Financial Analyst","Accountant", "Controller", "Financial Advisor", "Bookkeeper", "Patient Account Representative", "Accounts Receivable", "Personal Banker", "Other"],"Engineering":["Software Engineer", "Software Developer", "Mechanical Engineer", "Electrical Engineer", "Civil Engineer", "Web Developer", "QA", "Full Stack", "Chemical Engineer", "Other"]}],
+          options:[{"Healthcare":["Medical Assistant", "Health representative", "Production Scientist", "Other"],"Marketing":["Product Marketing", "Data Analyst", "Marketing Designer", "Other"],"Arts & Design":["Designer", "Chip Design Architect", "Front End Developer", "Other"],'Human Resources':["Digital Key Account","Global HR Planning & Operations","Talent Acquisition Specialist", "Other"],'Finance & Accounting':["VP Finance","Business Development", "Finance Controller", "Other"],"Engineering":["QA Engineer", "Network Engineer", "Software Engineer", "Other"]}],
           children:
           [
             specificCompany={
               title: "user selected job titles",
               text: "Great! Do you have any specific companies that you would like to work at? (Multiple companies)",
-              options:[{Healthcare:["Clalit","Maccabi","Israeli Defense Forces","Super Pharm","Novartis","I am open to any company"],Marketing:["Yupulse","InspHire","Teva Pharmaceuticals","RYB Technologies","CPS Jobs","I am open to any company"],"Arts & Design":["Yupulse","InspHire","Teva Pharmaceuticals","RYB Technologies","CPS Jobs","I am open to any company"],'Human Resources':["Yupulse","InspHire","Teva Pharmaceuticals","RYB Technologies","CPS Jobs","I am open to any company"],'Finance & Accounting':["Yupulse","InspHire","Teva Pharmaceuticals","RYB Technologies","CPS Jobs","Other"],Engineering:["Yupulse","InspHire","Teva Pharmaceuticals","RYB Technologies","CPS Jobs","Other"]}],
+              options:[{"Healthcare":["Diageo","Edwards Lifesciences","AstraZeneca","Pfizer","I'm open to any company"],"Marketing":["Eybna Technologies","InspHire","Seperia","Google","I'm open to any company"],"Arts & Design":["Mobileye","InspHire","Oski Technology","Palo Alto Networks","I'm open to any company"],'Human Resources':["JobInfo","ASM Global","Adidas","Solaredge","I'm open to any company"],'Finance & Accounting':["Deloitte","Mobileye","Barclays","Adidas","I'm open to any company"],"Engineering":["Google","Deloitte","SQLink","Check Point Software Technologies Ltd.","I'm open to any company"]}],
               children:
               [
                 {

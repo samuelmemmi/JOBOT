@@ -6,6 +6,8 @@ import StartChat from "./pages/chatBotLogic/StartChat.jsx"
 import ViewChatFlow from "./pages/adminArea/viewChatFlow.jsx";
 import HomeClient from "./pages/clientArea/HomeClient.jsx";
 import HomeAdmin from "./pages/adminArea/HomeAdmin.jsx";
+import JobsPage from "./pages/adminArea/JobsPage.jsx";
+import UsersPage from "./pages/adminArea/UsersPage.jsx";
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
       <Route path="/viewChatFlow" element={<ViewChatFlow />}/>
       <Route path="/homePage" element={<HomeClient />}/>
       <Route path="/homePageAdmin" element={<HomeAdmin />}/>
+      <Route path="/jobs" element={<JobsPage />}/>
+      <Route path="/users" element={<UsersPage />}/>
     </Routes>
   );
 }

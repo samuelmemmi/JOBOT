@@ -23,7 +23,7 @@ function Home() {
                 <Link to="/startChat">Start Chat</Link>
             </li>
             <li>
-                <Link to="/jobs">Jobs</Link>
+                <Link to="/jobs">Self job search</Link>
             </li>
         </ul>
     </nav>

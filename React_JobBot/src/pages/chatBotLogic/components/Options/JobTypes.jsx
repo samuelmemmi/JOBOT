@@ -6,6 +6,7 @@ import "./Options.css";
 const JobTypes = (props) => {
   const [options, setOptions] = useState([]);
   const [selectedOptions, setSelectedOptions] = useState([]);
+  const [submitted,setSubmitted]=useState(false);
 
   useEffect(()=>{setOptions(props.node.getNextResponse().options)},[]);//maybe props.node_if_options>0
 
@@ -23,6 +24,7 @@ const JobTypes = (props) => {
     event.preventDefault();
     console.log("Selected Options: ", selectedOptions);
     // handle submission logic
+    setSubmitted(true);
     props.actionProvider.handleJobType(props.node,selectedOptions);
     
   };
@@ -44,7 +46,7 @@ const JobTypes = (props) => {
         }
       </label>
       <br />
-      <button type="submit" className="option-button">Submit</button>
+      <button type="submit" className="option-button" disabled={submitted}>Submit</button>
     </form>
   );
 };

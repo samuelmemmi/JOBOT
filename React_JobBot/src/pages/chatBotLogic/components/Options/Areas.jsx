@@ -6,6 +6,8 @@ import "./Options.css";
 const Areas = (props) => {
   const [options, setOptions] = useState([]);
   const [selectedOptions, setSelectedOptions] = useState([]);
+  const [submitted,setSubmitted]=useState(false);
+
 
   useEffect(()=>{setOptions(props.node.getNextResponse().options)},[]);//maybe props.node_if_options>0
 
@@ -23,6 +25,7 @@ const Areas = (props) => {
     event.preventDefault();
     console.log("Selected Options: ", selectedOptions);
     // handle submission logic
+    setSubmitted(true);
     props.actionProvider.handleArea(props.node,selectedOptions);
     
   };
@@ -37,14 +40,14 @@ const Areas = (props) => {
             <input
             type="checkbox"
             value={opt}
-            onChange={handleOptionChange} />
+            onChange={handleOptionChange}/>
             {opt}
           </label>);
         },[])
         }
       </label>
       <br />
-      <button type="submit" className="option-button">Submit</button>
+      <button type="submit" className="option-button" disabled={submitted}>Submit</button>
     </form>
   );
 };
