@@ -16,7 +16,7 @@ class ActionProvider {
     const message = this.createChatBotMessage(
       txt,
       {
-        widget: "jobTitles",
+        widget: "JobTitles",
       }
     );
     node.setSelected({...node.getSelected(),field:opt})
@@ -64,6 +64,7 @@ class ActionProvider {
     node.setNextResponse(node.getNextResponse().children[0])
     this.addMessageToState(message);
   };
+
 
   handleCompany = (node,opts) => {
     var txt1=node.getNextResponse().children[0].text;
@@ -139,6 +140,7 @@ class ActionProvider {
       console.log("Error getting matching jobs: ", err.message);
     });
   }
+
 
   // handleJobType(node,opts){
   //   var txt1=node.getNextResponse().children[0].text;
@@ -253,6 +255,7 @@ class ActionProvider {
     node.setNextResponse(node.getNextResponse().children[0])
     this.addMessageToState(message);
   }
+
 
   addMessageToState = (message) => {
     this.setState((prevState) =>{
