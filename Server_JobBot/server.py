@@ -1,9 +1,10 @@
 from flask import Flask, request, jsonify
 from pymongo import MongoClient
 import json
+from flask import session, redirect, url_for
 
 app = Flask(__name__)
-
+app.secret_key = 'your-secret-key-here'
 
 # route for login
 @app.route("/login", methods=["POST"])
@@ -54,11 +55,20 @@ def register():
     collection.insert_one({"user_name": user_name, "password": password})
     return jsonify({"success": True, "message": "Your new user is created"})
 
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    session.clear()
+    response = jsonify({'success': True})
+    response.delete_cookie('session')
+    return response
+
+
 # route for updating the decision tree
 @app.route("/write-json", methods=["POST"])
 def writeJson():
     # get the updated decision tree
-    json_data=request.json
+    json_data = request.json
     # write it to a json file
     with open('../React_JobBot/src/pages/chatBotLogic/decisionTree.json', 'w') as f:
         json.dump(json_data, f)
@@ -79,7 +89,8 @@ def help_get_first_jobs(new_documents, list_jobs, title, company, city, other_li
                             if document["company"] == comp and are_all_words_present and document[
                                 "city"] in city:
                                 list_jobs.append(document)
-                            elif document["company"] == comp and ti.lower() in document["description"].lower() and \
+                            elif document["company"] == comp and ti.lower() in all(
+                                    word in document["description"].lower() for word in words1) and \
                                     document["city"] in city:
                                 list_jobs.append(document)
                         else:
@@ -92,6 +103,10 @@ def help_get_first_jobs(new_documents, list_jobs, title, company, city, other_li
                     are_all_words_present = words1.issubset(words2)
                     if title[0] != "Other":
                         if document["company"] == comp and are_all_words_present and document[
+                            "city"] in city:
+                            list_jobs.append(document)
+                        elif all(word in document["description"].lower() for word in words1) and document[
+                            "company"] == comp and document[
                             "city"] in city:
                             list_jobs.append(document)
                     else:
@@ -155,15 +170,26 @@ def get_first_jobs():
             title[i] = "account"
         elif title[i] == "Global HR Planning & Operations":
             title[i] = "HR Planning"
+        elif title[i] == "Talent Acquisition Specialist":
+            title[i] = "Talent Specialist"
+        elif title[i] == "Chip Design Architect":
+            title[i] = "Chip Design"
 
     areas = first_list["areas"]
-    area_dict = {"South": ["Ashdod", "South"], "North": ["Haifa", "North"],
-                 "Central": ["Herzliya", "Jerusalem", "Netanya", "Petah Tikva", "Raanana", "Ramat Gan",
-                             "Rishon LeZiyyon", "Tel Aviv", "Tel Aviv-Yafo", "Central"],
-                 "All": ["Herzliya", "Jerusalem", "Netanya", "Petah Tikva", "Raanana", "Ramat Gan", "Rishon LeZiyyon",
-                         "Tel Aviv", "Tel Aviv-Yafo", "Ashdod", "Haifa", "South", "North", "Central"]}
+    area_dict = {"South": ["Qiryat Gat", "Ashdod", "South", "Southern", "Israel"],
+                 "North": ["Haifa", "North", "Northern", "Israel"],
+                 "Central": ["Central", "Herzliya", "Jerusalem", "Netanya", "Petah Tikva", "Raanana", "Ramat Gan",
+                             "Rishon LeZiyyon", "Tel Aviv", "Tel Aviv-Yafo", "Kfar Saba", "Rehovot", "Hod HaSharon",
+                             "Bnei Brak", "Giv`atayim", "Israel", "Lod", "Holon", "Yavne", "Ness Ziona"],
+                 "All": ["Haifa", "North", "Northern", "Ashdod", "South", "Southern", "Central", "Herzliya",
+                         "Jerusalem", "Netanya", "Petah Tikva", "Raanana", "Ramat Gan",
+                         "Rishon LeZiyyon", "Tel Aviv", "Tel Aviv-Yafo", "Kfar Saba", "Rehovot", "Hod HaSharon",
+                         "Bnei Brak", "Giv`atayim", "Israel", "Lod", "Holon", "Yavne", "Ness Ziona"]}
 
-    city = area_dict[areas[0]]
+    city = []
+    for i in range(len(areas)):
+        city.append(area_dict[areas[i]])
+    city = [item for sublist in city for item in sublist]
 
     # Find all documents in the collection
     documents = collection.find()
@@ -191,13 +217,15 @@ def get_first_jobs():
                             if comp == "I'm open to any company":
                                 if are_all_words_present and document["city"] in city:
                                     list_jobs.append(document)
-                                elif ti.lower() in document["description"].lower() and document["city"] in city:
+                                elif all(word in document["description"].lower() for word in words1) and document[
+                                    "city"] in city:
                                     list_jobs.append(document)
                             else:
                                 if document["company"] == comp and are_all_words_present and document[
                                     "city"] in city:
                                     list_jobs.append(document)
-                                elif document["company"] == comp and ti.lower() in document["description"].lower() and \
+                                elif document["company"] == comp and all(
+                                        word in document["description"].lower() for word in words1) and \
                                         document["city"] in city:
                                     list_jobs.append(document)
                         else:
@@ -217,8 +245,15 @@ def get_first_jobs():
                             if document["company"] == comp and are_all_words_present and document[
                                 "city"] in city:
                                 list_jobs.append(document)
+                            elif document["company"] == comp and all(
+                                    word in document["description"].lower() for word in words1) and document[
+                                "city"] in city:
+                                list_jobs.append(document)
                         else:
                             if are_all_words_present and document["city"] in city:
+                                list_jobs.append(document)
+                            elif all(word in document["description"].lower() for word in words1) and document[
+                                "city"] in city:
                                 list_jobs.append(document)
                     else:
                         if comp != "I'm open to any company":
@@ -359,6 +394,28 @@ def find_best_title(field):
         print(result["_id"], result["count"])
 
 
+def find_best_city(field):
+    # connexion to the MongoDB database
+    cluster = MongoClient("mongodb+srv://samuelmemmi:1234@cluster0.e4sf8mm.mongodb.net/?retryWrites=true"
+                          "&w=majority")
+    db = cluster["chatbot"]
+    collection = db[field]
+
+    # Use aggregation to group by company and count the number of jobs per company
+    pipeline = [
+        {"$group": {"_id": "$city", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 15}
+    ]
+
+    # Execute the pipeline and get the results
+    results = list(collection.aggregate(pipeline))
+
+    # Print the top 5 companies
+    for result in results:
+        print(result["_id"], result["count"])
+
+
 if __name__ == "__main__":
     # find_best_title("healthcare_full_time")
     # find_best_title("marketing_full_time")
@@ -373,5 +430,12 @@ if __name__ == "__main__":
     # find_best_job("design_full_time")
     # find_best_job("humanresources_full_time")
     # find_best_job("engineer_full_time")
+
+    # find_best_city("healthcare_full_time")
+    # find_best_city("marketing_full_time")
+    # find_best_city("finance_full_time")
+    # find_best_city("design_full_time")
+    # find_best_city("humanresources_full_time")
+    # find_best_city("engineer_full_time")
 
     app.run(port=5000, debug=True)
