@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import './UsersPage.css';
 
 function UsersPage() {
   const [users, setUsers] = useState([]);
@@ -19,13 +20,13 @@ function UsersPage() {
   }, []);
 
   return (
-    <div>
-      <h1>All the users in the database</h1>
-      <ul>
+    <div className="users-page">
+      <h1 className="title">All the users in the database</h1>
+      <ul className="users-list">
         {users.map((user, index) => (
-          <li key={index}>
-            <h2>{user.user_name}</h2>
-            <p>{user.password}</p>
+          <li key={index} className="user-item">
+            <h2 className="user-name">{user.user_name}</h2>
+            <p className="user-password">{user.password}</p>
           </li>
         ))}
       </ul>
