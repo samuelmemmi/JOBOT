@@ -11,7 +11,7 @@ function HomeAdmin() {
     <nav>
         <ul>
             <li>
-                <Link to="/">Log out?</Link>
+                <Link to="/logout">Log out?</Link>
             </li>
             <li>
                 <Link to="/details">Registration details</Link>
