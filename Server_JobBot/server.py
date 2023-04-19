@@ -5,6 +5,7 @@ from flask import session
 import nltk
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
+import openai
 
 # initialize NLTK libraries
 nltk.download('stopwords')
@@ -532,6 +533,16 @@ def test_response(responses):
         print()
 
 
+def chatgpt(question):
+    API_KEY = open("API_KEY.txt", "r").read().strip()
+    openai.api_key = API_KEY
+    chat_log = [{"role": "user", "content": question}]
+    response = openai.ChatCompletion.create(model="davinci", messages=chat_log)
+    assistant_response = response['choices'][0]['message']['content']
+    print("chatgpt: ", assistant_response.strip("\n").strip())
+    chat_log.append({"role": "assistant", "content": assistant_response.strip("\n").strip()})
+
+
 if __name__ == "__main__":
     # find_best_title("healthcare_full_time")
     # find_best_title("marketing_full_time")
@@ -553,7 +564,6 @@ if __name__ == "__main__":
     # find_best_city("design_full_time")
     # find_best_city("humanresources_full_time")
     # find_best_city("engineer_full_time")
-
     app.run(port=5000, debug=True)
     # example usage
     # "Why don't you want offers anymore?
@@ -572,4 +582,6 @@ if __name__ == "__main__":
                  "The search results are not relevant or accurate enough.", "The navigation is difficult but the "
                                                                             "system is quite good"]
 
-    test_response(responses)"""
+    test_response(responses)
+
+    chatgpt("Is python a interpreter language?")"""
