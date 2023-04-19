@@ -12,7 +12,12 @@ import JobTypes from "./components/Options/JobTypes";
 import Jobs from "./components/Options/Jobs";
 import EmailDisplay from "./components/Options/EmailDisplay";
 import DisplaySelectedJobs from "./components/Options/DisplaySelectedJobs";
-
+import AccuracyLevels from "./components/Options/AccuracyLevels";
+import MoreInfo from "./components/Options/MoreInfo";
+import ExperienceLevel from "./components/Options/ExperienceLevel";
+import Cities from "./components/Options/Cities";
+import Email from "./components/Options/Email";
+import JobTitleTyping from "./components/Options/JobTitleTyping";
 
 const config = {
   botName: "JOBOT",
@@ -70,7 +75,7 @@ const config = {
       // ]
     },
     {
-      widgetName: "JobTitles",
+      widgetName: "jobTitles",
       widgetFunc: (props) => <JobTitles {...props} />,
       props: {
         node:dec_tree
@@ -114,6 +119,48 @@ const config = {
     {
       widgetName: "displaySelectedJobs",
       widgetFunc: (props) => <DisplaySelectedJobs {...props} />,
+      props: {
+        node:dec_tree
+      }
+    },
+    {
+      widgetName: "accuracyLevel",
+      widgetFunc: (props) => <AccuracyLevels {...props} />,
+      props: {
+        node:dec_tree
+      }
+    },
+    {
+      widgetName: "moreInfo",
+      widgetFunc: (props) => <MoreInfo {...props} />,
+      props: {
+        node:dec_tree
+      }
+    },
+    {
+      widgetName: "experienceLevel",
+      widgetFunc: (props) => <ExperienceLevel {...props} />,
+      props: {
+        node:dec_tree
+      }
+    },
+    {
+      widgetName: "cities",
+      widgetFunc: (props) => <Cities {...props} />,
+      props: {
+        node:dec_tree
+      }
+    },
+    {
+      widgetName: "email",
+      widgetFunc: (props) => <Email {...props} />,
+      props: {
+        node:dec_tree
+      }
+    },
+    {
+      widgetName: "jobTitleTyping",
+      widgetFunc: (props) => <JobTitleTyping {...props} />,
       props: {
         node:dec_tree
       }

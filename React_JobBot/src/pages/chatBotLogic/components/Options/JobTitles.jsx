@@ -6,7 +6,7 @@ import "./Options.css";
 const JobTitles = (props) => {
   const [options, setOptions] = useState([]);
   const [selectedOptions, setSelectedOptions] = useState([]);
-  const [submitted,setSubmitted]=useState(false);
+  const [submitted,setSubmitted]=useState(true);
 
   useEffect(
     ()=>{
@@ -24,11 +24,15 @@ const JobTitles = (props) => {
     }
   };
 
+  const isFormValid = () => {
+    return Object.values(selectedOptions).some((isChecked) => isChecked)&&submitted;
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
     console.log("Selected Options: ", selectedOptions);
     // handle submission logic
-    setSubmitted(true);
+    setSubmitted(false);
     props.actionProvider.handleJobTitle(props.node,selectedOptions);
     
   };
@@ -51,7 +55,7 @@ const JobTitles = (props) => {
         }
       </label>
       <br />
-      <button type="submit" className="option-button" disabled={submitted}>Submit</button>
+      <button type="submit" className="option-button" disabled={!isFormValid()}>Submit</button>
     </form>
   );
 };

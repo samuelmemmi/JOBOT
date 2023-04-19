@@ -3,29 +3,24 @@ import {useState,useEffect} from "react";
 
 import "./Options.css";
 
-const FieldOptions = (props) => {
+const ExperienceLevel = (props) => {
   const [options, setOptions] = useState([]);
-  const [selectedOption, setSelectedOption] = useState("Engineering");
+  const [selectedOption, setSelectedOption] = useState("Intern");
   const [submitted,setSubmitted]=useState(false);
 
-  useEffect(()=>{setOptions(props.node.getNextResponse().children[0].options)},[]);//maybe props.node_if_options>0
+  useEffect(()=>{setOptions(props.node.getNextResponse().options)},[]);//maybe props.node_if_options>0
 
   const handleOptionChange = (event) => {
+    // setSelectedOption(event.target.value);
     setSelectedOption(event.target.value);
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log("Selected Options radio: ", selectedOption);
     // handle submission logic
     setSubmitted(true);
-    switch(selectedOption) {
-      case "Other":
-        props.actionProvider.handleOtherField(props.node,selectedOption);
-        break;
-      default:
-        props.actionProvider.handleField(props.node,selectedOption);
-    }
+    props.actionProvider.handleExperienceLevel(props.node,[selectedOption]);
+    
   };
 
   return (
@@ -38,7 +33,7 @@ const FieldOptions = (props) => {
             <input
             type="radio"
             value={opt}
-            name="field"
+            name="experience"
             checked={selectedOption === opt}
             onChange={handleOptionChange} 
             />
@@ -52,4 +47,4 @@ const FieldOptions = (props) => {
     </form>);
 };
 
-export default FieldOptions;
+export default ExperienceLevel;

@@ -1,24 +1,38 @@
 import React from "react";
 import {useState,useEffect} from "react";
 
-import "./Options.css";
+import JobCard from "./JobCard.jsx"
 
 const DisplaySelectedJobs = (props) => {
   const [options, setOptions] = useState([]);
+  const [selectedJobId, setSelectedJobId] = useState(null);
 
   useEffect(()=>{
-    setOptions(props.node.getSelectedJobs())
-  },[]);//maybe props.node_if_options>0
+    var selectedJobsDetails=[];
+    //????????ואז לאחד את 2 רשימות העבודות
+    props.node.getJobs().map((job)=>{
+      if(props.node.getSelectedJobs().includes(job.id.toString())){
+        selectedJobsDetails.push(job);
+      }
+    })
+    setOptions(selectedJobsDetails)
+  },[]);
 
+  const onCardClick = (id) => {
+    setSelectedJobId(selectedJobId === id ? null : id);
+  };
 
-  var i=1;
-  const buttonsMarkup = options.map((opt) => (
-    <button key={i++} className="option-button">
-      {opt}
-    </button>
+  const buttonsMarkup = options.map((job) => (
+    <JobCard
+    key={job.id}
+    job={job}
+    isSelected={job.id === selectedJobId}
+    onCardClick={onCardClick}
+    />
   ),[]);
 
-  return <div className="options-container">{buttonsMarkup}</div>;
+
+  return <div>{buttonsMarkup}</div>;
 };
 
 export default DisplaySelectedJobs;

@@ -9,6 +9,13 @@ class FetchText{
         this.jobs=[]
         this.selectedJobs=[]
         this.countNotFits=0;
+        this.isFeedback=0;
+        //this.approval={"savingDetails":0,"accurateMatch":0,"viewAdditionalJobs":0};
+        this.accuracyNode={}
+        this.accuracyOptions=[]
+        this.isJobAccuracy=0;
+        this.isRequirements=0;
+        ///////חייב לשמור את פרטי המשרות שהלקוח סך הכל בחר בDB
     }
 
     intialHead(){
@@ -74,6 +81,42 @@ class FetchText{
 
     getCountNotFits(){
         return this.countNotFits;
+    }
+
+    setIsFeedback(val){
+        this.isFeedback=val;
+    }
+
+    getIsFeedback(){
+        return this.isFeedback;
+    }
+    setAccuracyNode(accuracyNode){
+        this.accuracyNode=accuracyNode;
+    }
+
+    getAccuracyNode(){
+        return this.accuracyNode;
+    }
+    setAccuracyOptions(accuracyOptions){
+        this.accuracyOptions=accuracyOptions;
+    }
+
+    getAccuracyOptions(){
+        return this.accuracyOptions;
+    }
+    setIsJobAccuracy(isJobAccuracy){
+        this.isJobAccuracy=isJobAccuracy;
+    }
+
+    getIsJobAccuracy(){
+        return this.isJobAccuracy;
+    }
+    setIsRequirements(isRequirements){
+        this.isRequirements=isRequirements;
+    }
+
+    getIsRequirements(){
+        return this.isRequirements;
     }
 }
 

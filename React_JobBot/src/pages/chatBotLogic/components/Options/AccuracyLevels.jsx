@@ -3,14 +3,12 @@ import {useState,useEffect} from "react";
 
 import "./Options.css";
 
-const Areas = (props) => {
+const AccuracyLevels = (props) => {
   const [options, setOptions] = useState([]);
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [submitted,setSubmitted]=useState(true);
 
-
-  useEffect(()=>{setOptions(props.node.getNextResponse().options)},[]);//maybe props.node_if_options>0
-
+  useEffect(()=>{setOptions(props.node.getNextResponse().options)},[]);
 
   const handleOptionChange = (event) => {
     const option = event.target.value;
@@ -27,15 +25,20 @@ const Areas = (props) => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log("Selected Options: ", selectedOptions);
+    console.log("Selected Options in accu: ", selectedOptions);
     // handle submission logic
     setSubmitted(false);
-    if(selectedOptions.length===3){
-      props.actionProvider.handleArea(props.node,["All"]);
+    if(selectedOptions.includes("Other")){
+      props.actionProvider.selfSearch(props.node,["Other"]);
     }else{
-      props.actionProvider.handleArea(props.node,selectedOptions);
+      //set the accuracy node and options
+      props.node.setAccuracyOptions(selectedOptions)
+      props.node.setAccuracyNode({...props.node.getNextResponse()})
+      //set in history list
+      props.node.setHistoryChat([...props.node.getHistoryChat(),{user:selectedOptions}])
+      //call handler
+      props.actionProvider.handleAccuracyLevel(props.node,selectedOptions);
     }
-    
   };
 
   return (
@@ -46,9 +49,11 @@ const Areas = (props) => {
           <label key={index}>
             <br />
             <input
+            className="checkbox"
             type="checkbox"
             value={opt}
-            onChange={handleOptionChange}/>
+            onChange={handleOptionChange}
+            disabled={(opt!=="Other")&&selectedOptions.includes("Other")} />
             {opt}
           </label>);
         },[])
@@ -60,5 +65,4 @@ const Areas = (props) => {
   );
 };
 
-export default Areas;
-
+export default AccuracyLevels;

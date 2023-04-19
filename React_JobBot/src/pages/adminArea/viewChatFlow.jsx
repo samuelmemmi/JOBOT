@@ -1,10 +1,30 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
+import chatFlow from "../chatBotLogic/convert_tree_to_json";
 import "./viewChatFlow.css"
 
 function ViewChatFlow() {
-  const [myObject, setMyObject] = useState(require('../chatBotLogic/decisionTree.json'));
+  // const [myObject, setMyObject] = useState(require('../chatBotLogic/decisionTree.json'));
+  const [myObject, setMyObject] = useState(()=>{
+    try {
+      var obje = require('../chatBotLogic/decisionTree.json');
+      return obje;
+    } catch (error) {
+      //console.error(`Error loading data: ${error}`);
+      obje = chatFlow;
+      axios.post('/write-json', obje, {
+          headers: {
+          'Content-type': 'application/json; charset=UTF-8' } 
+        })
+        .then((response) => {
+          console.log(response.data.message);
+        })
+        .catch((error) => {
+          console.error(error.response.data.error);
+        });
+        return obje
+    }});
 
   function RenderObject({ object }) {
     const [editing, setEditing] = useState(false);

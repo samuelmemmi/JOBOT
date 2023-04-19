@@ -20,7 +20,14 @@
 
 .option-button:focus{border-color:rgb(202, 87, 16);}
 
-/* .checkbox{
-  position:relative;
-  vertical-align:middle
-} */
+.job-card{
+  background-color: #eee;
+  margin: 2rem;
+  padding: 1rem;
+  }
+
+  #email,.jobTitleTyping{
+    width: 250px;
+    height: 20px;
+    border-color: gray;
+  }

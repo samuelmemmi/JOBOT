@@ -1,6 +1,7 @@
 class MessageParser {
-  constructor(actionProvider) {
+  constructor(actionProvider,props) {
     this.actionProvider = actionProvider;
+    this.props=props;
   }
 
   parse(message) {
@@ -13,6 +14,15 @@ class MessageParser {
 
     if (lowercase.includes("javascript") || lowercase.includes("js")) {
       this.actionProvider.handleJavascriptQuiz();
+    }
+
+    if (this.props.head&&this.props.head.getIsFeedback()===1) {//&&lowercase.includes("bad navigation")
+      //server
+      this.actionProvider.selfSearch(this.props.head, message);
+    }
+
+    if(this.props.head&&this.props.head.getIsRequirements()===1){
+      this.actionProvider.handleRequirements(this.props.head, message);
     }
   }
 }

@@ -3,10 +3,12 @@ var successfulEnding;
 var selfJobSearch;
 var goodBy2;
 var displayingAdaptedJobs;
+var isAdditionalJobs;
+var enterEmail;
 var areas={
   title: "",
   text: "In which areas are you interested?",
-  options:["South", "North", "Central","All"],
+  options:["South", "North", "Central"],
   children:
   [
     {
@@ -16,7 +18,7 @@ var areas={
       [
         jobTypes={
           title: "next question",
-          text: "Select job types",
+          text: "Select a job type",
           options: ["Full_time", "Part_time"],
           children:
           [
@@ -30,60 +32,63 @@ var areas={
                   text: "Please select appropriate jobs",
                   children:
                   [
-                    {
-                      title: "first time the user has selected 'Nothing fits'",
-                      text: "Just a moment please, I'm looking for relevant jobs again",
+                    {//!!!!!
+                      title: "user selected 'Nothing fits' or up to 2 jobs",
+                      text: "Would you like to see jobs with an accurate match?",
+                      options: ["Yes", "No"],
                       children:
                       [
                         {
-                          title: "second time the user has selected 'Nothing fits'",
-                          text: "Would you like to see jobs with an accurate match?",
-                          options: ["Yes", "No"],
+                          title: "user refused to an accurate match",
+                          text: "Why don't you want offers anymore? (Type in terms of easy/difficult navigation, simplicity of the system, displaying jobs)",
                           children:
                           [
-                            {
-                              title: "user refused to an accurate match",
-                              text: "Why don't you want offers anymore? (Type in terms of easy/difficult navigation, simplicity of the system, displaying jobs)",
+                            selfJobSearch={
+                              title: "send to self job search",
+                              text: "Ok, you have an opportunity to self job search from our jobs pool",
                               children:
                               [
-                                selfJobSearch={
-                                  title: "send to self job search",
-                                  text: "Ok, you have an opportunity to self job search from our jobs pool here",
-                                  children:
-                                  [
-                                    goodBy2={
-                                      title: "goodbye",
-                                      text: "It was a pleasure to assist you. Thank you!"
-                                    }
-                                  ]
+                                goodBy2={
+                                  title: "goodbye",
+                                  text: "It was a pleasure to assist you. Thank you!"
                                 }
                               ]
-                            },
+                            }
+                          ]
+                        },
+                        {
+                          title: "user agreed to an accurate match",
+                          text: "Select the accuracy level (Multiple choice)",
+                          options: ["Experience level","Desired city","Job title","Job requirements","Other"],
+                          children:
+                          [
+                            {...selfJobSearch,title: "user selected 'other' level of accuracy"},
                             {
-                              title: "user agreed to an accurate match",
-                              text: "Select the accuracy level (Multiple choice)",
+                              title: "user selected city accuracy",
+                              text: "Select cities in your chosen regions",
+                              // options: ["Netanya","TLV","Jerusalem","Other"],
                               children:
                               [
-                                {...selfJobSearch,title: "user selected 'other' level of accuracy"},
-                                {
-                                  title: "user selected city accuracy",
-                                  text: "Select preferred cities",
+                                {...selfJobSearch,title: "user selected 'Other'"},          
+                                displayingAdaptedJobs={
+                                  title: "user selected cities",
+                                  text: "Just a moment please, I'm looking for more precise jobs for you",
                                   children:
-                                  [            
-                                    displayingAdaptedJobs={
-                                      title: "user selected cities",
+                                  [
+                                    {
+                                      title: "JOBOT search more precise jobs",
                                       text: "Please select appropriate jobs",
                                       children:
                                       [
-                                        {...selfJobSearch,title: "user has selected 'Nothing fits"},
+                                        {...selfJobSearch,title: "user selected 'Nothing fits"},
                                         successfulEnding={
                                           title: "user selected at least 1 job",
                                           text: "Wonderful, how would you like to continute? (Multiple choice)",
-                                          options: ["Display my choices again","Email them to me"],
+                                          options: ["Display my choices again","Email them to me","Just keep going"],
                                           children:
                                           [
-                                            {
-                                              title: "viewing additional jobs",
+                                            isAdditionalJobs={
+                                              title: "self job search",
                                               text: "Are you interested in viewing additional jobs in our web?",
                                               options: ["Yes","No"],
                                               children:
@@ -91,35 +96,79 @@ var areas={
                                                 {...selfJobSearch, title: "user selected 'yes' for viewing additional jobs"},
                                                 {...goodBy2, title: "user selected 'no' for viewing additional jobs"}
                                               ]
+                                            },
+                                            {
+                                              title: "user selected 'display choices'",
+                                              text: "There are your selected jobs",
+                                              children:
+                                              [
+                                                isAdditionalJobs
+                                              ]
+                                            },
+                                            enterEmail={
+                                              title: "user selected 'email me'",
+                                              text: "Please enter an email",
+                                              children:
+                                              [
+                                                {
+                                                  title: "user sended an email",
+                                                  text: "The jobs were sent",
+                                                  children:
+                                                  [
+                                                    isAdditionalJobs
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              title: "user selected 'display and email me'",
+                                              text: "There are your selected jobs",
+                                              children:
+                                              [
+                                                {...enterEmail, title: "Request to enter an email"}
+                                              ]
                                             }
                                           ]
                                         }
                                       ]
                                     }
                                   ]
-                                },
-                                {
-                                  title: "user selected job requirements accuracy",
-                                  text: "What is your experience and education in the selected fields?",
-                                  children:
-                                  [
-                                    {...displayingAdaptedJobs, title: "clear typing for experience and education"},
-                                    {...selfJobSearch,title: "unclear typing for experience and education"}
-                                  ]
-                                },
-                                {
-                                  title: "user selected experience level accuracy",
-                                  text: "Select an experience level",
-                                  children: {...displayingAdaptedJobs, title: "user selected an experience level"}
                                 }
+                              ]
+                            },
+                            {
+                              title: "user selected job requirements accuracy",
+                              text: "Type your experience and education in the selected fields",
+                              children:
+                              [
+                                {...selfJobSearch,title: "unclear typing for experience and education"},
+                                {...displayingAdaptedJobs, title: "clear typing for experience and education"}
+                              ]
+                            },
+                            {
+                              title: "user selected experience level accuracy",
+                              text: "Select an experience level",
+                              options: ["Intern","Junior","Senior","Other"],
+                              children:
+                              [
+                                {...selfJobSearch,title: "user selected 'Other'"},
+                                {...displayingAdaptedJobs, title: "user selected an experience level"}
+                              ]
+                            },
+                            {
+                              title: "user selected job title accuracy",
+                              text: "Enter a job title",
+                              children:
+                              [
+                                {...selfJobSearch,title: "unclear typing for a job title"},
+                                {...displayingAdaptedJobs, title: "clear typing for a job title"}
                               ]
                             }
                           ]
-                        },
-                        successfulEnding
+                        }
                       ]
-                    },
-                    successfulEnding
+                    },//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    {...successfulEnding,title:"user selected 3 or more jobs"}
                   ]
                 }
               ]
@@ -153,7 +202,7 @@ var chatFlow = {
           [
             goodBy1={
             title: "user agreed to save his details",
-            text: "Thank you for visiting our site. For more information click here",
+            text: "Thank you for visiting our site.",
             },
             {...goodBy1,title: "user refused to save his details"}
           ]
@@ -180,8 +229,7 @@ var chatFlow = {
                 },            
                 {...areas,title: "user selected 'all companies'"}
               ]
-            },
-            {...specificCompany,title: "user selected 'other' job title"}
+            }
           ]
         }
       ],

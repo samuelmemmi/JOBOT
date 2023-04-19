@@ -92,6 +92,22 @@ def writeJson():
         json.dump(json_data, f)
     return jsonify({"success": False, "message": "The decision tree has been updated"})
 
+# route for getting cities
+@app.route("/cities", methods=["POST"])
+def getCities():
+    areas=request.json.get("areas")
+    citiesObject = {"South": ["Qiryat Gat", "Ashdod"],
+                 "North": ["Haifa"],
+                 "Central": ["Herzliya", "Jerusalem", "Netanya", "Petah Tikva", "Raanana", "Ramat Gan",
+                             "Rishon LeZiyyon", "Tel Aviv", "Tel Aviv-Yafo", "Kfar Saba", "Rehovot", "Hod HaSharon",
+                             "Bnei Brak", "Giv`atayim", "Lod", "Holon", "Yavne", "Ness Ziona"]}
+    res=[]
+    for k in areas:
+        if k=="All":
+            res+=citiesObject["South"]+citiesObject["North"]+citiesObject["Central"]
+            break
+        res+=citiesObject[k]    
+    return jsonify({"success": True, "cities": res})
 
 def help_get_first_jobs(new_documents, list_jobs, title, company, city, other_list):
     for document in new_documents:

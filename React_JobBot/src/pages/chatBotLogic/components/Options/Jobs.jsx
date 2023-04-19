@@ -1,18 +1,17 @@
 import React from "react";
 import {useState,useEffect} from "react";
 
+import JobCard from "./JobCard.jsx"
+
 import "./Options.css";
 
 const Jobs = (props) => {
   const [options, setOptions] = useState([]);
   const [selectedOptions, setSelectedOptions] = useState([]);
-  const [submitted,setSubmitted]=useState(false);
+  const [selectedJobId, setSelectedJobId] = useState(null);
+  const [submitted,setSubmitted]=useState(true);
 
-  useEffect(
-    ()=>{
-        setOptions(props.node.getJobs())
-    }
-    ,[]);//maybe props.node_if_options>0
+  useEffect(()=>{setOptions([...props.node.getJobs(),{id:"Nothing fits"}])},[]);
 
   const handleOptionChange = (event) => {
     const option = event.target.value;
@@ -23,41 +22,57 @@ const Jobs = (props) => {
     }
   };
 
+  const isFormValid = () => {
+    return Object.values(selectedOptions).some((isChecked) => isChecked)&&submitted;
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
     console.log("Selected Options1: ", selectedOptions);
     // handle submission logic
-    setSubmitted(true);
+    setSubmitted(false);
     if(selectedOptions.includes("Nothing fits")){
       props.node.incCountNotFits(props.node.getCountNotFits());
       console.log("count ",props.node.getCountNotFits())
+      props.actionProvider.handleJob(props.node,["Nothing fits"]);
+    }else if((selectedOptions.length<=2)&&props.node.getCountNotFits()===0){
+      props.node.incCountNotFits(props.node.getCountNotFits());
+      props.node.setSelectedJobs(props.node.getSelectedJobs().concat(selectedOptions))
+      console.log("selected jobs ",props.node.getSelectedJobs())
       props.actionProvider.handleJob(props.node,["Nothing fits"]);
     }else{
       props.actionProvider.handleJob(props.node,selectedOptions);
     }
   };
 
-  return (
-    <form onSubmit={handleSubmit}>
-      <label>
-        {options.map((opt,index) =>{
-          return(
-          <label key={index}>
-            <br />
-            <input
-            className="checkbox"
-            type="checkbox"
-            value={opt}
-            onChange={handleOptionChange}
-            disabled={(opt!=="Nothing fits")&&selectedOptions.includes("Nothing fits")} />
-            {opt}
-          </label>);
-        },[])
-        }
-      </label>
-      <br />
-      <button type="submit" className="option-button" disabled={submitted}>Submit</button>
-    </form>
+  const onCardClick = (id) => {
+    setSelectedJobId(selectedJobId === id ? null : id);
+  };
+    
+  return(
+   <form onSubmit={handleSubmit}>
+    {options.map((job,index) => (
+      <div key={index}>
+          <input
+          className="checkbox"
+          type="checkbox"
+          value={job.id}
+          onChange={handleOptionChange}
+          disabled={(job.id!=="Nothing fits")&&selectedOptions.includes("Nothing fits")}
+          />
+          {/* {job.id} */}
+
+          <JobCard
+          // key={job.id}
+          job={job}
+          isSelected={job.id === selectedJobId}
+          onCardClick={onCardClick}
+          />
+      </div>
+      ))
+    }
+    <button type="submit" className="option-button" disabled={!isFormValid()}>Submit</button>
+   </form>
   );
 };
 
