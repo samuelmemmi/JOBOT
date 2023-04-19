@@ -297,11 +297,14 @@ def get_first_jobs():
 
     seen_jobs = set()
     unique_jobs = []
+    counter = 0
 
     for job in list_jobs:
         job_id = (job['job'], job['company'], job['city'])
         if job_id not in seen_jobs:
             seen_jobs.add(job_id)
+            counter += 1
+            job['id'] = counter
             unique_jobs.append(job)
 
     return jsonify({"success": True, "list_jobs": unique_jobs})
@@ -483,41 +486,78 @@ def identify_intent(response):
 
 
 # function to extract relevant information for each intent
-def extract_info(intents):
+def extract_info(intents, number):
     # initialize dictionary to store extracted information
     info = {}
     # extract relevant information for each identified intent
     for intent in intents:
         if intent == "easy navigation":
             info[intent] = "Great! I'm glad you find the navigation easy."
+            if intent in number:
+                number[intent] += 1
+            else:
+                number[intent] = 1
         elif intent == "difficult navigation":
             info[intent] = "I'm sorry to hear that you find the navigation difficult. Have you tried using the search " \
                            "function to find job offers? "
+            if intent in number:
+                number[intent] += 1
+            else:
+                number[intent] = 1
         elif intent == "simple system":
             info[intent] = "That's great to hear! We always strive to make our system simple and easy to use."
+            if intent in number:
+                number[intent] += 1
+            else:
+                number[intent] = 1
         elif intent == "complicated system":
             info[
                 intent] = "I'm sorry to hear that. We are constantly working on improving our system to make it more " \
                           "user-friendly. "
+            if intent in number:
+                number[intent] += 1
+            else:
+                number[intent] = 1
         elif intent == "attractive display":
             info[
                 intent] = "That's great to hear! We always try to make our job displays as attractive and informative " \
                           "as possible. "
+            if intent in number:
+                number[intent] += 1
+            else:
+                number[intent] = 1
         elif intent == "ugly display":
             info[intent] = "I'm sorry to hear that. We are always looking for ways to improve our job displays."
+            if intent in number:
+                number[intent] += 1
+            else:
+                number[intent] = 1
         elif intent == "jobs goods":
             info[
                 intent] = "That's great to hear! We always try to make our job as attractive and informative " \
                           "as possible. "
+            if intent in number:
+                number[intent] += 1
+            else:
+                number[intent] = 1
         elif intent == "jobs problems":
             info[intent] = "I'm sorry to hear that. We are always looking for ways to improve our job displays."
+            if intent in number:
+                number[intent] += 1
+            else:
+                number[intent] = 1
         elif intent == "search problems":
             info[intent] = "I'm sorry to hear that. We are always looking for ways to improve our search displays."
+            if intent in number:
+                number[intent] += 1
+            else:
+                number[intent] = 1
     # return dictionary of extracted information
     return info
 
 
 def test_response(responses):
+    number = {}
     # iterate over each response in the list
     for response in responses:
         # preprocess response
@@ -525,12 +565,19 @@ def test_response(responses):
         # identify intent based on preprocessed response
         intents = identify_intent(response)
         # extract relevant information for each intent
-        info = extract_info(intents)
+        info = extract_info(intents, number)
         # print extracted information for each response
         print(f"User response: {response}")
         for intent, response in info.items():
             print(response)
         print()
+    # connexion to the MongoDB database
+    cluster = MongoClient("mongodb+srv://samuelmemmi:1234@cluster0.e4sf8mm.mongodb.net/?retryWrites=true"
+                              "&w=majority")
+    db = cluster["chatbot"]
+    collection = db["statistics"]
+    number_list = [{'intent': key, 'count': value} for key, value in number.items()]
+    collection.insert_many(number_list)
 
 
 def chatgpt(question):
@@ -580,8 +627,8 @@ if __name__ == "__main__":
                  "The site layout is confusing and hard to follow.",
                  "The job postings are not visually appealing or well-designed.",
                  "The search results are not relevant or accurate enough.", "The navigation is difficult but the "
-                                                                            "system is quite good"]
+                                                                            "system is quite good", "The navigation is easy"]
 
-    test_response(responses)
+    test_response(responses)"""
 
-    chatgpt("Is python a interpreter language?")"""
+    # chatgpt("Is python a interpreter language?")
