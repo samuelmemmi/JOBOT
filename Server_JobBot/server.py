@@ -92,24 +92,26 @@ def writeJson():
         json.dump(json_data, f)
     return jsonify({"success": False, "message": "The decision tree has been updated"})
 
+
 # route for getting cities
 @app.route("/cities", methods=["POST"])
 def getCities():
-    areas=request.json.get("areas")
+    areas = request.json.get("areas")
     citiesObject = {"South": ["Qiryat Gat", "Ashdod"],
-                 "North": ["Haifa"],
-                 "Central": ["Herzliya", "Jerusalem", "Netanya", "Petah Tikva", "Raanana", "Ramat Gan",
-                             "Rishon LeZiyyon", "Tel Aviv", "Tel Aviv-Yafo", "Kfar Saba", "Rehovot", "Hod HaSharon",
-                             "Bnei Brak", "Giv`atayim", "Lod", "Holon", "Yavne", "Ness Ziona"]}
-    res=[]
+                    "North": ["Haifa"],
+                    "Central": ["Herzliya", "Jerusalem", "Netanya", "Petah Tikva", "Raanana", "Ramat Gan",
+                                "Rishon LeZiyyon", "Tel Aviv", "Tel Aviv-Yafo", "Kfar Saba", "Rehovot", "Hod HaSharon",
+                                "Bnei Brak", "Giv`atayim", "Lod", "Holon", "Yavne", "Ness Ziona"]}
+    res = []
     for k in areas:
-        if k=="All":
-            res+=citiesObject["South"]+citiesObject["North"]+citiesObject["Central"]
+        if k == "All":
+            res += citiesObject["South"] + citiesObject["North"] + citiesObject["Central"]
             break
-        res+=citiesObject[k]    
+        res += citiesObject[k]
     return jsonify({"success": True, "cities": res})
 
-def help_get_first_jobs(new_documents, list_jobs, title, company, city, other_list):
+
+def first_help_get_first_jobs(new_documents, list_jobs, title, company, city, other_list):
     for document in new_documents:
         words2 = set(document["job"].lower().split())
 
@@ -230,13 +232,18 @@ def get_first_jobs():
     # Create a new list of dictionaries with all fields except "id"
     new_documents = [{k: v for k, v in doc.items() if k != "_id"} for doc in documents]
     list_jobs = []
+    unique_jobs = second_help_get_first_jobs(new_documents, list_jobs, title, company, city, other_list, time, field, db)
 
+    return jsonify({"success": True, "list_jobs": unique_jobs})
+
+
+def second_help_get_first_jobs(new_documents, list_jobs, title, company, city, other_list, time, field, db):
     if "I'm open to any company" not in company:
-        list_jobs = help_get_first_jobs(new_documents, list_jobs, title, company, city, other_list)
+        list_jobs = first_help_get_first_jobs(new_documents, list_jobs, title, company, city, other_list)
         if len(list_jobs) < 15:
             company.append("I'm open to any company")
         else:
-            return jsonify({"success": True, "list_jobs": list_jobs})
+            return list_jobs
 
     for document in new_documents:
         words2 = set(document["job"].lower().split())
@@ -323,7 +330,92 @@ def get_first_jobs():
             job['id'] = counter
             unique_jobs.append(job)
 
-    return jsonify({"success": True, "list_jobs": unique_jobs})
+    return unique_jobs
+
+
+@app.route("/getsecondjobs", methods=["POST"])
+def get_second_jobs():
+    # connexion to the MongoDB database
+    cluster = MongoClient("mongodb+srv://samuelmemmi:1234@cluster0.e4sf8mm.mongodb.net/?retryWrites=true"
+                          "&w=majority")
+    db = cluster["chatbot"]
+
+    second_list = request.json.get("responses")
+
+    field = second_list["field"]
+
+    other_list = []
+    other_list_healthcare = ["Medical Assistant", "Health representative", "Production Scientist"]
+    other_list_marketing = ["Product Marketing", "Data Analyst", "Marketing Designer"]
+    other_list_design = ["Designer", "Chip Design Architect", "Front End Developer"]
+    other_list_human = ["Digital Key Account", "Global HR Planning & Operations", "Talent Acquisition Specialist"]
+    other_list_finance = ["VP Finance", "Business Development", "Finance Controller"]
+    other_list_engineer = ["QA Engineer", "Network Engineer", "Software Engineer"]
+
+    if field == "Arts & Design":
+        field = "design"
+        other_list = other_list_design
+    elif field == "Human Resources":
+        field = "humanresources"
+        other_list = other_list_human
+    elif field == "Finance & Accounting":
+        field = "finance"
+        other_list = other_list_finance
+    elif field == "Engineering":
+        field = "engineer"
+        other_list = other_list_engineer
+    elif field == "Healthcare":
+        other_list = other_list_healthcare
+    else:
+        other_list = other_list_marketing
+
+    company = second_list["companies"]
+
+    if "job title" in second_list:
+        jobtitle = second_list["job title"]
+        jobtitle = [jobtitle]
+    else:
+        jobtitle = second_list["JobTitles"]
+
+    if "experience level" in second_list:
+        level = second_list["experience level"]
+    else:
+        level = second_list["job Types"]
+        id = 1
+
+    if "cities" in second_list:
+        city = second_list["cities"]
+    else:
+        areas = second_list["areas"]
+        area_dict = {"South": ["Qiryat Gat", "Ashdod", "South", "Southern", "Israel"],
+                     "North": ["Haifa", "North", "Northern", "Israel"],
+                     "Central": ["Central", "Herzliya", "Jerusalem", "Netanya", "Petah Tikva", "Raanana", "Ramat Gan",
+                                 "Rishon LeZiyyon", "Tel Aviv", "Tel Aviv-Yafo", "Kfar Saba", "Rehovot", "Hod HaSharon",
+                                 "Bnei Brak", "Giv`atayim", "Israel", "Lod", "Holon", "Yavne", "Ness Ziona"],
+                     }
+
+        city = []
+        for i in range(len(areas)):
+            city.append(area_dict[areas[i]])
+        city = [item for sublist in city for item in sublist]
+
+    if "job Requirements" in second_list:
+        requirements = second_list["job Requirements"]
+    else:
+        requirements = ""
+
+    job = field.lower() + "_" + level[0].lower()
+    collection = db[job]
+    # Find all documents in the collection
+    documents = collection.find()
+    # Create a new list of dictionaries with all fields except "id"
+    new_documents = [{k: v for k, v in doc.items() if k != "_id"} for doc in documents]
+    list_jobs = []
+    unique_jobs = second_help_get_first_jobs(new_documents, list_jobs, jobtitle, company, city, other_list, level, field,
+                                             db)
+    print(unique_jobs)
+
+    # Now use chatgpt to get more precise job (use requirements)
 
 
 def get_jobs_from_view(jobs, db):
@@ -589,7 +681,7 @@ def test_response(responses):
         print()
     # connexion to the MongoDB database
     cluster = MongoClient("mongodb+srv://samuelmemmi:1234@cluster0.e4sf8mm.mongodb.net/?retryWrites=true"
-                              "&w=majority")
+                          "&w=majority")
     db = cluster["chatbot"]
     collection = db["statistics"]
     number_list = [{'intent': key, 'count': value} for key, value in number.items()]

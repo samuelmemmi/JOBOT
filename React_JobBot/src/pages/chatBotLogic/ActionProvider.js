@@ -651,7 +651,7 @@ class ActionProvider {
     //server calculating jobs...
     console.log("new selected ",node.getSelected())
     var responses = node.getSelected()
-    axios.post("/getfirstjobs", {
+    axios.post("/getsecondjobs", {
       responses: responses
     }, {
       headers: {
