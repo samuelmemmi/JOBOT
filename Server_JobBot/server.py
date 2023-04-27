@@ -230,9 +230,12 @@ def get_first_jobs():
     # Find all documents in the collection
     documents = collection.find()
     # Create a new list of dictionaries with all fields except "id"
-    new_documents = [{k: v for k, v in doc.items() if k != "_id"} for doc in documents]
+    # new_documents = [{k: v for k, v in doc.items() if k != "_id"} for doc in documents]
+    # Create a new list of dictionaries with all fields and "id" converted to str
+    new_documents = [{k: (str(v) if k == '_id' else v) for k, v in doc.items()} for doc in documents]
     list_jobs = []
-    unique_jobs = second_help_get_first_jobs(new_documents, list_jobs, title, company, city, other_list, time, field, db)
+    unique_jobs = second_help_get_first_jobs(new_documents, list_jobs, title, company, city, other_list, time, field,
+                                             db)
 
     return jsonify({"success": True, "list_jobs": unique_jobs})
 
@@ -320,14 +323,11 @@ def second_help_get_first_jobs(new_documents, list_jobs, title, company, city, o
 
     seen_jobs = set()
     unique_jobs = []
-    counter = 0
 
     for job in list_jobs:
         job_id = (job['job'], job['company'], job['city'])
         if job_id not in seen_jobs:
             seen_jobs.add(job_id)
-            counter += 1
-            job['id'] = counter
             unique_jobs.append(job)
 
     return unique_jobs
@@ -343,6 +343,8 @@ def get_second_jobs():
     second_list = request.json.get("responses")
 
     field = second_list["field"]
+    display_jobs = second_list["displayed jobs"]
+    id = 0
 
     other_list = []
     other_list_healthcare = ["Medical Assistant", "Health representative", "Production Scientist"]
@@ -408,14 +410,53 @@ def get_second_jobs():
     collection = db[job]
     # Find all documents in the collection
     documents = collection.find()
-    # Create a new list of dictionaries with all fields except "id"
-    new_documents = [{k: v for k, v in doc.items() if k != "_id"} for doc in documents]
+    # Create a new list of dictionaries with all fields and "id" converted to str
+    new_documents = [{k: (str(v) if k == '_id' else v) for k, v in doc.items()} for doc in documents]
     list_jobs = []
-    unique_jobs = second_help_get_first_jobs(new_documents, list_jobs, jobtitle, company, city, other_list, level, field,
+    unique_jobs = second_help_get_first_jobs(new_documents, list_jobs, jobtitle, company, city, other_list, level,
+                                             field,
                                              db)
-    print(unique_jobs)
+    if id == 1:
+        for job1 in unique_jobs:
+            for job2 in display_jobs:
+                if job1["_id"] == job2["_id"]:
+                    unique_jobs.remove(job1)
 
     # Now use chatgpt to get more precise job (use requirements)
+
+    city_string = ', '.join(city)
+    job_string = ""
+    current_id = None
+    index = 1
+
+    for job in unique_jobs:
+        if job['_id'] != current_id:
+            job_string += "\n"  # add separator if id changes
+            current_id = job['_id']
+        job_string += "This is the " + str(index) + " job" + job['job'] + "," + job['city'] + "," + job['company'] + "," + job['description'] + "\n"
+        index += 1
+
+    question = "I have a person who his experience level is: " + level[0] + \
+               "and want a job that can fit to this job title: " + \
+               jobtitle[0] + "in this cities: " + city_string + "and this is his requirements: " + requirements + \
+               "what jobs in this jobs lists can fit for this person: " + job_string + \
+               "return to me a top 3 of the jobs"
+
+    response_gpt = chatgpt(question)
+    j_list = [job.strip() for job in response_gpt.split('\n')]
+
+    jobs_dict_list = [{'job': job[3:-16], 'company': job.split('at ')[1].split(' in ')[0], 'city': job.split(' in ')[1]}
+                      for job in j_list]
+
+    res = "With all the information you provide us, JobBot find for you this top 3 jobs: " + "\n" + response_gpt
+
+    gpt_list = []
+    for job1 in unique_jobs:
+        for job2 in jobs_dict_list:
+            if job1['job'] in job2['job'] and job1['company'] in job2['company']:
+                gpt_list.append(job1)
+
+    return jsonify({"success": True, "list_jobs": gpt_list})
 
 
 def get_jobs_from_view(jobs, db):
@@ -692,10 +733,11 @@ def chatgpt(question):
     API_KEY = open("API_KEY.txt", "r").read().strip()
     openai.api_key = API_KEY
     chat_log = [{"role": "user", "content": question}]
-    response = openai.ChatCompletion.create(model="davinci", messages=chat_log)
+    response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=chat_log)
     assistant_response = response['choices'][0]['message']['content']
     print("chatgpt: ", assistant_response.strip("\n").strip())
     chat_log.append({"role": "assistant", "content": assistant_response.strip("\n").strip()})
+    return assistant_response.strip("\n").strip()
 
 
 if __name__ == "__main__":
@@ -739,4 +781,5 @@ if __name__ == "__main__":
 
     test_response(responses)"""
 
-    # chatgpt("Is python a interpreter language?")
+    # chatgpt("Is there a gggg job title in the world of jobs? Answer in Yes or No. If Yes correct spelling "
+    # "mistakes and send it to me")

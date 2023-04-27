@@ -693,6 +693,7 @@ class ActionProvider {
       headers: {
       'Content-type': 'application/json; charset=UTF-8' } 
     })
+    
     .then((response) => {
       if (response.data.success) {
         console.log("Server returned matching jobs:", response.data.list_jobs);
@@ -706,9 +707,8 @@ class ActionProvider {
         // while(response.data.list_jobs===[]){}
 
         // node.setJobs(response.data.list_jobs);
-
-        node.setJobs(["K","L","M","N","O","P","Q","R","S","T","Nothing fits"]);
-
+        node.setJobs(response.data.list_jobs.map((job,index)=>{return {...job,id:index}}));
+        //node.setJobs(["K","L","M","N","O","P","Q","R","S","T","Nothing fits"]);
         if(node.getSavedInDB()["displayed jobs"]){
           node.setSavedInDB({...node.getSavedInDB(),"displayed jobs":node.getSavedInDB()["displayed jobs"].concat(node.getJobs())});
         }else{
