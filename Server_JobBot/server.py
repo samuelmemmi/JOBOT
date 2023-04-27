@@ -34,7 +34,7 @@ def login():
 
     if user:
         # check if the user is admin or client
-        if user_name == "samuel" or user_name == "rachel":
+        if (((user_name == "samuel") and (password == "1")) or ((user_name == "rachel") and (password == "123"))):
             return jsonify({"success": True, "message": "Admin login success"})
 
         return jsonify({"success": True, "message": "Client login success"})

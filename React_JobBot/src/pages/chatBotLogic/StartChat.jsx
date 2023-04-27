@@ -1,31 +1,36 @@
 import React from "react";
 import Chatbot from "react-chatbot-kit";
 import "react-chatbot-kit/build/main.css";
-import {useState} from "react";//
+import { useLocation } from 'react-router-dom';
 
 import config from "./config";
 import ActionProvider from "./ActionProvider";
 import MessageParser from "./MessageParser";
 import dec_tree from "./getFlowText.js"
 
-
 import "./startChat.css";
 
-
-
 function StartChat() {
-  const [chatbotState, setChatbotState] = useState(dec_tree);
+  const location = useLocation();
+  const clientDetails = location.state;
+  console.log(clientDetails)
+  dec_tree.setRegistrationDetails(clientDetails)
 
-  // const [showBot, toggleBot] = useState(false);
-
-  // const saveMessages = (messages, HTMLString) => {
-  //   localStorage.setItem('chat_messages', JSON.stringify(messages));
+  // const chatwindowconfig ={
+  //   width: "350px",
+  //   height: "500px",
+  //   floating: true,
   // };
 
-    // Define a function to update the chatbot state
-    const handleStateChange = (state) => {
-      setChatbotState(state);
-    };
+  const validator = (input) => {
+    if((dec_tree.getIsFeedback()===1)||(dec_tree.getIsRequirements()===1)){
+      if(input.length > 0){
+        return true
+      }
+      return false;
+    }
+    return false;
+  }
 
   return (
     <div className="chatWindow">
@@ -34,9 +39,8 @@ function StartChat() {
         config={config}
         actionProvider={ActionProvider}
         messageParser={MessageParser}
-        state={chatbotState}//
-        onStateChange={handleStateChange}//
-        // saveMessages={saveMessages}
+        validator={validator}
+        // {...chatwindowconfig}
       />
       </div>
     </div>
@@ -45,15 +49,3 @@ function StartChat() {
 
 export default StartChat;
 
-//  <button onClick={() => toggleBot((prev) => !prev)}>Bot</button>
-
-
-//
-// // Define a function to export the chatbot state
-// function exportChatbotState(state) {
-//   const serializedState = JSON.stringify(state);
-//   // Do something with the serialized state, e.g. save it to a file or send it to a server
-// }
-
-// // Call the exportChatbotState function to export the chatbot state
-// exportChatbotState(chatbotState);

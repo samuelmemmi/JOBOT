@@ -1,3 +1,7 @@
+:root {
+  --button-visibility: hidden;
+}
+
 .chatWindow {
   text-align: center;
   background-color: whitesmoke;
@@ -9,6 +13,7 @@
 
   .react-chatbot-kit-chat-inner-container, .react-chatbot-kit-chat-input-container{
     width: 700px;
+    /* background-color:bisque */
   }
   .react-chatbot-kit-chat-inner-container {
     height: 500px;
@@ -20,4 +25,15 @@
     right: 190px;
   }
 
-  
+  .botImage{
+    width: 50px;
+    height: 50px;
+  }
+
+  .react-chatbot-kit-chat-input-form{
+    visibility: var(--button-visibility,visible);
+  }
+
+  /* .react-chatbot-kit-chat-bot-message{
+    margin-left: auto;
+  } */

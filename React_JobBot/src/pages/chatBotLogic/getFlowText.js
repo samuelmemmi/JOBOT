@@ -3,6 +3,7 @@ import axios from 'axios';
 
 class FetchText{
     constructor(){
+        this.registrationDetails={}
         this.head={}
         this.selected={}
         this.historyChat=[]
@@ -10,11 +11,11 @@ class FetchText{
         this.selectedJobs=[]
         this.countNotFits=0;
         this.isFeedback=0;
-        //this.approval={"savingDetails":0,"accurateMatch":0,"viewAdditionalJobs":0};
         this.accuracyNode={}
         this.accuracyOptions=[]
         this.isJobAccuracy=0;
         this.isRequirements=0;
+        this.savedInDB={};
         ///////חייב לשמור את פרטי המשרות שהלקוח סך הכל בחר בDB
     }
 
@@ -118,8 +119,22 @@ class FetchText{
     getIsRequirements(){
         return this.isRequirements;
     }
+
+    setRegistrationDetails(registrationDetails){
+        this.registrationDetails=registrationDetails;
+    }
+    getRegistrationDetails(){
+        return this.registrationDetails;
+    }
+    setSavedInDB(savedInDB){
+        this.savedInDB=savedInDB;
+    }
+    getSavedInDB(){
+        return this.savedInDB;
+    }
 }
 
 var dec_tree=new FetchText();
 dec_tree.intialHead()
+
 export default dec_tree;

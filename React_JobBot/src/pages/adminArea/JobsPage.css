@@ -5,9 +5,23 @@
     padding: 20px;
   }
   
-  .title {
+  .title{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
     font-size: 36px;
     margin-bottom: 20px;
+  }
+
+  .loading{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    margin-bottom: 20px;
+    font-style: italic;
+    font-size: 36px;
   }
   
   .search-container {
@@ -83,5 +97,10 @@
   .job-description {
     font-size: 16px;
     text-align: justify;
+  }
+
+  .star{
+    width: 25px;
+    height: 25px;
   }
   

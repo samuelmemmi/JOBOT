@@ -2,8 +2,11 @@ import React from "react";
 import "./login.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+// import { useHistory } from 'react-router-dom';
+
 
 export default function Login() {
+  // const history = useHistory();
   let navigate = useNavigate();
   const routeChange = () => {
     navigate("/./register");
@@ -26,14 +29,16 @@ export default function Login() {
           if (response.data.message === "Admin login success"){
             navigate("/./homePageAdmin", {
               state: {
-                name: userName,
+                userName: userName,
+                password: Password,
               },
             });
           }
           else {
-            navigate("/./startChat", {
+            navigate("/./homePage", {
               state: {
-                name: userName,
+                userName: userName,
+                password: Password,
               },
             });
           }

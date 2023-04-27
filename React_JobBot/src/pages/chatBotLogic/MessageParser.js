@@ -16,8 +16,13 @@ class MessageParser {
       this.actionProvider.handleJavascriptQuiz();
     }
 
-    if (this.props.head&&this.props.head.getIsFeedback()===1) {//&&lowercase.includes("bad navigation")
-      //server
+    if (this.props.head&&this.props.head.getIsFeedback()===1) {
+      document.documentElement.style.setProperty('--button-visibility', 'hidden');
+      this.props.head.setSavedInDB({...this.props.head.getSavedInDB(),"feedback on termination":message})
+      //call server
+      //message:string
+
+      //קריאה לסיום
       this.actionProvider.selfSearch(this.props.head, message);
     }
 

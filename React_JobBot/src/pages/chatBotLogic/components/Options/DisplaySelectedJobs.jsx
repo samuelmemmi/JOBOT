@@ -9,9 +9,10 @@ const DisplaySelectedJobs = (props) => {
 
   useEffect(()=>{
     var selectedJobsDetails=[];
-    //????????ואז לאחד את 2 רשימות העבודות
-    props.node.getJobs().map((job)=>{
-      if(props.node.getSelectedJobs().includes(job.id.toString())){
+    var jobs=props.node.getSavedInDB()["displayed jobs"];
+    var selectedJobs=props.node.getSavedInDB()["selected jobs"];
+    jobs.map((job)=>{
+      if(selectedJobs.includes(job.id.toString())){//#מתוך סך העבודות כולם הצג את כל העבודות שנבחרו בכל השלבים
         selectedJobsDetails.push(job);
       }
     })
