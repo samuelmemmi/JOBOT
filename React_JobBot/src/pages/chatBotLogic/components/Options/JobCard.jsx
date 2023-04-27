@@ -1,5 +1,5 @@
 const JobCard = ({ job, isSelected, onCardClick }) => {
-    if (job.id==="Nothing fits"){
+    if (job._id==="Nothing fits"){
       return(
       <div className={`job-card ${isSelected ? "selected" : ""}`}>
       <strong>Nothing Fits</strong>
@@ -9,7 +9,7 @@ const JobCard = ({ job, isSelected, onCardClick }) => {
   
     return (
     <div className="job">
-      <div className={`job-card ${isSelected ? "selected" : ""}`} onClick={() => onCardClick(job.id)}>
+      <div className={`job-card ${isSelected ? "selected" : ""}`} onClick={() => onCardClick(job._id)}>
         <h3>{job.job}</h3>
         <p>{job.company}</p>
         <p>{job.city}</p>

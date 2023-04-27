@@ -11,7 +11,7 @@ const Jobs = (props) => {
   const [selectedJobId, setSelectedJobId] = useState(null);
   const [submitted,setSubmitted]=useState(true);
 
-  useEffect(()=>{setOptions([...props.node.getJobs(),{id:"Nothing fits"}])},[]);
+  useEffect(()=>{setOptions([...props.node.getJobs(),{_id:"Nothing fits"}])},[]);
 
   const handleOptionChange = (event) => {
     const option = event.target.value;
@@ -71,16 +71,16 @@ const Jobs = (props) => {
           <input
           className="checkbox"
           type="checkbox"
-          value={job.id}
+          value={job._id}
           onChange={handleOptionChange}
-          disabled={(job.id!=="Nothing fits")&&selectedOptions.includes("Nothing fits")}
+          disabled={(job._id!=="Nothing fits")&&selectedOptions.includes("Nothing fits")}
           />
-          {/* {job.id} */}
+          {/* {job._id} */}
 
           <JobCard
-          // key={job.id}
+          key={index}
           job={job}
-          isSelected={job.id === selectedJobId}
+          isSelected={job._id === selectedJobId}
           onCardClick={onCardClick}
           />
       </div>

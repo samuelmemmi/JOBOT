@@ -12,7 +12,7 @@ const DisplaySelectedJobs = (props) => {
     var jobs=props.node.getSavedInDB()["displayed jobs"];
     var selectedJobs=props.node.getSavedInDB()["selected jobs"];
     jobs.map((job)=>{
-      if(selectedJobs.includes(job.id.toString())){//#מתוך סך העבודות כולם הצג את כל העבודות שנבחרו בכל השלבים
+      if(selectedJobs.includes(job._id)){//#מתוך סך העבודות כולם הצג את כל העבודות שנבחרו בכל השלבים
         selectedJobsDetails.push(job);
       }
     })
@@ -23,11 +23,11 @@ const DisplaySelectedJobs = (props) => {
     setSelectedJobId(selectedJobId === id ? null : id);
   };
 
-  const buttonsMarkup = options.map((job) => (
+  const buttonsMarkup = options.map((job,index) => (
     <JobCard
-    key={job.id}
+    key={index}
     job={job}
-    isSelected={job.id === selectedJobId}
+    isSelected={job._id === selectedJobId}
     onCardClick={onCardClick}
     />
   ),[]);

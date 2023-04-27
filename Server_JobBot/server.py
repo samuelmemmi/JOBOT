@@ -345,7 +345,8 @@ def get_second_jobs():
     field = second_list["field"]
     display_jobs = second_list["displayed jobs"]
     id = 0
-
+    
+    # other _list=the job titles that exist in db
     other_list = []
     other_list_healthcare = ["Medical Assistant", "Health representative", "Production Scientist"]
     other_list_marketing = ["Product Marketing", "Data Analyst", "Marketing Designer"]
@@ -373,9 +374,9 @@ def get_second_jobs():
 
     company = second_list["companies"]
 
-    if "job title" in second_list:
-        jobtitle = second_list["job title"]
-        jobtitle = [jobtitle]
+    if "additional job title" in second_list:# rachel change
+        jobtitle = second_list["additional job title"]
+        jobtitle = [jobtitle]+second_list["JobTitles"]
     else:
         jobtitle = second_list["JobTitles"]
 
@@ -422,42 +423,43 @@ def get_second_jobs():
                 if job1["_id"] == job2["_id"]:
                     unique_jobs.remove(job1)
 
+    return jsonify({"success": True, "list_jobs": unique_jobs})
+
     # Now use chatgpt to get more precise job (use requirements)
 
-    city_string = ', '.join(city)
-    job_string = ""
-    current_id = None
-    index = 1
+    # city_string = ', '.join(city)
+    # job_string = ""
+    # current_id = None
+    # index = 1
 
-    for job in unique_jobs:
-        if job['_id'] != current_id:
-            job_string += "\n"  # add separator if id changes
-            current_id = job['_id']
-        job_string += "This is the " + str(index) + " job" + job['job'] + "," + job['city'] + "," + job[
-            'company'] + "," + job['description'] + "\n"
-        index += 1
+    # for job in unique_jobs:
+    #     if job['_id'] != current_id:
+    #         job_string += "\n"  # add separator if id changes
+    #         current_id = job['_id']
+    #     job_string += "This is the " + str(index) + " job" + job['job'] + "," + job['city'] + "," + job['company'] + "," + job['description'] + "\n"
+    #     index += 1
 
-    question = "I have a person who his experience level is: " + level[0] + \
-               "and want a job that can fit to this job title: " + \
-               jobtitle[0] + "in this cities: " + city_string + "and this is his requirements: " + requirements + \
-               "what jobs in this jobs lists can fit for this person: " + job_string + \
-               "return to me a top 3 of the jobs"
+    # question = "I have a person who his experience level is: " + level[0] + \
+    #            "and want a job that can fit to this job title: " + \
+    #            jobtitle[0] + "in this cities: " + city_string + "and this is his requirements: " + requirements + \
+    #            "what jobs in this jobs lists can fit for this person: " + job_string + \
+    #            "return to me a top 3 of the jobs"
 
-    response_gpt = chatgpt(question)
-    j_list = [job.strip() for job in response_gpt.split('\n')]
+    # response_gpt = chatgpt(question)
+    # j_list = [job.strip() for job in response_gpt.split('\n')]
 
-    jobs_dict_list = [{'job': job[3:-16], 'company': job.split('at ')[1].split(' in ')[0], 'city': job.split(' in ')[1]}
-                      for job in j_list]
+    # jobs_dict_list = [{'job': job[3:-16], 'company': job.split('at ')[1].split(' in ')[0], 'city': job.split(' in ')[1]}
+    #                   for job in j_list]
 
-    res = "With all the information you provide us, JobBot find for you this top 3 jobs: " + "\n" + response_gpt
+    # res = "With all the information you provide us, JobBot find for you this top 3 jobs: " + "\n" + response_gpt
 
-    gpt_list = []
-    for job1 in unique_jobs:
-        for job2 in jobs_dict_list:
-            if job1['job'] in job2['job'] and job1['company'] in job2['company']:
-                gpt_list.append(job1)
+    # gpt_list = []
+    # for job1 in unique_jobs:
+    #     for job2 in jobs_dict_list:
+    #         if job1['job'] in job2['job'] and job1['company'] in job2['company']:
+    #             gpt_list.append(job1)
 
-    return jsonify({"success": True, "list_jobs": gpt_list})
+    # return jsonify({"success": True, "list_jobs": gpt_list})
 
 
 def get_jobs_from_view(jobs, db):

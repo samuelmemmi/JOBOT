@@ -274,7 +274,7 @@ class ActionProvider {
         // while(response.data.list_jobs===[]){}
         
         // node.setJobs(response.data.list_jobs);
-        node.setJobs(response.data.list_jobs.map((job,index)=>{return {...job,id:index}}));
+        node.setJobs(response.data.list_jobs);
 
         // node.setJobs(["A","B","C","D","E","F","G","H","I","J","Nothing fits"]);
         if(node.getSavedInDB()["displayed jobs"]){
@@ -669,7 +669,7 @@ class ActionProvider {
     //unclear-->0 ???????
     node.setIsJobAccuracy(1);
 
-    node.setSelected({...node.getSelected(),"additional JobTitles":msg})
+    node.setSelected({...node.getSelected(),"additional job title":msg})
     node.setHistoryChat([...node.getHistoryChat(),{user:[msg]}])
     console.log("history in handleIsJobTitleTyping ",node.getHistoryChat());
     console.log("selected in handleIsJobTitleTyping ",node.getSelected());
@@ -707,7 +707,7 @@ class ActionProvider {
         // while(response.data.list_jobs===[]){}
 
         // node.setJobs(response.data.list_jobs);
-        node.setJobs(response.data.list_jobs.map((job,index)=>{return {...job,id:index}}));
+        node.setJobs(response.data.list_jobs);
         //node.setJobs(["K","L","M","N","O","P","Q","R","S","T","Nothing fits"]);
         if(node.getSavedInDB()["displayed jobs"]){
           node.setSavedInDB({...node.getSavedInDB(),"displayed jobs":node.getSavedInDB()["displayed jobs"].concat(node.getJobs())});
