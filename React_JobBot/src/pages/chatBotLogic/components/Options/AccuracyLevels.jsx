@@ -29,6 +29,7 @@ const AccuracyLevels = (props) => {
     // handle submission logic
     setSubmitted(false);
     if(selectedOptions.includes("Other")){
+      //קריאה לסיום
       props.actionProvider.selfSearch(props.node,["Other"]);
     }else{
       //set the accuracy node and options

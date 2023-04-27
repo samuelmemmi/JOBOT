@@ -37,10 +37,25 @@ const Jobs = (props) => {
       props.actionProvider.handleJob(props.node,["Nothing fits"]);
     }else if((selectedOptions.length<=2)&&props.node.getCountNotFits()===0){
       props.node.incCountNotFits(props.node.getCountNotFits());
-      props.node.setSelectedJobs(props.node.getSelectedJobs().concat(selectedOptions))
+      //update selected jobs in state
+      if(props.node.getSavedInDB()["selected jobs"]){
+        props.node.setSavedInDB({...props.node.getSavedInDB(),"selected jobs":props.node.getSavedInDB()["selected jobs"].concat(selectedOptions)});
+      }else{
+        props.node.setSavedInDB({...props.node.getSavedInDB(),"selected jobs":selectedOptions});
+      }
+      //
+      props.node.setSelectedJobs(selectedOptions)
       console.log("selected jobs ",props.node.getSelectedJobs())
       props.actionProvider.handleJob(props.node,["Nothing fits"]);
     }else{
+      //update selected jobs in state
+      if(props.node.getSavedInDB()["selected jobs"]){
+        props.node.setSavedInDB({...props.node.getSavedInDB(),"selected jobs":props.node.getSavedInDB()["selected jobs"].concat(selectedOptions)});
+      }else{
+        props.node.setSavedInDB({...props.node.getSavedInDB(),"selected jobs":selectedOptions});
+      }
+      //
+      props.node.setSelectedJobs(selectedOptions)
       props.actionProvider.handleJob(props.node,selectedOptions);
     }
   };
