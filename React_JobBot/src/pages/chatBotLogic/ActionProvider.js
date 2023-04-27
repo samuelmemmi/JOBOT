@@ -259,6 +259,7 @@ class ActionProvider {
             }
           );
           node.setHistoryChat([...node.getHistoryChat(),{user:opts},{bot:[txt1,txt2]}])
+          node.setSelected({...node.getSelected(),"displayed jobs":response.data.list_jobs})
           console.log("history ",node.getHistoryChat());
           node.setNextResponse(node.getNextResponse().children[0].children[0])
           this.addMessageToState(message2,node);
@@ -657,6 +658,7 @@ class ActionProvider {
       headers: {
       'Content-type': 'application/json; charset=UTF-8' } 
     })
+    
     .then((response) => {
       if (response.data.success) {
         console.log("Server returned matching jobs:", response.data.list_jobs);
@@ -670,7 +672,8 @@ class ActionProvider {
         // while(response.data.list_jobs===[]){}
 
         // node.setJobs(response.data.list_jobs);
-        node.setJobs(["K","L","M","N","O","P","Q","R","S","T","Nothing fits"]);
+        node.setJobs(response.data.list_jobs.map((job,index)=>{return {...job,id:index}}));
+        //node.setJobs(["K","L","M","N","O","P","Q","R","S","T","Nothing fits"]);
 
         //לא לשכוח לשרשר את העבודות החדשות שהוצעו????????אולי לעשות רשימה חדשה שהיא העבודות סבב 2
         //continute
