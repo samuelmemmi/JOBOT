@@ -1,3 +1,5 @@
+import axios from "axios";
+
 class MessageParser {
   constructor(actionProvider,props) {
     this.actionProvider = actionProvider;
@@ -21,7 +23,24 @@ class MessageParser {
       this.props.head.setSavedInDB({...this.props.head.getSavedInDB(),"feedback on termination":message})
       //call server
       //message:string
+    axios.post("/getIsFeedback", {
+      message: message
+    }, {
+      headers: {
+      'Content-type': 'application/json; charset=UTF-8' } 
+    })
+    
+    .then((response) => {
+      if (response.data.success) {
+        console.log("Server returned matching jobs:", response.data.message);
 
+      } else {
+        console.log("Error getting matching jobs: ", response.data.message);
+      }
+    })
+    .catch((err) => {
+      console.log("Error getting matching jobs: ", err.message);
+    });
       //קריאה לסיום
       this.actionProvider.selfSearch(this.props.head, message);
     }

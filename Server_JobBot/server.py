@@ -433,7 +433,8 @@ def get_second_jobs():
         if job['_id'] != current_id:
             job_string += "\n"  # add separator if id changes
             current_id = job['_id']
-        job_string += "This is the " + str(index) + " job" + job['job'] + "," + job['city'] + "," + job['company'] + "," + job['description'] + "\n"
+        job_string += "This is the " + str(index) + " job" + job['job'] + "," + job['city'] + "," + job[
+            'company'] + "," + job['description'] + "\n"
         index += 1
 
     question = "I have a person who his experience level is: " + level[0] + \
@@ -606,13 +607,13 @@ def identify_intent(response):
     intents = []
     # check for navigation-related keywords
     if "navigation" in response:
-        if "easy" in response or "simple" in response:
+        if "easy" in response or "simple" in response or "simplicity" in response:
             intents.append("easy navigation")
         elif "complicated" in response or "difficult" in response or "hard" in response:
             intents.append("difficult navigation")
     # check for simplicity-related keywords
     if "system" in response:
-        if "simple" in response or "easy" in response or "good" in response:
+        if "simple" in response or "easy" in response or "good" in response or "simplicity" in response:
             intents.append("simple system")
         elif "complicated" in response or "difficult" in response or "hard" in response:
             intents.append("complicated system")
@@ -623,7 +624,7 @@ def identify_intent(response):
         elif "grotesque" in response or "ugly" in response or "unattractive" in response:
             intents.append("ugly display")
     if "job" in response:
-        if "not" in response or "enough" in response:
+        if "not" in response or "enough" in response or "displaying jobs" in response:
             intents.append("jobs problems")
         else:
             intents.append("jobs good")
@@ -681,7 +682,7 @@ def extract_info(intents, number):
                 number[intent] += 1
             else:
                 number[intent] = 1
-        elif intent == "jobs goods":
+        elif intent == "jobs good":
             info[
                 intent] = "That's great to hear! We always try to make our job as attractive and informative " \
                           "as possible. "
@@ -705,8 +706,11 @@ def extract_info(intents, number):
     return info
 
 
-def test_response(responses):
+@app.route("/getIsFeedback", methods=["POST"])
+def test_response():
     number = {}
+    ret = ""
+    responses = [request.json.get("message")]
     # iterate over each response in the list
     for response in responses:
         # preprocess response
@@ -718,7 +722,7 @@ def test_response(responses):
         # print extracted information for each response
         print(f"User response: {response}")
         for intent, response in info.items():
-            print(response)
+            ret = response
         print()
     # connexion to the MongoDB database
     cluster = MongoClient("mongodb+srv://samuelmemmi:1234@cluster0.e4sf8mm.mongodb.net/?retryWrites=true"
@@ -727,6 +731,7 @@ def test_response(responses):
     collection = db["statistics"]
     number_list = [{'intent': key, 'count': value} for key, value in number.items()]
     collection.insert_many(number_list)
+    return jsonify({"success": True, "ret": ret})
 
 
 def chatgpt(question):
