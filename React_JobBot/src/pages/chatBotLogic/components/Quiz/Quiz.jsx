@@ -24,3 +24,8 @@ const Quiz = (props) => {
 };
 
 export default Quiz;
+
+//line 126
+  // elif document["company"] == comp and all(
+  // [word in document["description"].lower() for word in words1]) and \
+  // document["city"] in city:

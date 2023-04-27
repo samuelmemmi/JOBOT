@@ -6,6 +6,25 @@ class ActionProvider {
     this.setState = setStateFunc;
   }
 
+  saveHistoryInDB=(node)=>{
+    node.getSelected()["displayed jobs"] && delete node.getSelected()["displayed jobs"];
+    var history={
+      ...node.getSavedInDB(),
+      "client details":node.getRegistrationDetails(),
+      "field":node.getSelected().field,
+      "conversation content":node.getHistoryChat(),
+      "displayed jobs":node.getSavedInDB()["displayed jobs"]?node.getSavedInDB()["displayed jobs"]:"-",
+      "selected jobs":node.getSavedInDB()["selected jobs"]?node.getSavedInDB()["selected jobs"]:"-",
+      "experiance & education":node.getSelected()["job Requirements"]?node.getSelected()["job Requirements"]:"-",
+      "feedback on termination":node.getSavedInDB()["feedback on termination"]?node.getSavedInDB()["feedback on termination"]:"-",
+      "selected features":node.getSelected()
+      }
+    node.setSavedInDB(history);
+    //call server with 'history' var
+
+    console.log("save data in DB ",history)
+  }
+
   selfSearch = (node,Freetxt) => {
     var txt1=node.getNextResponse().children[0].text;
     const message1 = this.createChatBotMessage(
@@ -36,9 +55,11 @@ class ActionProvider {
     console.log("history ",node.getHistoryChat());
     node.setIsFeedback(0);
     this.addMessageToState(message2,node);
+    this.saveHistoryInDB(node)
   };
 
   handleField = (node,opt) => {
+    console.log("Thank you god!",node.getRegistrationDetails())
     var txt=node.getNextResponse().children[0].children[1].text;
     const message = this.createChatBotMessage(
       txt,
@@ -83,17 +104,22 @@ class ActionProvider {
       node.setHistoryChat([...node.getHistoryChat(),{user:[opt]},{bot:[txt]}]);
       console.log("history ",node.getHistoryChat());
       this.addMessageToState(message,node);
+      //קריאה לסיום לא בטוח
+      this.saveHistoryInDB(node)
     }
     //case of asking for self job search
     else if(node.getNextResponse().title.includes("self job search")){
       if(opt==="Yes"){
+        //קריאה לסיום
         this.selfSearch(node,opt)
       }else{
+        //קריאה לסיום
         var txt=node.getNextResponse().children[1].text;
         const message = this.createChatBotMessage(txt);
         node.setHistoryChat([...node.getHistoryChat(),{user:[opt]},{bot:[txt]}]);
         console.log("history ",node.getHistoryChat());
         this.addMessageToState(message,node);
+        this.saveHistoryInDB(node)
       }
     }
     //case of asking for accurate match
@@ -120,6 +146,7 @@ class ActionProvider {
         node.setIsFeedback(1);
         node.setNextResponse(node.getNextResponse().children[0])
         this.addMessageToState(message,node);
+        document.documentElement.style.setProperty('--button-visibility', 'visible');
       }
     }
   }
@@ -222,6 +249,7 @@ class ActionProvider {
 
     //server calculating jobs...
     node.setSelected({...node.getSelected(),'job Types':opts})
+    console.log("selected before sending to server: ",node.getSelected())
     // var jobs=["X","Y","Z","T","W","Nothing fits"];
     // node.setJobs(jobs);
 
@@ -247,7 +275,13 @@ class ActionProvider {
         
         // node.setJobs(response.data.list_jobs);
         node.setJobs(response.data.list_jobs.map((job,index)=>{return {...job,id:index}}));
+
         // node.setJobs(["A","B","C","D","E","F","G","H","I","J","Nothing fits"]);
+        if(node.getSavedInDB()["displayed jobs"]){
+          node.setSavedInDB({...node.getSavedInDB(),"displayed jobs":node.getSavedInDB()["displayed jobs"].concat(node.getJobs())});
+        }else{
+          node.setSavedInDB({...node.getSavedInDB(),"displayed jobs":node.getJobs()});
+        }
 
         //continute
         if(response.data.list_jobs.length!==0){
@@ -258,7 +292,7 @@ class ActionProvider {
               widget: "jobs",
             }
           );
-          node.setHistoryChat([...node.getHistoryChat(),{user:opts},{bot:[txt1,txt2]}])
+          node.setHistoryChat([...node.getHistoryChat(),{user:opts},{bot:[txt1,txt2]}])//ID job ADDED???
           node.setSelected({...node.getSelected(),"displayed jobs":response.data.list_jobs})
           console.log("history ",node.getHistoryChat());
           node.setNextResponse(node.getNextResponse().children[0].children[0])
@@ -340,7 +374,7 @@ class ActionProvider {
           this.selfSearch(node,{flag:"noJobs"});
         }
       }
-    }else if((opts.length<=2)&&(node.getIsJobAccuracy()===0)){
+    }else if((opts.length<=2)&&(node.getIsJobAccuracy()===0)){//#מה ההבדל בין זה ללמעלה??
       var txt=node.getNextResponse().children[0].text;
       const message = this.createChatBotMessage(
         txt,
@@ -359,8 +393,6 @@ class ActionProvider {
           widget: "emailDisplay",
         }
       );
-      node.setSelectedJobs(node.getSelectedJobs().concat(opts))
-      node.setSelected({...node.getSelected(),'selected jobs':node.getSelectedJobs()})
       node.setHistoryChat([...node.getHistoryChat(),{user:opts},{bot:[txt]}])
       console.log("I chose jobs  ",node.getSelectedJobs());
       node.setNextResponse(node.getNextResponse().children[1])
@@ -527,6 +559,7 @@ class ActionProvider {
     }else if(opts.includes("Desired city")){
       this.cityWidget(node)
     }else if(opts.includes("Job requirements")){
+      document.documentElement.style.setProperty('--button-visibility', 'visible');
       this.requirementsWidget(node)
     }else if(opts.includes("Job title")){
       this.jobTitleTypingWidget(node)
@@ -537,6 +570,7 @@ class ActionProvider {
         console.log("server match");
         this.accurateJobsWidget(node)
       } else {
+        //קריאה לסיום
         this.selfSearch(node,{flag:"noAccuracy"});
       }
     }
@@ -605,6 +639,7 @@ class ActionProvider {
   }
 
   handleRequirements(node,msg){
+    document.documentElement.style.setProperty('--button-visibility', 'hidden');
     //typing about job requirements is stopped 
     node.setIsRequirements(0);
 
@@ -634,7 +669,7 @@ class ActionProvider {
     //unclear-->0 ???????
     node.setIsJobAccuracy(1);
 
-    node.setSelected({...node.getSelected(),"job title":msg})
+    node.setSelected({...node.getSelected(),"additional JobTitles":msg})
     node.setHistoryChat([...node.getHistoryChat(),{user:[msg]}])
     console.log("history in handleIsJobTitleTyping ",node.getHistoryChat());
     console.log("selected in handleIsJobTitleTyping ",node.getSelected());
@@ -674,7 +709,12 @@ class ActionProvider {
         // node.setJobs(response.data.list_jobs);
         node.setJobs(response.data.list_jobs.map((job,index)=>{return {...job,id:index}}));
         //node.setJobs(["K","L","M","N","O","P","Q","R","S","T","Nothing fits"]);
-
+        if(node.getSavedInDB()["displayed jobs"]){
+          node.setSavedInDB({...node.getSavedInDB(),"displayed jobs":node.getSavedInDB()["displayed jobs"].concat(node.getJobs())});
+        }else{
+          node.setSavedInDB({...node.getSavedInDB(),"displayed jobs":node.getJobs()});
+        }
+        
         //לא לשכוח לשרשר את העבודות החדשות שהוצעו????????אולי לעשות רשימה חדשה שהיא העבודות סבב 2
         //continute
         if(response.data.list_jobs.length!==0){

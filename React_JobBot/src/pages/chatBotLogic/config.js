@@ -18,6 +18,7 @@ import ExperienceLevel from "./components/Options/ExperienceLevel";
 import Cities from "./components/Options/Cities";
 import Email from "./components/Options/Email";
 import JobTitleTyping from "./components/Options/JobTitleTyping";
+import MyCustomChatMessage from "./MyCustomChatMessage";
 
 const config = {
   botName: "JOBOT",
@@ -174,6 +175,10 @@ const config = {
       backgroundColor: '#376B7E',
     },
   },
+  customComponents: {
+    botAvatar:(props) => <MyCustomChatMessage {...props} />
+  },
 };
 
 export default config;
+

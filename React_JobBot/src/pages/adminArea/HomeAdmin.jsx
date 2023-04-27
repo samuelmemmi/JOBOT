@@ -1,7 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 function HomeAdmin() {
+    const location = useLocation();
+    const adminDetails = location.state;
+    console.log(adminDetails)
   return (
     <div>
     <h1>JOBOT Admin</h1>
@@ -14,7 +18,7 @@ function HomeAdmin() {
                 <Link to="/logout">Log out?</Link>
             </li>
             <li>
-                <Link to="/details">Registration details</Link>
+                <Link to="/details" state={adminDetails}>Registration details</Link>
             </li>
             <li>
                 <Link to="/about">About</Link>
