@@ -532,6 +532,11 @@ def client_history():
     db = cluster["chatbot"]
     collection = db["users"]
 
+    responses = request.json.get("responses")
+    # define the username and password of the user you want to update
+    username = "johndoe"
+    password = "password123"
+
 
 def find_best_job(field):
     # connexion to the MongoDB database
