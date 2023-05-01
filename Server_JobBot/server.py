@@ -812,7 +812,7 @@ def test_response(responses):
     collection = db["statistics"]
     number_list = [{'intent': key, 'count': value} for key, value in number.items()]
     collection.insert_many(number_list)
-    return jsonify({"success": True, "ret": ret})
+    return jsonify({"success": True, "message": ret})
 
 
 def chatgpt(question):
