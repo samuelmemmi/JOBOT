@@ -34,7 +34,7 @@ def login():
 
     if user:
         # check if the user is admin or client
-        if (((user_name == "samuel") and (password == "1")) or ((user_name == "rachel") and (password == "123"))):
+        if ((user_name == "samuel") and (password == "1")) or ((user_name == "rachel") and (password == "123")):
             return jsonify({"success": True, "message": "Admin login success"})
 
         return jsonify({"success": True, "message": "Client login success"})
@@ -316,7 +316,7 @@ def second_help_get_first_jobs(new_documents, list_jobs, title, company, city, o
         # Find all documents in the collection
         documents2 = collection2.find()
         # Create a new list of dictionaries with all fields except "id"
-        new_documents2 = [{k: v for k, v in doc.items() if k != "_id"} for doc in documents2]
+        new_documents2 = [{k: (str(v) if k == '_id' else v) for k, v in doc.items()} for doc in documents]
         for doc in new_documents2:
             if len(list_jobs) < 15 and doc["job"] != "":
                 list_jobs.append(doc)
@@ -394,7 +394,10 @@ def get_second_jobs():
                      "Central": ["Central", "Herzliya", "Jerusalem", "Netanya", "Petah Tikva", "Raanana", "Ramat Gan",
                                  "Rishon LeZiyyon", "Tel Aviv", "Tel Aviv-Yafo", "Kfar Saba", "Rehovot", "Hod HaSharon",
                                  "Bnei Brak", "Giv`atayim", "Israel", "Lod", "Holon", "Yavne", "Ness Ziona"],
-                     }
+                     "All": ["Haifa", "North", "Northern", "Ashdod", "South", "Southern", "Central", "Herzliya",
+                             "Jerusalem", "Netanya", "Petah Tikva", "Raanana", "Ramat Gan",
+                             "Rishon LeZiyyon", "Tel Aviv", "Tel Aviv-Yafo", "Kfar Saba", "Rehovot", "Hod HaSharon",
+                             "Bnei Brak", "Giv`atayim", "Israel", "Lod", "Holon", "Yavne", "Ness Ziona"]}
 
         city = []
         for i in range(len(areas)):
@@ -519,6 +522,15 @@ def view_users():
         users_list.append(document)
 
     return jsonify({"success": True, "users_list": users_list})
+
+
+@app.route("/clienthistory", methods=["POST"])
+def client_history():
+    # connexion to the MongoDB database
+    cluster = MongoClient("mongodb+srv://samuelmemmi:1234@cluster0.e4sf8mm.mongodb.net/?retryWrites=true"
+                          "&w=majority")
+    db = cluster["chatbot"]
+    collection = db["users"]
 
 
 def find_best_job(field):
