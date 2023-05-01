@@ -21,8 +21,20 @@ class ActionProvider {
       }
     node.setSavedInDB(history);
     //call server with 'history' var
-
-    console.log("save data in DB ",history)
+    //clienthistory
+      axios.post('/clienthistory', {
+        history: history
+      }, {
+        headers: {
+        'Content-type': 'application/json; charset=UTF-8' } 
+      })
+      .then((response) => {
+        console.log(response.data.message);
+        console.log("save data in DB ",history)
+      })
+      .catch((error) => {
+        console.error(error.response.data.error);
+      });
   }
 
   selfSearch = (node,Freetxt) => {
@@ -274,7 +286,15 @@ class ActionProvider {
         // while(response.data.list_jobs===[]){}
         
         // node.setJobs(response.data.list_jobs);
-        node.setJobs(response.data.list_jobs);
+
+        node.setJobs(response.data.list_jobs.map((job,index) =>{
+          if(!job._id){
+            var _id=(index).toString();
+            return {...job,"_id":_id};
+          }else{
+            return job;
+          }
+        }));
 
         // node.setJobs(["A","B","C","D","E","F","G","H","I","J","Nothing fits"]);
         if(node.getSavedInDB()["displayed jobs"]){
@@ -707,7 +727,15 @@ class ActionProvider {
         // while(response.data.list_jobs===[]){}
 
         // node.setJobs(response.data.list_jobs);
-        node.setJobs(response.data.list_jobs);
+        
+        node.setJobs(response.data.list_jobs.map((job,index) =>{
+          if(!job._id){
+            var _id=(index+20).toString();
+            return {...job,"_id":_id};
+          }else{
+            return job;
+          }
+        }));
         //node.setJobs(["K","L","M","N","O","P","Q","R","S","T","Nothing fits"]);
         if(node.getSavedInDB()["displayed jobs"]){
           node.setSavedInDB({...node.getSavedInDB(),"displayed jobs":node.getSavedInDB()["displayed jobs"].concat(node.getJobs())});
@@ -718,6 +746,10 @@ class ActionProvider {
         //לא לשכוח לשרשר את העבודות החדשות שהוצעו????????אולי לעשות רשימה חדשה שהיא העבודות סבב 2
         //continute
         if(response.data.list_jobs.length!==0){
+          var txt=`With all the information you provide us, JobBot find for you this top ${response.data.list_jobs.length} jobs`;
+          const message = this.createChatBotMessage(txt)//history
+          this.addMessageToState(message,node);
+
           var txt2=node.getNextResponse().children[1].children[1].children[0].text;
           const message2 = this.createChatBotMessage(
             txt2,
