@@ -595,7 +595,7 @@ def client_history():
     db = cluster["chatbot"]
     collection = db["users"]
 
-    responses = request.json.get("responses")
+    history = request.json.get("history")
     # define the username and password of the user you want to update
     username = "johndoe"
     password = "password123"
@@ -687,13 +687,13 @@ def identify_intent(response):
     intents = []
     # check for navigation-related keywords
     if "navigation" in response:
-        if "easy" in response or "simple" in response:
+        if "easy" in response or "simple" in response or "simplicity" in response:
             intents.append("easy navigation")
         elif "complicated" in response or "difficult" in response or "hard" in response:
             intents.append("difficult navigation")
     # check for simplicity-related keywords
     if "system" in response:
-        if "simple" in response or "easy" in response or "good" in response:
+        if "simple" in response or "easy" in response or "good" in response or "simplicity" in response:
             intents.append("simple system")
         elif "complicated" in response or "difficult" in response or "hard" in response:
             intents.append("complicated system")
@@ -704,7 +704,7 @@ def identify_intent(response):
         elif "grotesque" in response or "ugly" in response or "unattractive" in response:
             intents.append("ugly display")
     if "job" in response:
-        if "not" in response or "enough" in response:
+        if "not" in response or "enough" in response or "displaying jobs" in response:
             intents.append("jobs problems")
         else:
             intents.append("jobs good")
@@ -762,7 +762,7 @@ def extract_info(intents, number):
                 number[intent] += 1
             else:
                 number[intent] = 1
-        elif intent == "jobs goods":
+        elif intent == "jobs good":
             info[
                 intent] = "That's great to hear! We always try to make our job as attractive and informative " \
                           "as possible. "
@@ -786,8 +786,11 @@ def extract_info(intents, number):
     return info
 
 
+@app.route("/getIsFeedback", methods=["POST"])
 def test_response(responses):
     number = {}
+    ret = ""
+    responses = [request.json.get("message")]
     # iterate over each response in the list
     for response in responses:
         # preprocess response
@@ -799,6 +802,7 @@ def test_response(responses):
         # print extracted information for each response
         print(f"User response: {response}")
         for intent, response in info.items():
+            ret = response
             print(response)
         print()
     # connexion to the MongoDB database
@@ -808,6 +812,7 @@ def test_response(responses):
     collection = db["statistics"]
     number_list = [{'intent': key, 'count': value} for key, value in number.items()]
     collection.insert_many(number_list)
+    return jsonify({"success": True, "ret": ret})
 
 
 def chatgpt(question):
