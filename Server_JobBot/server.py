@@ -811,6 +811,7 @@ def test_response():
     return jsonify({"success": True, "message": ret}) # return jsonify({"success": True, "ret": ret})
 
 
+
 def chatgpt(question):
     API_KEY = open("API_KEY.txt", "r").read().strip()
     openai.api_key = API_KEY
