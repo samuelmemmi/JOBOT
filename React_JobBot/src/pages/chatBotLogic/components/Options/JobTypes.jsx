@@ -82,7 +82,7 @@ const JobTypes = (props) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <label>
+      <label className="listOptions">
         {options.map((opt,index) =>{
           return(
           <label key={index}>

@@ -30,7 +30,14 @@ const AccuracyLevels = (props) => {
     setSubmitted(false);
     if(selectedOptions.includes("Other")){
       //קריאה לסיום
-      props.actionProvider.selfSearch(props.node,["Other"]);
+      // props.actionProvider.selfSearch(props.node,["Other"]);
+
+      //set the accuracy node
+      props.node.setAccuracyNode({...props.node.getNextResponse()})
+      //set in history list
+      props.node.setHistoryChat([...props.node.getHistoryChat(),{user:["Other"]}])
+      //call handler
+      props.actionProvider.handleAccuracyLevel(props.node,["Other"]);
     }else{
       //set the accuracy node and options
       props.node.setAccuracyOptions(selectedOptions)

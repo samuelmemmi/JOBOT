@@ -32,7 +32,7 @@ var areas={
                   text: "Please select appropriate jobs",
                   children:
                   [
-                    {//!!!!!
+                    {
                       title: "user selected 'Nothing fits' or up to 2 jobs",
                       text: "Would you like to see jobs with an accurate match?",
                       options: ["Yes", "No"],
@@ -58,20 +58,17 @@ var areas={
                         },
                         {
                           title: "user agreed to an accurate match",
-                          text: "Select the accuracy level (Multiple choice)",
-                          options: ["Experience level","Desired city","Job title","Job requirements","Other"],
+                          text: "Type your experience and education in the selected field",
                           children:
                           [
-                            {...selfJobSearch,title: "user selected 'other' level of accuracy"},
-                            {
-                              title: "user selected city accuracy",
-                              text: "Select cities in your chosen regions",
-                              // options: ["Netanya","TLV","Jerusalem","Other"],
+                            {//
+                              title: "user typed his experience and education",
+                              text: "Select additional accuracy levels (Multiple choice)",
+                              options: ["Experience level","Desired city","Job title","Other"],
                               children:
                               [
-                                {...selfJobSearch,title: "user selected 'Other'"},          
                                 displayingAdaptedJobs={
-                                  title: "user selected cities",
+                                  title: "user selected 'Other' level of accuracy",
                                   text: "Just a moment please, I'm looking for more precise jobs for you",
                                   children:
                                   [
@@ -133,41 +130,38 @@ var areas={
                                       ]
                                     }
                                   ]
+                                },
+                                {
+                                  title: "user selected city accuracy",
+                                  text: "Select cities in your chosen regions",
+                                  children:
+                                  [
+                                    {...displayingAdaptedJobs, title: "user selected cities"}
+                                  ]
+                                },
+                                {
+                                  title: "user selected experience level accuracy",
+                                  text: "Select an experience level",
+                                  options: ["Intern","Junior","Senior","Other"],
+                                  children:
+                                  [
+                                    {...displayingAdaptedJobs, title: "user selected an experience level"}
+                                  ]
+                                },
+                                {
+                                  title: "user selected job title accuracy",
+                                  text: "Enter a job title",
+                                  children:
+                                  [
+                                    {...displayingAdaptedJobs, title: "user inserted a job title"}
+                                  ]
                                 }
                               ]
-                            },
-                            {
-                              title: "user selected job requirements accuracy",
-                              text: "Type your experience and education in the selected fields",
-                              children:
-                              [
-                                {...selfJobSearch,title: "unclear typing for experience and education"},
-                                {...displayingAdaptedJobs, title: "clear typing for experience and education"}
-                              ]
-                            },
-                            {
-                              title: "user selected experience level accuracy",
-                              text: "Select an experience level",
-                              options: ["Intern","Junior","Senior","Other"],
-                              children:
-                              [
-                                {...selfJobSearch,title: "user selected 'Other'"},
-                                {...displayingAdaptedJobs, title: "user selected an experience level"}
-                              ]
-                            },
-                            {
-                              title: "user selected job title accuracy",
-                              text: "Enter a job title",
-                              children:
-                              [
-                                {...selfJobSearch,title: "unclear typing for a job title"},
-                                {...displayingAdaptedJobs, title: "clear typing for a job title"}
-                              ]
-                            }
+                            }//
                           ]
-                        }
+                        },
                       ]
-                    },//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    },
                     {...successfulEnding,title:"user selected 3 or more jobs"}
                   ]
                 }
@@ -177,7 +171,7 @@ var areas={
         }
       ]
     },
-    {...jobTypes,title:"user selected 'all areas'"}
+    // {...jobTypes,title:"user selected 'all areas'"}
   ]
 }
 
@@ -220,14 +214,14 @@ var chatFlow = {
               children:
               [
                 {
-                  title: "user selected specific companies",
+                  title: "user selected companies",
                   text: "Excellent, we will consider priority for these companies",
                   children:
                   [
                     {...areas,title: "next question"}
                   ]
-                },            
-                {...areas,title: "user selected 'all companies'"}
+                },          
+                // {...areas,title: "user selected 'all companies'"}
               ]
             }
           ]

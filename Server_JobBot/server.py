@@ -427,67 +427,49 @@ def get_second_jobs():
                 if job1["_id"] == job2["_id"]:
                     unique_jobs.remove(job1)
 
-    # return jsonify({"success": True, "list_jobs": unique_jobs})
+    return jsonify({"success": True, "list_jobs": unique_jobs})
 
     # Now use chatgpt to get more precise job (use requirements)
-
-    gpt_list = []
-    index = 1
-    print("len(): ")
-    print(len(unique_jobs))
-
-    lengt=int(len(unique_jobs)/2)*2
-    for i in range(0,lengt,2):
-        # if job['_id'] != current_id:
-        #     job_string += "\n"  # add separator if id changes
-        #     current_id = job['_id']
-        job_string1 = "This is the " + str(index) + " job\n" + "job title: " + unique_jobs[i]['job'] + ", job description: " + unique_jobs[i]['description'] + "\n"
-        job_string2 = "This is the " + str(index+1) + " job\n" + "job title: " + unique_jobs[i+1]['job'] + ", job description: " + unique_jobs[i+1]['description'] + "\n"
-        question = "I have a person who his requirements are: '" + requirements +"'" \
-               ". Are the jobs below fit for him: " + job_string1 + job_string2 + \
-               "Return an answer according to the following template: 'job #: Yes' if this job is fit and 'job #: No' else."
-
-        print("question_gpt: ",question)
-        response_gpt = chatgpt(question)
-        # print("response_gpt: ",response_gpt)
-        if (str(index) + ": Yes") in response_gpt:
-            gpt_list.append(unique_jobs[i])
-        if (str(index+1) + ": Yes") in response_gpt:
-            gpt_list.append(unique_jobs[i+1])
-        if(i+1!=(lengt-1)):
-            time.sleep(20) #12
-        index += 2
-
-    print("iiiiii")
-    print(i)
-    i+=2
-    for i in range(i,len(unique_jobs)):
-        job_string = "This is the " + str(index) + " job\n" + "job title: " + unique_jobs[i]['job'] + ", job description: " + unique_jobs[i]['description'] + "\n"
-        question = "I have a person who his requirements are: '" + requirements +"'" \
-               ". Are the jobs below fit for him: " + job_string + \
-               "Return an answer according to the following template: 'job #: Yes' if this job is fit and 'job #: No' else."
-    
-        print("question_gpt: ",question)
-        response_gpt = chatgpt(question)
-        # print("response_gpt: ",response_gpt)
-        if (str(index) + ": Yes") in response_gpt:
-            gpt_list.append(unique_jobs[i])
-        
-        # break
-    #     j_list = [job.strip() for job in response_gpt.split('\n')]
-
-    #     jobs_dict_list = [{'job': job[3:-16], 'company': job.split('at ')[1].split(' in ')[0], 'city': job.split(' in ')[1]}
-    #                   for job in j_list]
-
-    # res = "With all the information you provide us, JobBot find for you this top 3 jobs: " + "\n" + response_gpt
-
+    # #start
     # gpt_list = []
-    # for job1 in unique_jobs:
-    #     for job2 in jobs_dict_list:
-    #         if job1['job'] in job2['job'] and job1['company'] in job2['company']:
-    #             gpt_list.append(job1)
+    # index = 1
+    # print("len(): ")
+    # print(len(unique_jobs))
 
-    return jsonify({"success": True, "list_jobs": gpt_list})
+    # lengt=int(len(unique_jobs)/2)*2
+    # for i in range(0,lengt,2):
+    #     job_string1 = "This is the " + str(index) + " job\n" + "job title: " + unique_jobs[i]['job'] + ", job description: " + unique_jobs[i]['description'] + "\n"
+    #     job_string2 = "This is the " + str(index+1) + " job\n" + "job title: " + unique_jobs[i+1]['job'] + ", job description: " + unique_jobs[i+1]['description'] + "\n"
+    #     question = "I have a person who his requirements are: '" + requirements +"'" \
+    #            ". Are the jobs below fit for him: " + job_string1 + job_string2 + \
+    #            "Return an answer according to the following template: 'job #: Yes' if this job is fit and 'job #: No' else."
+
+    #     print("question_gpt: ",question)
+    #     response_gpt = chatgpt(question)
+    #     # print("response_gpt: ",response_gpt)
+    #     if (str(index) + ": Yes") in response_gpt:
+    #         gpt_list.append(unique_jobs[i])
+    #     if (str(index+1) + ": Yes") in response_gpt:
+    #         gpt_list.append(unique_jobs[i+1])
+    #     if(i+1!=(lengt-1)):
+    #         time.sleep(20) #12
+    #     index += 2
+
+    # print("iiiiii")
+    # print(i)
+    # i+=2
+    # for i in range(i,len(unique_jobs)):
+    #     job_string = "This is the " + str(index) + " job\n" + "job title: " + unique_jobs[i]['job'] + ", job description: " + unique_jobs[i]['description'] + "\n"
+    #     question = "I have a person who his requirements are: '" + requirements +"'" \
+    #            ". Are the jobs below fit for him: " + job_string + \
+    #            "Return an answer according to the following template: 'job #: Yes' if this job is fit and 'job #: No' else."
+    
+    #     print("question_gpt: ",question)
+    #     response_gpt = chatgpt(question)
+    #     if (str(index) + ": Yes") in response_gpt:
+    #         gpt_list.append(unique_jobs[i])
+        
+    # return jsonify({"success": True, "list_jobs": gpt_list})#final
 
     # Now use chatgpt to get more precise job (use requirements)
 
@@ -711,7 +693,10 @@ def identify_intent(response):
     if "search" in response:
         if "not relevant" in response or "accurate enough" in response:
             intents.append("search problems")
+    if len(intents)==0:
+        intents.append("other")
     # return list of identified intents
+    print("intents in func identify intent: ",intents)
     return intents
 
 
@@ -782,17 +767,23 @@ def extract_info(intents, number):
                 number[intent] += 1
             else:
                 number[intent] = 1
+        elif intent == "other":
+            info[intent] = ""
+            if intent in number:
+                number[intent] += 1
+            else:
+                number[intent] = 1
     # return dictionary of extracted information
     return info
 
 
 @app.route("/getIsFeedback", methods=["POST"])
-def test_response(responses):
+def test_response():
     number = {}
     ret = ""
     responses = [request.json.get("message")]
     # iterate over each response in the list
-    for response in responses:
+    for response in responses:# why for?
         # preprocess response
         # preprocessed_response = preprocess(response)
         # identify intent based on preprocessed response
@@ -801,9 +792,13 @@ def test_response(responses):
         info = extract_info(intents, number)
         # print extracted information for each response
         print(f"User response: {response}")
+        print(f"User responses: {responses}")
+        print(f"info : {info}")
+        print(f"intents: {intents}")
+
         for intent, response in info.items():
-            ret = response
-            print(response)
+            ret = ret + response
+            print("response",ret)
         print()
     # connexion to the MongoDB database
     cluster = MongoClient("mongodb+srv://samuelmemmi:1234@cluster0.e4sf8mm.mongodb.net/?retryWrites=true"
@@ -812,7 +807,9 @@ def test_response(responses):
     collection = db["statistics"]
     number_list = [{'intent': key, 'count': value} for key, value in number.items()]
     collection.insert_many(number_list)
-    return jsonify({"success": True, "message": ret})
+    print("number_list: ",number_list)
+    return jsonify({"success": True, "message": ret}) # return jsonify({"success": True, "ret": ret})
+
 
 
 def chatgpt(question):
