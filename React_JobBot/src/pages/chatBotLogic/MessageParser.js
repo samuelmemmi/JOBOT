@@ -23,6 +23,7 @@ class MessageParser {
       this.props.head.setSavedInDB({...this.props.head.getSavedInDB(),"feedback on termination":message})
       //call server
       //message:string
+
       axios.post("/getIsFeedback", {
         message: message
       }, {
@@ -42,6 +43,7 @@ class MessageParser {
       .catch((err) => {
         console.log("Error getting bot response: ", err.message);
       });
+
     }
 
     if(this.props.head&&this.props.head.getIsRequirements()===1){

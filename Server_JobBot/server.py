@@ -36,11 +36,23 @@ def login():
     if user:
         # check if the user is admin or client
         if ((user_name == "samuel") and (password == "1")) or ((user_name == "rachel") and (password == "123")):
+            collection.update_one(
+                {"user_name": "samuel", "password": "1"},
+                {"$set": {"admin": "Yes"}}
+            )
+            collection.update_one(
+                {"user_name": "rachel", "password": "123"},
+                {"$set": {"admin": "Yes"}}
+            )
             return jsonify({"success": True, "message": "Admin login success"})
 
         return jsonify({"success": True, "message": "Client login success"})
 
     else:
+        collection.update_one(
+            {"user_name": user_name, "password": password},
+            {"$set": {"admin": "No"}}
+        )
         return jsonify({"success": False, "message": "Username or password incorrect"})
 
 
@@ -317,7 +329,7 @@ def second_help_get_first_jobs(new_documents, list_jobs, title, company, city, o
         # Find all documents in the collection
         documents2 = collection2.find()
         # Create a new list of dictionaries with all fields except "id"
-        new_documents2 = [{k: (str(v) if k == '_id' else v) for k, v in doc.items()} for doc in documents]
+        new_documents2 = [{k: (str(v) if k == '_id' else v) for k, v in doc.items()} for doc in documents2]
         for doc in new_documents2:
             if len(list_jobs) < 15 and doc["job"] != "":
                 list_jobs.append(doc)
@@ -579,8 +591,27 @@ def client_history():
 
     history = request.json.get("history")
     # define the username and password of the user you want to update
-    username = "johndoe"
-    password = "password123"
+    username = history["client details"]["userName"]
+    password = history["client details"]["password"]
+
+    # retrieve the current value of the history field
+    result = collection.find_one({"user_name": username, "password": password}, {"history": 1})
+    current_history = result.get("history", {})
+
+    # if the current history is a dictionary, convert it to a list with one element
+    if isinstance(current_history, dict):
+        current_history = [current_history]
+
+    # append the new history to the current history list
+    current_history.append(history)
+
+    # update the user document with the merged history
+    collection.update_one(
+        {"user_name": username, "password": password},
+        {"$set": {"history": current_history}}
+    )
+
+    return jsonify({"success": True, "message": "update database"})
 
 
 def find_best_job(field):
@@ -780,7 +811,7 @@ def extract_info(intents, number):
 @app.route("/getIsFeedback", methods=["POST"])
 def test_response():
     number = {}
-    ret = ""
+    res = ""
     responses = [request.json.get("message")]
     # iterate over each response in the list
     for response in responses:# why for?
@@ -799,6 +830,7 @@ def test_response():
         for intent, response in info.items():
             ret = ret + response
             print("response",ret)
+
         print()
     # connexion to the MongoDB database
     cluster = MongoClient("mongodb+srv://samuelmemmi:1234@cluster0.e4sf8mm.mongodb.net/?retryWrites=true"
