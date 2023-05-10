@@ -32,10 +32,10 @@ class MessageParser {
     
     .then((response) => {
       if (response.data.success) {
-        console.log("Server returned matching jobs:", response.data.message);
+        console.log("Server returned matching jobs:", response.data.res);
 
       } else {
-        console.log("Error getting matching jobs: ", response.data.message);
+        console.log("Error getting matching jobs: ", response.data.res);
       }
     })
     .catch((err) => {
