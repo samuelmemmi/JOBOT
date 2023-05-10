@@ -8,6 +8,8 @@ class ActionProvider {
 
   saveHistoryInDB=(node)=>{
     node.getSelected()["displayed jobs"] && delete node.getSelected()["displayed jobs"];
+    const current = new Date();
+    const date = `${current.getDate()}/${current.getMonth()+1}/${current.getFullYear()}`;
     var history={
       ...node.getSavedInDB(),
       "client details":node.getRegistrationDetails(),
@@ -17,24 +19,26 @@ class ActionProvider {
       "selected jobs":node.getSavedInDB()["selected jobs"]?node.getSavedInDB()["selected jobs"]:"-",
       "experiance & education":node.getSelected()["job Requirements"]?node.getSelected()["job Requirements"]:"-",
       "feedback on termination":node.getSavedInDB()["feedback on termination"]?node.getSavedInDB()["feedback on termination"]:"-",
-      "selected features":node.getSelected()
+      "selected features":node.getSelected(),
+      "date":date
       }
-    node.setSavedInDB(history);
-    //call server with 'history' var
-    //clienthistory
-      axios.post('/clienthistory', {
-        history: history
-      }, {
-        headers: {
-        'Content-type': 'application/json; charset=UTF-8' } 
-      })
-      .then((response) => {
-        console.log(response.data.message);
-        console.log("save data in DB ",history)
-      })
-      .catch((error) => {
-        console.error(error.response.data.error);
-      });
+      console.log("save data in DB ",history)
+    // node.setSavedInDB(history);
+    // //call server with 'history' var
+    // //clienthistory
+    //   axios.post('/clienthistory', {
+    //     history: history
+    //   }, {
+    //     headers: {
+    //     'Content-type': 'application/json; charset=UTF-8' } 
+    //   })
+    //   .then((response) => {
+    //     console.log(response.data.message);
+    //     console.log("save data in DB ",history)
+    //   })
+    //   .catch((error) => {
+    //     console.error(error.response.data.error);
+    //   });
   }
 
   selfSearch = (node,Freetxt) => {
@@ -52,9 +56,7 @@ class ActionProvider {
     const message2 = this.createChatBotMessage(txt2);
 
     //set history
-    if((typeof Freetxt === "object") && (Freetxt !== null) && (Freetxt.flag === "noAccuracy")){
-      node.setHistoryChat([...node.getHistoryChat(),{bot:[txt1,txt2]}]);
-    }else if((typeof Freetxt === "object") && (Freetxt !== null) && (Freetxt.flag === "noJobs")){
+    if((typeof Freetxt === "object") && (Freetxt !== null) && (Freetxt.flag === "noJobs")){
       //adding the bot message into the end of history
       var newHistoryArray=node.getHistoryChat();
       var lastBotHistory=newHistoryArray.pop();
@@ -136,19 +138,11 @@ class ActionProvider {
     }
     //case of asking for accurate match
     else if(node.getNextResponse().title==="user selected 'Nothing fits' or up to 2 jobs"){
+      //user want an accurate match
       if(opt==="Yes"){
-        //user wanted an accurate match
-        var txt=node.getNextResponse().children[1].text;
-        const message = this.createChatBotMessage(
-          txt,
-          {
-            widget: "accuracyLevel",
-          }
-        );
-        node.setHistoryChat([...node.getHistoryChat(),{user:[opt]},{bot:[txt]}]);
-        console.log("history ",node.getHistoryChat());
-        node.setNextResponse(node.getNextResponse().children[1])
-        this.addMessageToState(message,node);
+        node.setHistoryChat([...node.getHistoryChat(),{user:[opt]}]);
+        document.documentElement.style.setProperty('--button-visibility', 'visible');
+        this.requirementsWidget(node)
       }else{
         //user did not want an accurate match
         var txt=node.getNextResponse().children[0].text;
@@ -578,26 +572,16 @@ class ActionProvider {
       this.experienceWidget(node)
     }else if(opts.includes("Desired city")){
       this.cityWidget(node)
-    }else if(opts.includes("Job requirements")){
-      document.documentElement.style.setProperty('--button-visibility', 'visible');
-      this.requirementsWidget(node)
     }else if(opts.includes("Job title")){
       this.jobTitleTypingWidget(node)
     }else{
-      //server1--->server
-      //server0--->self_search
-      if(node.getIsJobAccuracy()===1){
-        console.log("server match");
-        this.accurateJobsWidget(node)
-      } else {
-        //קריאה לסיום
-        this.selfSearch(node,{flag:"noAccuracy"});
-      }
+      console.log("server match");
+      this.accurateJobsWidget(node)
     }
   }
 
   experienceWidget(node){
-    var txt=node.getNextResponse().children[3].text;
+    var txt=node.getNextResponse().children[2].text;
     const message = this.createChatBotMessage(
       txt,
       {
@@ -606,7 +590,7 @@ class ActionProvider {
     );
     node.setHistoryChat([...node.getHistoryChat(),{bot:[txt]}])
     // console.log("history ",node.getHistoryChat());
-    node.setNextResponse(node.getNextResponse().children[3])
+    node.setNextResponse(node.getNextResponse().children[2])
     this.addMessageToState(message,node);
   }
 
@@ -649,10 +633,10 @@ class ActionProvider {
   }
 
   requirementsWidget(node){
-    var txt=node.getNextResponse().children[2].text;
+    var txt=node.getNextResponse().children[1].text;
     const message = this.createChatBotMessage(txt);
     node.setHistoryChat([...node.getHistoryChat(),{bot:[txt]}])
-    node.setNextResponse(node.getNextResponse().children[2])
+    node.setNextResponse(node.getNextResponse().children[1])
     console.log("history in requirementsWidget ",node.getHistoryChat());
     node.setIsRequirements(1);
     this.addMessageToState(message,node); 
@@ -671,17 +655,29 @@ class ActionProvider {
     console.log("history in handleRequirements ",node.getHistoryChat());
     console.log("selected in handleRequirements ",node.getSelected());
     //remove 'Job requirements' from the selected accuracy levels and handle additional widgets of accuracy levels
-    node.setAccuracyOptions(node.getAccuracyOptions().filter((selectedOption) => selectedOption !== "Job requirements"))
-    this.handleAccuracyLevel(node,node.getAccuracyOptions())
+    // node.setAccuracyOptions(node.getAccuracyOptions().filter((selectedOption) => selectedOption !== "Job requirements"))
+    // this.handleAccuracyLevel(node,node.getAccuracyOptions())
+
+    var txt=node.getNextResponse().children[0].text;
+    const message = this.createChatBotMessage(
+      txt,
+      {
+        widget: "accuracyLevel",
+      }
+    );
+    node.setHistoryChat([...node.getHistoryChat(),{bot:[txt]}]);
+    console.log("history ",node.getHistoryChat());
+    node.setNextResponse(node.getNextResponse().children[0])
+    this.addMessageToState(message,node);
   }
 
   jobTitleTypingWidget(node){
-    var txt=node.getNextResponse().children[4].text;
+    var txt=node.getNextResponse().children[3].text;
     const message = this.createChatBotMessage(txt, {
       widget: "jobTitleTyping",
     });
     node.setHistoryChat([...node.getHistoryChat(),{bot:[txt]}])
-    node.setNextResponse(node.getNextResponse().children[4])
+    node.setNextResponse(node.getNextResponse().children[3])
     console.log("history in jobTitleTypingWidgetTyping ",node.getHistoryChat());
     this.addMessageToState(message,node); 
   }
@@ -700,7 +696,7 @@ class ActionProvider {
 
   accurateJobsWidget(node){
     //asking to wait
-    var txt1=node.getNextResponse().children[1].children[1].text;
+    var txt1=node.getNextResponse().children[0].text;
     const message1 = this.createChatBotMessage(txt1);
     this.addMessageToState(message1,node);
 
@@ -746,27 +742,32 @@ class ActionProvider {
         //לא לשכוח לשרשר את העבודות החדשות שהוצעו????????אולי לעשות רשימה חדשה שהיא העבודות סבב 2
         //continute
         if(response.data.list_jobs.length!==0){
-          var txt=`With all the information you provide us, JobBot find for you this top ${response.data.list_jobs.length} jobs`;
-          const message = this.createChatBotMessage(txt)//history
-          this.addMessageToState(message,node);
-
-          var txt2=node.getNextResponse().children[1].children[1].children[0].text;
-          const message2 = this.createChatBotMessage(
-            txt2,
+          if(response.data.list_jobs.length>1){
+            var txt2=`With all the information you provided me, I find for you these top ${response.data.list_jobs.length} jobs`;
+            const message2 = this.createChatBotMessage(txt2)
+            this.addMessageToState(message2,node);
+          }
+          var txt3=node.getNextResponse().children[0].children[0].text;
+          const message3 = this.createChatBotMessage(
+            txt3,
             {
               widget: "jobs",
             }
           );
-          node.setHistoryChat([...node.getHistoryChat(),{bot:[txt1,txt2]}])
+          if(response.data.list_jobs.length>1){
+            node.setHistoryChat([...node.getHistoryChat(),{bot:[txt1,txt2,txt3]}])
+          }else{
+            node.setHistoryChat([...node.getHistoryChat(),{bot:[txt1,txt3]}])
+          }
           console.log("history in accurate jobs handle ",node.getHistoryChat());
-          node.setNextResponse(node.getNextResponse().children[1].children[1].children[0])
-          this.addMessageToState(message2,node);
+          node.setNextResponse(node.getNextResponse().children[0].children[0])
+          this.addMessageToState(message3,node);
         }else{
           var txt2="No jobs found";
           const message2 = this.createChatBotMessage(txt2);
           node.setHistoryChat([...node.getHistoryChat(),{bot:[txt1,txt2]}])
           console.log("history ",node.getHistoryChat());
-          node.setNextResponse(node.getNextResponse().children[1].children[1].children[0])
+          node.setNextResponse(node.getNextResponse().children[0].children[0])
           this.addMessageToState(message2,node);
 
           //continute to accuracy phase

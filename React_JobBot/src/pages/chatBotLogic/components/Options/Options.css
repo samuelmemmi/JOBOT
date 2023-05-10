@@ -31,3 +31,10 @@
     height: 20px;
     border-color: gray;
   }
+
+  .listOptions{
+    /* display:inline;
+    justify-content: left;
+    align-items: right; זמני*/
+    justify-content: center;
+  }

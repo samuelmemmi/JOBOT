@@ -23,26 +23,27 @@ class MessageParser {
       this.props.head.setSavedInDB({...this.props.head.getSavedInDB(),"feedback on termination":message})
       //call server
       //message:string
-    axios.post("/getIsFeedback", {
-      message: message
-    }, {
-      headers: {
-      'Content-type': 'application/json; charset=UTF-8' } 
-    })
-    
-    .then((response) => {
-      if (response.data.success) {
-        console.log("Server returned matching jobs:", response.data.res);
 
-      } else {
-        console.log("Error getting matching jobs: ", response.data.res);
-      }
-    })
-    .catch((err) => {
-      console.log("Error getting matching jobs: ", err.message);
-    });
-      //קריאה לסיום
-      this.actionProvider.selfSearch(this.props.head, message);
+      axios.post("/getIsFeedback", {
+        message: message
+      }, {
+        headers: {
+        'Content-type': 'application/json; charset=UTF-8' } 
+      })
+      .then((response) => {
+        if (response.data.success) {
+          console.log("Server returned bot response:", response.data.message);
+          //קריאה לסיום
+          this.actionProvider.selfSearch(this.props.head, message);
+
+        } else {
+          console.log("Server did not return bot response: ", response.data.message);
+        }
+      })
+      .catch((err) => {
+        console.log("Error getting bot response: ", err.message);
+      });
+
     }
 
     if(this.props.head&&this.props.head.getIsRequirements()===1){
