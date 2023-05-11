@@ -41,6 +41,7 @@ function UsersPage() {
           <li key={index} className="user-item" id="user-item" onClick={()=>handleHistory(user)}>
             <h2 className="user-name">{user.user_name}</h2>
             <p className="user-password">{user.password}</p>
+            Admin:<p className="user-admin">{user.admin}</p>
           </li>
         ))}
       </ul>
