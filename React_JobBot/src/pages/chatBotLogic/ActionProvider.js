@@ -56,7 +56,7 @@ class ActionProvider {
     const message2 = this.createChatBotMessage(txt2);
 
     //set history
-    if((typeof Freetxt === "object") && (Freetxt !== null) && (Freetxt.flag === "noJobs")){
+    if((typeof Freetxt === "object") && (Freetxt !== null) && (Freetxt.flag === "noJobs" || Freetxt.flag === "feedback")){
       //adding the bot message into the end of history
       var newHistoryArray=node.getHistoryChat();
       var lastBotHistory=newHistoryArray.pop();
@@ -71,6 +71,12 @@ class ActionProvider {
     this.addMessageToState(message2,node);
     this.saveHistoryInDB(node)
   };
+
+  responseToFeedback = (node,feedback,JOBOTresponse) => {
+    const message = this.createChatBotMessage(JOBOTresponse);
+    this.addMessageToState(message,node);
+    node.setHistoryChat([...node.getHistoryChat(),{user:[feedback]},{bot:[JOBOTresponse]}]);
+  }
 
   handleField = (node,opt) => {
     console.log("Thank you god!",node.getRegistrationDetails())
@@ -104,9 +110,8 @@ class ActionProvider {
   };
 
   handleApproval(node,opt){
-    //case of asking for saving user details in our system
+    //case of asking for saving chat details in our system
     if(node.getNextResponse().title==="user selected 'other' field"){
-      //????????????????????? if yes save!!!
       var txt=node.getNextResponse().children[0].text;
       const message = this.createChatBotMessage(
         txt,
@@ -119,7 +124,9 @@ class ActionProvider {
       console.log("history ",node.getHistoryChat());
       this.addMessageToState(message,node);
       //קריאה לסיום לא בטוח
-      this.saveHistoryInDB(node)
+      if(opt==="Yes"){
+        this.saveHistoryInDB(node)
+      }
     }
     //case of asking for self job search
     else if(node.getNextResponse().title.includes("self job search")){

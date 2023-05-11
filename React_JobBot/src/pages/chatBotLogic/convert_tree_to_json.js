@@ -40,7 +40,7 @@ var areas={
                       [
                         {
                           title: "user refused to an accurate match",
-                          text: "Why don't you want offers anymore? (Type in terms of easy/difficult navigation, simplicity of the system, displaying jobs)",
+                          text: "Why don't you want offers anymore?",
                           children:
                           [
                             selfJobSearch={
@@ -190,7 +190,7 @@ var chatFlow = {
       [
         {
           title: "user selected 'other' field",
-          text: "Sorry, there is not a job to offer you. Would you like us to save your details for future services?",
+          text: "Sorry, there is not a job to offer you. Would you like us to save the chat details for future services?",
           options:["Yes","No"],
           children:
           [

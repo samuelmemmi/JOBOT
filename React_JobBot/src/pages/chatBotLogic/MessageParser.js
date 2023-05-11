@@ -34,8 +34,9 @@ class MessageParser {
         if (response.data.success) {
           console.log("Server returned bot response:", response.data.message);
           //קריאה לסיום
-          this.actionProvider.selfSearch(this.props.head, message);
-
+          this.actionProvider.responseToFeedback(this.props.head, message, response.data.message)
+          this.actionProvider.selfSearch(this.props.head, {flag:"feedback"});
+          
         } else {
           console.log("Server did not return bot response: ", response.data.message);
         }
