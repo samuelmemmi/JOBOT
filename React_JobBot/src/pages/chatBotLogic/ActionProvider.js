@@ -22,23 +22,23 @@ class ActionProvider {
       "selected features":node.getSelected(),
       "date":date
       }
-      console.log("save data in DB ",history)
-    // node.setSavedInDB(history);
-    // //call server with 'history' var
-    // //clienthistory
-    //   axios.post('/clienthistory', {
-    //     history: history
-    //   }, {
-    //     headers: {
-    //     'Content-type': 'application/json; charset=UTF-8' } 
-    //   })
-    //   .then((response) => {
-    //     console.log(response.data.message);
-    //     console.log("save data in DB ",history)
-    //   })
-    //   .catch((error) => {
-    //     console.error(error.response.data.error);
-    //   });
+      // console.log("save data in DB ",history)
+    node.setSavedInDB(history);
+
+    //call server with 'history' var
+      axios.post('/clienthistory', {
+        history: history
+      }, {
+        headers: {
+        'Content-type': 'application/json; charset=UTF-8' } 
+      })
+      .then((response) => {
+        console.log(response.data.message);
+        console.log("save data in DB ",history)
+      })
+      .catch((error) => {
+        console.error(error.response.data.error);
+      });
   }
 
   selfSearch = (node,Freetxt) => {
@@ -76,6 +76,7 @@ class ActionProvider {
     const message = this.createChatBotMessage(JOBOTresponse);
     this.addMessageToState(message,node);
     node.setHistoryChat([...node.getHistoryChat(),{user:[feedback]},{bot:[JOBOTresponse]}]);
+    node.setSelected({...node.getSelected(),"feedback":feedback})
   }
 
   handleField = (node,opt) => {
@@ -216,43 +217,6 @@ class ActionProvider {
     node.setNextResponse(node.getNextResponse().children[0].children[0])
     this.addMessageToState(message2,node);
   }
-  //Samuel version
-  // handleJobType(node,opts){
-  //   const message = this.createChatBotMessage(
-  //     node.getNextResponse().children[0].text,
-  //     {
-  //       widget: "",
-  //     }
-  //   );
-  //   node.setSelected({...node.getSelected(),'job Types':opts})
-  //   node.setNextResponse(node.getNextResponse().children[0])
-  //   this.addMessageToState(message,node);
-  //   //server
-  //   var responses = node.getSelected()
-  //   axios.post("/getfirstjobs", {
-  //     responses: responses
-  //   }, {
-  //     headers: {
-  //     'Content-type': 'application/json; charset=UTF-8' } 
-  //   })
-  //   .then((response) => {
-  //     if (response.data.success) {
-  //       console.log("Server returned matching jobs:", response.data.list_jobs);
-  //       // Add a message for each job to the chatbot's message history
-  //       response.data.list_jobs.forEach((job) => {
-  //         const jobMessage = this.createChatBotMessage(
-  //           `Job title: ${job.job}\nCompany: ${job.company}\nLocation: ${job.city}`
-  //         );
-  //         this.addMessageToState(jobMessage,node);
-  //       });
-  //     } else {
-  //       console.log("Error getting matching jobs: ", response.data.message);
-  //     }
-  //   })
-  //   .catch((err) => {
-  //     console.log("Error getting matching jobs: ", err.message);
-  //   });
-  // }
 
   handleJobType(node,opts){
     //asking to wait
@@ -267,7 +231,7 @@ class ActionProvider {
     // node.setJobs(jobs);
 
     //samuel
-    var responses = node.getSelected()
+    var responses = {...node.getSelected(),"client details":node.getRegistrationDetails()}
     axios.post("/getfirstjobs", {
       responses: responses
     }, {
@@ -288,14 +252,7 @@ class ActionProvider {
         
         // node.setJobs(response.data.list_jobs);
 
-        node.setJobs(response.data.list_jobs.map((job,index) =>{
-          if(!job._id){
-            var _id=(index).toString();
-            return {...job,"_id":_id};
-          }else{
-            return job;
-          }
-        }));
+        node.setJobs(response.data.list_jobs);
 
         // node.setJobs(["A","B","C","D","E","F","G","H","I","J","Nothing fits"]);
         if(node.getSavedInDB()["displayed jobs"]){
@@ -709,7 +666,7 @@ class ActionProvider {
 
     //server calculating jobs...
     console.log("new selected ",node.getSelected())
-    var responses = node.getSelected()
+    var responses = {...node.getSelected(),"client details":node.getRegistrationDetails()}
     axios.post("/getsecondjobs", {
       responses: responses
     }, {
@@ -731,14 +688,7 @@ class ActionProvider {
 
         // node.setJobs(response.data.list_jobs);
         
-        node.setJobs(response.data.list_jobs.map((job,index) =>{
-          if(!job._id){
-            var _id=(index+20).toString();
-            return {...job,"_id":_id};
-          }else{
-            return job;
-          }
-        }));
+        node.setJobs(response.data.list_jobs);
         //node.setJobs(["K","L","M","N","O","P","Q","R","S","T","Nothing fits"]);
         if(node.getSavedInDB()["displayed jobs"]){
           node.setSavedInDB({...node.getSavedInDB(),"displayed jobs":node.getSavedInDB()["displayed jobs"].concat(node.getJobs())});

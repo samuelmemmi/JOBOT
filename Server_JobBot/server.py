@@ -70,7 +70,7 @@ def register():
     password = request.json.get("password")
 
     # check if the user is already existing
-    existing_user = collection.find_one({"user_name": user_name})
+    existing_user = collection.find_one({"user_name": user_name,"password": password})
     if existing_user:
         return jsonify({"success": False, "message": "User name already exists"})
 
@@ -123,10 +123,7 @@ def getCities():
         res += citiesObject[k]
     return jsonify({"success": True, "cities": res})
 
-#//line 126
-  #// elif document["company"] == comp and all(
-  #// [word in document["description"].lower() for word in words1]) and \
-  #// document["city"] in city:
+
 def first_help_get_first_jobs(new_documents, list_jobs, title, company, city, other_list):
     for document in new_documents:
         words2 = set(document["job"].lower().split())
@@ -253,7 +250,29 @@ def get_first_jobs():
     unique_jobs = second_help_get_first_jobs(new_documents, list_jobs, title, company, city, other_list, time, field,
                                              db)
 
-    return jsonify({"success": True, "list_jobs": unique_jobs})
+    # connexion to the MongoDB database
+    collection = db["users"]
+    userDetails={"user_name": first_list["client details"]["userName"], "password": first_list["client details"]["password"]}
+    user = collection.find_one(userDetails)
+
+    # search in client histories if there are his experiance & education in the selected field
+    experi_educa="-"
+    if "history" in user:
+        histories_list=user["history"]
+        for history in reversed(histories_list):
+            print(history['field'])
+            if(history["field"]==first_list["field"]):
+                experi_educa=history["experiance & education"]
+                if experi_educa!="-":
+                    break
+    print("experi_educa: ",experi_educa)
+
+    # call chatgpt with the experiance & education we found
+    gpt_list=unique_jobs
+    if len(unique_jobs)!=0 and experi_educa!="-":
+        gpt_list=get_jobs_from_chatGpt(unique_jobs,experi_educa)
+
+    return jsonify({"success": True, "list_jobs": gpt_list})
 
 
 def second_help_get_first_jobs(new_documents, list_jobs, title, company, city, other_list, time, field, db):
@@ -337,14 +356,25 @@ def second_help_get_first_jobs(new_documents, list_jobs, title, company, city, o
             if len(list_jobs) < 15 and doc["job"] != "":
                 list_jobs.append(doc)
 
-    seen_jobs = set()
-    unique_jobs = []
+    # seen_jobs = set()
+    # unique_jobs = []
+    # for job in list_jobs:
+    #     print(job["_id"])
+    #     job_id = (job['job'], job['company'], job['city'])
+    #     if job_id not in seen_jobs:
+    #         seen_jobs.add(job_id)
+    #         unique_jobs.append(job)
 
-    for job in list_jobs:
-        job_id = (job['job'], job['company'], job['city'])
-        if job_id not in seen_jobs:
-            seen_jobs.add(job_id)
-            unique_jobs.append(job)
+    set_res = set([job["_id"] for job in list_jobs])
+    unique_jobs = []
+    for id in set_res:
+        for job in list_jobs:
+            if job["_id"]==id:
+                unique_jobs.append(job)
+                break
+    
+    # print("test:")
+    # print([i["_id"] for i in unique_jobs])
 
     return unique_jobs
 
@@ -360,6 +390,8 @@ def get_jobs_from_chatGpt(unique_jobs,experience_education):
     else:
         temp_len=len(unique_jobs)
     lengt=int(temp_len/2)*2
+    print("is")
+    print(len(unique_jobs))
     for i in range(0,lengt,2):
         job_string1 = "This is the " + str(index) + " job\n" + "job title: " + unique_jobs[i]['job'] + ", job description: " + unique_jobs[i]['description'] + "\n"
         job_string2 = "This is the " + str(index+1) + " job\n" + "job title: " + unique_jobs[i+1]['job'] + ", job description: " + unique_jobs[i+1]['description'] + "\n"
@@ -381,7 +413,7 @@ def get_jobs_from_chatGpt(unique_jobs,experience_education):
     print("iiiiii")
     print(i)
     i+=2
-    for i in range(i,len(unique_jobs)):
+    for i in range(i,lengt):
         job_string = "This is the " + str(index) + " job\n" + "job title: " + unique_jobs[i]['job'] + ", job description: " + unique_jobs[i]['description'] + "\n"
         question = "I have a person who his experience and education are: '" + experience_education +"'" \
                ". Are the description jobs below fit for him: " + job_string + \
@@ -485,14 +517,18 @@ def get_second_jobs():
     unique_jobs = second_help_get_first_jobs(new_documents, list_jobs, jobtitle, company, city, other_list, level,
                                              field,
                                              db)
-    if id == 1:
-        for job1 in unique_jobs:
-            for job2 in display_jobs:
-                if job1["_id"] == job2["_id"]:
-                    unique_jobs.remove(job1)
+    # if id == 1:
+    # for job1 in unique_jobs:
+    #     for job2 in display_jobs:
+    #         if job1["_id"] == job2["_id"]:
+    #             unique_jobs.remove(job1)
 
-    # return jsonify({"success": True, "list_jobs": unique_jobs})
-    gpt_list=get_jobs_from_chatGpt(unique_jobs,requirements)
+    display_jobs_ids = [job["_id"] for job in display_jobs]
+    unique_jobs_second_jobs=[job for job in unique_jobs if job["_id"] not in display_jobs_ids]
+
+    gpt_list=[]
+    if len(unique_jobs_second_jobs)!=0:
+        gpt_list=get_jobs_from_chatGpt(unique_jobs_second_jobs,requirements)
     return jsonify({"success": True, "list_jobs": gpt_list})
 
 def get_jobs_from_view(jobs, db):
@@ -569,22 +605,46 @@ def client_history():
     username = history["client details"]["userName"]
     password = history["client details"]["password"]
 
-    # retrieve the current value of the history field
-    result = collection.find_one({"user_name": username, "password": password}, {"history": 1})
-    current_history = result.get("history", {})
+    result = collection.find_one({"user_name": username, "password": password})
+    if "history" in result:
+        current_history=result['history']
+        current_history.append(history)
+    else:
+        current_history=[history]
 
-    # if the current history is a dictionary, convert it to a list with one element
-    if isinstance(current_history, dict):
-        current_history = [current_history]
-
-    # append the new history to the current history list
-    current_history.append(history)
-
-    # update the user document with the merged history
     collection.update_one(
         {"user_name": username, "password": password},
         {"$set": {"history": current_history}}
     )
+
+    #fixing:
+    # result['history'] = []
+    # print(result['history'])
+    # collection.update_one({'_id':result['_id']}, {"$set": result})
+    result2 = collection.find_one({"user_name": username, "password": password})
+    print(result2)
+
+    # # retrieve the current value of the history field $$$$$$$$$$$$
+    # result = collection.find_one({"user_name": username, "password": password}, {"history": 1})
+    # # print(f"result: {result}")
+    # current_history = result.get("history", {})
+    # # print(f"result2: {current_history[1]}")
+
+    # # if the current history is a dictionary, convert it to a list with one element
+    # if isinstance(current_history, dict):
+    #     current_history = [current_history]
+
+    # # append the new history to the current history list
+    # current_history.append(history)
+
+    # # update the user document with the merged history
+    # collection.update_one(
+    #     {"user_name": username, "password": password},
+    #     {"$set": {"history": current_history}}
+    # )
+
+    # # for x in collection.find():
+    # # print(collection.find_one({"user_name": "Shira"})["history"]) $$$$$$$$$$$$$
 
     return jsonify({"success": True, "message": "update database"})
 
@@ -700,6 +760,45 @@ def save_intents_in_DB(intents, collection):
             collection.insert_one({ "intent": intent, "count":1})
     for x in collection.find():
         print(x)
+
+# route for general statistics
+@app.route("/getGeneralStatistics", methods=["POST"])
+def getGeneralStatistics():
+    # connexion to the MongoDB database
+    cluster = MongoClient("mongodb+srv://samuelmemmi:1234@cluster0.e4sf8mm.mongodb.net/?retryWrites=true"
+                          "&w=majority")
+    db = cluster["chatbot"]
+    # collection1 = db["statistics"]
+
+    collection = db["users"]
+    stat="areas"
+    genaralStat={"areas":{"south":0,"north":0,"central":0},"job type":{"part":0,"full":0}}
+    'field': 'Engineering', 'JobTitles': ['Software Engineer'], 'companies': ["I'm open to any company"], 'areas': ['North'], 'job Types': ['Full_time'], 'feedback': 'I did not find jobs in Haifa'
+    user_len=len(collection.find())
+    for user in collection.find():
+        if "history" in user:
+            for history in user['history']:
+                if stat!="field":
+                    for cat in history['selected features'][stat]:
+                        genaralStat[stat][cat]=genaralStat[stat][cat]+1
+                else:
+                    cat=history['selected features'][stat]
+                    genaralStat[stat][cat]=genaralStat[stat][cat]+1
+
+
+
+    # # get the username and password
+    # user_name = request.json.get("user_name")
+    # password = request.json.get("password")
+
+    # # check if the user is already existing
+    # existing_user = collection.find_one({"user_name": user_name,"password": password})
+    # if existing_user:
+    #     return jsonify({"success": False, "message": "User name already exists"})
+
+    # # this user is new, so we add him to the DB
+    # collection.insert_one({"user_name": user_name, "password": password})
+    # return jsonify({"success": True, "message": "Your new user is created"})
 
 
 @app.route("/getIsFeedback", methods=["POST"])
