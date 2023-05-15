@@ -7,6 +7,8 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 import openai
 import time
+from datetime import date
+
 
 # initialize NLTK libraries
 nltk.download('stopwords')
@@ -770,20 +772,48 @@ def getGeneralStatistics():
     db = cluster["chatbot"]
     # collection1 = db["statistics"]
 
+    # import pymongo
+
+    # myclient = pymongo.MongoClient('mongodb://localhost:27017/')
+
+    # mydb = myclient['mydatabase']
+
+    # mycol = mydb["customers"]
+
+    # # collection created!
+
+    # print(mydb.list_collection_names())
+
+
+
+    today = date.today()
+    print("Today's date:", today)
+
     collection = db["users"]
+    users_len=len(list(collection.find()))
     stat="areas"
-    genaralStat={"areas":{"south":0,"north":0,"central":0},"job type":{"part":0,"full":0}}
-    'field': 'Engineering', 'JobTitles': ['Software Engineer'], 'companies': ["I'm open to any company"], 'areas': ['North'], 'job Types': ['Full_time'], 'feedback': 'I did not find jobs in Haifa'
-    user_len=len(collection.find())
+    genaralStat={"areas":{"South":0,"North":0,"Central":0},"job Types":{"Part_time":0,"Full_time":0},\
+    "field":{"Engineering":0, "Marketing":0, "Human Resources":0, "Healthcare":0, "Arts & Design":0, "Finance & Accounting":0, "Other":0},\
+    "experience level":{"Intern":0,"Junior":0,"Senior":0,"Other":0},"update date":today,"users number":users_len}
     for user in collection.find():
         if "history" in user:
             for history in user['history']:
                 if stat!="field":
-                    for cat in history['selected features'][stat]:
-                        genaralStat[stat][cat]=genaralStat[stat][cat]+1
+                    print(history['selected features'])
+                    if stat in history['selected features']:
+                        for cat in history['selected features'][stat]:
+                            if cat=="All":
+                                genaralStat[stat]["South"]=genaralStat[stat]["South"]+1
+                                genaralStat[stat]["North"]=genaralStat[stat]["North"]+1
+                                genaralStat[stat]["Central"]=genaralStat[stat]["Central"]+1
+                            else:
+                                genaralStat[stat][cat]=genaralStat[stat][cat]+1
                 else:
                     cat=history['selected features'][stat]
                     genaralStat[stat][cat]=genaralStat[stat][cat]+1
+    print("genaralStat")
+    print(genaralStat)
+
 
 
 
@@ -798,7 +828,7 @@ def getGeneralStatistics():
 
     # # this user is new, so we add him to the DB
     # collection.insert_one({"user_name": user_name, "password": password})
-    # return jsonify({"success": True, "message": "Your new user is created"})
+    return jsonify({"success": True, "message": "Finish calculate"})
 
 
 @app.route("/getIsFeedback", methods=["POST"])

@@ -93,6 +93,27 @@ class ActionProvider {
     console.log("how ",node.getHistoryChat())
     node.setNextResponse(node.getNextResponse().children[0].children[1])
     this.addMessageToState(message,node);
+
+    // var genaralStat=["areas","job Types","field","experience level"]
+
+    // axios.post("/getGeneralStatistics", {
+    //   calcData: genaralStat
+    // }, {
+    //   headers: {
+    //   'Content-type': 'application/json; charset=UTF-8' } 
+    // })
+    // .then((response) => {
+    //   if (response.data.success) {
+    //     console.log("Server returned statistics:", response.data.message);
+
+    //   } else {
+    //     console.log("Server did not return statistics: ", response.data.message);
+    //   }
+    // })
+    // .catch((err) => {
+    //   console.log("Error getting statistics: ", err.message);
+    // });
+
   };
 
   handleOtherField = (node,opt)=>{
@@ -211,7 +232,7 @@ class ActionProvider {
         widget: "jobTypes",
       }
     );
-    node.setSelected({...node.getSelected(), areas:opts})
+    node.setSelected({...node.getSelected(), "areas":opts})
     node.setHistoryChat([...node.getHistoryChat(),{user:opts},{bot:[txt1,txt2]}])
     console.log("how ",node.getHistoryChat());
     node.setNextResponse(node.getNextResponse().children[0].children[0])
