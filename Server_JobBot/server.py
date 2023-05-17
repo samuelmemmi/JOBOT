@@ -9,7 +9,6 @@ import openai
 import time
 from datetime import date
 
-
 # initialize NLTK libraries
 nltk.download('stopwords')
 nltk.download('punkt')
@@ -72,7 +71,7 @@ def register():
     password = request.json.get("password")
 
     # check if the user is already existing
-    existing_user = collection.find_one({"user_name": user_name,"password": password})
+    existing_user = collection.find_one({"user_name": user_name, "password": password})
     if existing_user:
         return jsonify({"success": False, "message": "User name already exists"})
 
@@ -254,25 +253,26 @@ def get_first_jobs():
 
     # connexion to the MongoDB database
     collection = db["users"]
-    userDetails={"user_name": first_list["client details"]["userName"], "password": first_list["client details"]["password"]}
+    userDetails = {"user_name": first_list["client details"]["userName"],
+                   "password": first_list["client details"]["password"]}
     user = collection.find_one(userDetails)
 
     # search in client histories if there are his experiance & education in the selected field
-    experi_educa="-"
+    experi_educa = "-"
     if "history" in user:
-        histories_list=user["history"]
+        histories_list = user["history"]
         for history in reversed(histories_list):
             print(history['field'])
-            if(history["field"]==first_list["field"]):
-                experi_educa=history["experiance & education"]
-                if experi_educa!="-":
+            if (history["field"] == first_list["field"]):
+                experi_educa = history["experiance & education"]
+                if experi_educa != "-":
                     break
-    print("experi_educa: ",experi_educa)
+    print("experi_educa: ", experi_educa)
 
     # call chatgpt with the experiance & education we found
-    gpt_list=unique_jobs
-    if len(unique_jobs)!=0 and experi_educa!="-":
-        gpt_list=get_jobs_from_chatGpt(unique_jobs,experi_educa)
+    gpt_list = unique_jobs
+    if len(unique_jobs) != 0 and experi_educa != "-":
+        gpt_list = get_jobs_from_chatGpt(unique_jobs, experi_educa)
 
     return jsonify({"success": True, "list_jobs": gpt_list})
 
@@ -371,66 +371,71 @@ def second_help_get_first_jobs(new_documents, list_jobs, title, company, city, o
     unique_jobs = []
     for id in set_res:
         for job in list_jobs:
-            if job["_id"]==id:
+            if job["_id"] == id:
                 unique_jobs.append(job)
                 break
-    
+
     # print("test:")
     # print([i["_id"] for i in unique_jobs])
 
     return unique_jobs
 
+
 # use chatgpt to get more precise job (use experience and education)
-def get_jobs_from_chatGpt(unique_jobs,experience_education):
+def get_jobs_from_chatGpt(unique_jobs, experience_education):
     gpt_list = []
     index = 1
     print("len(): ")
     print(len(unique_jobs))
     # If there are more than 6 jobs, we will not use chatgpt for the seventh job or higher
-    if len(unique_jobs)>=7:
-        temp_len=6
+    if len(unique_jobs) >= 7:
+        temp_len = 6
     else:
-        temp_len=len(unique_jobs)
-    lengt=int(temp_len/2)*2
+        temp_len = len(unique_jobs)
+    lengt = int(temp_len / 2) * 2
     print("is")
     print(len(unique_jobs))
-    for i in range(0,lengt,2):
-        job_string1 = "This is the " + str(index) + " job\n" + "job title: " + unique_jobs[i]['job'] + ", job description: " + unique_jobs[i]['description'] + "\n"
-        job_string2 = "This is the " + str(index+1) + " job\n" + "job title: " + unique_jobs[i+1]['job'] + ", job description: " + unique_jobs[i+1]['description'] + "\n"
-        question = "I have a person who his experience and education are: '" + experience_education +"'" \
-               ". Are the description jobs below fit for him: " + job_string1 + job_string2 + \
-               "Return an answer according to the following template: 'job #: Yes' if this job is fit and 'job #: No' else."
+    for i in range(0, lengt, 2):
+        job_string1 = "This is the " + str(index) + " job\n" + "job title: " + unique_jobs[i][
+            'job'] + ", job description: " + unique_jobs[i]['description'] + "\n"
+        job_string2 = "This is the " + str(index + 1) + " job\n" + "job title: " + unique_jobs[i + 1][
+            'job'] + ", job description: " + unique_jobs[i + 1]['description'] + "\n"
+        question = "I have a person who his experience and education are: '" + experience_education + "'" \
+                                                                                                      ". Are the description jobs below fit for him: " + job_string1 + job_string2 + \
+                   "Return an answer according to the following template: 'job #: Yes' if this job is fit and 'job #: No' else."
 
-        print("question_gpt: ",question)
+        print("question_gpt: ", question)
         response_gpt = chatgpt(question)
 
         if (str(index) + ": Yes") in response_gpt:
             gpt_list.append(unique_jobs[i])
-        if (str(index+1) + ": Yes") in response_gpt:
-            gpt_list.append(unique_jobs[i+1])
-        if(i+1!=(lengt-1)):
-            time.sleep(20) #12
+        if (str(index + 1) + ": Yes") in response_gpt:
+            gpt_list.append(unique_jobs[i + 1])
+        if (i + 1 != (lengt - 1)):
+            time.sleep(20)  # 12
         index += 2
 
     print("iiiiii")
     print(i)
-    i+=2
-    for i in range(i,lengt):
-        job_string = "This is the " + str(index) + " job\n" + "job title: " + unique_jobs[i]['job'] + ", job description: " + unique_jobs[i]['description'] + "\n"
-        question = "I have a person who his experience and education are: '" + experience_education +"'" \
-               ". Are the description jobs below fit for him: " + job_string + \
-               "Return an answer according to the following template: 'job #: Yes' if this job is fit and 'job #: No' else."
-    
-        print("question_gpt: ",question)
+    i += 2
+    for i in range(i, lengt):
+        job_string = "This is the " + str(index) + " job\n" + "job title: " + unique_jobs[i][
+            'job'] + ", job description: " + unique_jobs[i]['description'] + "\n"
+        question = "I have a person who his experience and education are: '" + experience_education + "'" \
+                                                                                                      ". Are the description jobs below fit for him: " + job_string + \
+                   "Return an answer according to the following template: 'job #: Yes' if this job is fit and 'job #: No' else."
+
+        print("question_gpt: ", question)
         response_gpt = chatgpt(question)
         if (str(index) + ": Yes") in response_gpt:
             gpt_list.append(unique_jobs[i])
-    
+
     # if there are more than 6 jobs in unique_jobs we also send to client from the seventh job onwards
-    j=6
-    for j in range(j,len(unique_jobs)):
+    j = 6
+    for j in range(j, len(unique_jobs)):
         gpt_list.append(unique_jobs[j])
     return gpt_list
+
 
 @app.route("/getsecondjobs", methods=["POST"])
 def get_second_jobs():
@@ -473,9 +478,9 @@ def get_second_jobs():
 
     company = second_list["companies"]
 
-    if "additional job title" in second_list:# rachel change
+    if "additional job title" in second_list:  # rachel change
         jobtitle = second_list["additional job title"]
-        jobtitle = [jobtitle]+second_list["JobTitles"]
+        jobtitle = [jobtitle] + second_list["JobTitles"]
     else:
         jobtitle = second_list["JobTitles"]
 
@@ -526,12 +531,13 @@ def get_second_jobs():
     #             unique_jobs.remove(job1)
 
     display_jobs_ids = [job["_id"] for job in display_jobs]
-    unique_jobs_second_jobs=[job for job in unique_jobs if job["_id"] not in display_jobs_ids]
+    unique_jobs_second_jobs = [job for job in unique_jobs if job["_id"] not in display_jobs_ids]
 
-    gpt_list=[]
-    if len(unique_jobs_second_jobs)!=0:
-        gpt_list=get_jobs_from_chatGpt(unique_jobs_second_jobs,requirements)
+    gpt_list = []
+    if len(unique_jobs_second_jobs) != 0:
+        gpt_list = get_jobs_from_chatGpt(unique_jobs_second_jobs, requirements)
     return jsonify({"success": True, "list_jobs": gpt_list})
+
 
 def get_jobs_from_view(jobs, db):
     listt = []
@@ -594,6 +600,66 @@ def view_users():
     return jsonify({"success": True, "users_list": users_list})
 
 
+@app.route("/offeredjobs", methods=["POST"])
+def offered_jobs():
+    # connexion to the MongoDB database
+    cluster = MongoClient("mongodb+srv://samuelmemmi:1234@cluster0.e4sf8mm.mongodb.net/?retryWrites=true"
+                          "&w=majority")
+    db = cluster["chatbot"]
+    collection = db["users"]
+    details = request.json.get('clientDetails')
+    username = details["clientDetails"]["userName"]
+    password = details["clientDetails"]["password"]
+    history = collection.find_one(
+        {'user_name': username, 'password': password},
+        {'history': 1}  # Only retrieve the 'history' field
+    )
+    size = len(history['history'])
+    if size > 0:
+        listt = history['history'][size - 1]['displayed jobs']
+        listt = [dict(t) for t in set([tuple(d.items()) for d in listt])]
+        return jsonify({"success": True, "listt": listt})
+    else:
+        return jsonify({})  # Return an empty array if no history found
+
+
+@app.route("/viewhistory", methods=["POST"])
+def view_history():
+    # connexion to the MongoDB database
+    cluster = MongoClient("mongodb+srv://samuelmemmi:1234@cluster0.e4sf8mm.mongodb.net/?retryWrites=true"
+                          "&w=majority")
+    db = cluster["chatbot"]
+    collection = db["users"]
+    details = request.json.get('clientDetails')
+    username = details["clientDetails"]["userName"]
+    password = details["clientDetails"]["password"]
+    history = collection.find_one(
+        {'user_name': username, 'password': password},
+        {'history': 1}  # Only retrieve the 'history' field
+    )
+    size = len(history['history'])
+    if size > 0:
+        listt = history['history'][size - 1]['conversation content']
+        unique_listt = []
+        seen = set()
+
+        for d in listt:
+            # Convert list values to tuples within the dictionary
+            for k, v in d.items():
+                if isinstance(v, list):
+                    d[k] = tuple(v)
+
+            # Convert the dictionary to a tuple and check if it's already seen
+            t = tuple(d.items())
+            if t not in seen:
+                unique_listt.append(dict(t))
+                seen.add(t)
+
+        return jsonify({"success": True, "unique_listt": unique_listt})
+    else:
+        return jsonify({})  # Return an empty array if no history found
+
+
 @app.route("/clienthistory", methods=["POST"])
 def client_history():
     # connexion to the MongoDB database
@@ -609,17 +675,17 @@ def client_history():
 
     result = collection.find_one({"user_name": username, "password": password})
     if "history" in result:
-        current_history=result['history']
+        current_history = result['history']
         current_history.append(history)
     else:
-        current_history=[history]
+        current_history = [history]
 
     collection.update_one(
         {"user_name": username, "password": password},
         {"$set": {"history": current_history}}
     )
 
-    #fixing:
+    # fixing:
     # result['history'] = []
     # print(result['history'])
     # collection.update_one({'_id':result['_id']}, {"$set": result})
@@ -733,18 +799,19 @@ def preprocess(response):
 
 # function to identify user intent based on chatGPT
 def identify_intent(response):
-    relevant_intents=[]
-    intents=["I found enough jobs here","I prefer self job search","I'm interested in a shorter process"]
-    question="For which of the intents in the list "+ str(intents) +" the sentence '"+response+"' corresponds? Return the indexes (which start from 1) of the corresponding intents according to the following template: 'intent #: Yes', If this intent fits and 'intent #: No' else."
+    relevant_intents = []
+    intents = ["I found enough jobs here", "I prefer self job search", "I'm interested in a shorter process"]
+    question = "For which of the intents in the list " + str(
+        intents) + " the sentence '" + response + "' corresponds? Return the indexes (which start from 1) of the corresponding intents according to the following template: 'intent #: Yes', If this intent fits and 'intent #: No' else."
     print("question:")
     print(question)
     response_gpt = chatgpt(question)
     for i in range(len(intents)):
-        if (str(i+1) + ": Yes") in response_gpt:
+        if (str(i + 1) + ": Yes") in response_gpt:
             relevant_intents.append(intents[i])
-    if len(relevant_intents)==0:
+    if len(relevant_intents) == 0:
         relevant_intents.append("Other")
-    print("relevant_intents: ",end="")
+    print("relevant_intents: ", end="")
     print(relevant_intents)
     return relevant_intents
 
@@ -753,15 +820,16 @@ def identify_intent(response):
 def save_intents_in_DB(intents, collection):
     # pass on intents in db and update the counter
     for intent in intents:
-        prev_intent_info=collection.find_one({ "intent": intent })
+        prev_intent_info = collection.find_one({"intent": intent})
         if prev_intent_info:
-            new_count=prev_intent_info["count"]+1
-            newvalues = { "$set": { "intent": intent, "count":new_count} }
+            new_count = prev_intent_info["count"] + 1
+            newvalues = {"$set": {"intent": intent, "count": new_count}}
             collection.update_one(prev_intent_info, newvalues)
         else:
-            collection.insert_one({ "intent": intent, "count":1})
+            collection.insert_one({"intent": intent, "count": 1})
     for x in collection.find():
         print(x)
+
 
 # route for general statistics
 @app.route("/getGeneralStatistics", methods=["POST"])
@@ -784,38 +852,35 @@ def getGeneralStatistics():
 
     # print(mydb.list_collection_names())
 
-
-
     today = date.today()
     print("Today's date:", today)
 
     collection = db["users"]
-    users_len=len(list(collection.find()))
-    stat="areas"
-    genaralStat={"areas":{"South":0,"North":0,"Central":0},"job Types":{"Part_time":0,"Full_time":0},\
-    "field":{"Engineering":0, "Marketing":0, "Human Resources":0, "Healthcare":0, "Arts & Design":0, "Finance & Accounting":0, "Other":0},\
-    "experience level":{"Intern":0,"Junior":0,"Senior":0,"Other":0},"update date":today,"users number":users_len}
+    users_len = len(list(collection.find()))
+    stat = "areas"
+    genaralStat = {"areas": {"South": 0, "North": 0, "Central": 0}, "job Types": {"Part_time": 0, "Full_time": 0}, \
+                   "field": {"Engineering": 0, "Marketing": 0, "Human Resources": 0, "Healthcare": 0,
+                             "Arts & Design": 0, "Finance & Accounting": 0, "Other": 0}, \
+                   "experience level": {"Intern": 0, "Junior": 0, "Senior": 0, "Other": 0}, "update date": today,
+                   "users number": users_len}
     for user in collection.find():
         if "history" in user:
             for history in user['history']:
-                if stat!="field":
+                if stat != "field":
                     print(history['selected features'])
                     if stat in history['selected features']:
                         for cat in history['selected features'][stat]:
-                            if cat=="All":
-                                genaralStat[stat]["South"]=genaralStat[stat]["South"]+1
-                                genaralStat[stat]["North"]=genaralStat[stat]["North"]+1
-                                genaralStat[stat]["Central"]=genaralStat[stat]["Central"]+1
+                            if cat == "All":
+                                genaralStat[stat]["South"] = genaralStat[stat]["South"] + 1
+                                genaralStat[stat]["North"] = genaralStat[stat]["North"] + 1
+                                genaralStat[stat]["Central"] = genaralStat[stat]["Central"] + 1
                             else:
-                                genaralStat[stat][cat]=genaralStat[stat][cat]+1
+                                genaralStat[stat][cat] = genaralStat[stat][cat] + 1
                 else:
-                    cat=history['selected features'][stat]
-                    genaralStat[stat][cat]=genaralStat[stat][cat]+1
+                    cat = history['selected features'][stat]
+                    genaralStat[stat][cat] = genaralStat[stat][cat] + 1
     print("genaralStat")
     print(genaralStat)
-
-
-
 
     # # get the username and password
     # user_name = request.json.get("user_name")
@@ -842,15 +907,15 @@ def test_response():
     feedback = request.json.get("message")
     # identify intents using chatGPT
     intents = identify_intent(feedback)
-    
+
     # save the identified intents in DB
     save_intents_in_DB(intents, collection)
 
-    JOBOT_response=""
-    if len(intents)==1 and intents[0]=="I found enough jobs here":
-        JOBOT_response="I'm glad to hear you found a job"
+    JOBOT_response = ""
+    if len(intents) == 1 and intents[0] == "I found enough jobs here":
+        JOBOT_response = "I'm glad to hear you found a job"
     else:
-        JOBOT_response="Thanks for the feedback. We are always looking for ways to improve our services."
+        JOBOT_response = "Thanks for the feedback. We are always looking for ways to improve our services."
     print(f"User response: {feedback}")
     return jsonify({"success": True, "message": JOBOT_response})
 
