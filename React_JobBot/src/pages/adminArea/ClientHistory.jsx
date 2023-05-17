@@ -1,11 +1,16 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 function ClientHistory() {
   const location = useLocation();
   const clientDetails = location.state;
   console.log(clientDetails);
+
+  const navigate = useNavigate();
+
+  function handleNavigate(pathname) {
+    navigate(pathname, { state: { clientDetails } });
+  }
 
   return (
     <div>
@@ -14,14 +19,10 @@ function ClientHistory() {
         Tabs of:
         <ul>
           <li>
-            <Link to={{ pathname: '/conversations', state: { clientDetails } }}>
-              Conversations
-            </Link>
+            <button onClick={() => handleNavigate('/./conversations')}>Conversations</button>
           </li>
           <li>
-            <Link to={{ pathname: '/selectedJobs', state: { clientDetails } }}>
-              Selected/Offered jobs
-            </Link>
+            <button onClick={() => handleNavigate('/./offeredJobs')}>Offered jobs</button>
           </li>
         </ul>
       </nav>
