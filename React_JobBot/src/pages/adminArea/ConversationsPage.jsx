@@ -27,7 +27,7 @@ function ConversationsPage() {
 
   return (
     <div className="conversations-page">
-      <h2>History Item:</h2>
+      <h2>Last History Item:</h2>
       {historyItem ? (
         <div>
           {historyItem.map((item, index) => (

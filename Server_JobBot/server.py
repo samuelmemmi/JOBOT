@@ -46,14 +46,14 @@ def login():
                 {"$set": {"admin": "Yes"}}
             )
             return jsonify({"success": True, "message": "Admin login success"})
+        else:
+            collection.update_one(
+                {"user_name": user_name, "password": password},
+                {"$set": {"admin": "No"}})
 
         return jsonify({"success": True, "message": "Client login success"})
 
     else:
-        collection.update_one(
-            {"user_name": user_name, "password": password},
-            {"$set": {"admin": "No"}}
-        )
         return jsonify({"success": False, "message": "Username or password incorrect"})
 
 
@@ -617,6 +617,8 @@ def offered_jobs():
     size = len(history['history'])
     if size > 0:
         listt = history['history'][size - 1]['displayed jobs']
+        if listt == "-":
+            return jsonify({})
         listt = [dict(t) for t in set([tuple(d.items()) for d in listt])]
         return jsonify({"success": True, "listt": listt})
     else:
