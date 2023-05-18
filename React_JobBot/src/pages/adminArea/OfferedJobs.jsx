@@ -26,7 +26,7 @@ function OfferedJobs() {
         setJobs(response.data.listt);
       })
       .catch(error => {
-        console.error('Error fetching history:', error);
+        console.error('Error fetching jobs:', error);
       });
   };
 
@@ -44,8 +44,10 @@ function OfferedJobs() {
       ) : (
         <div className="jobs-page">
           <div className="search-container">
+            {/* Search input components */}
           </div>
-          <ul className="jobs-list">
+          {filteredJobs.length > 0 ? (
+            <ul className="jobs-list">
             {filteredJobs.map((job, index) => (
               <li key={index} className="job-item">
                 <h2 className="company-name">{job.company}</h2>
@@ -62,12 +64,13 @@ function OfferedJobs() {
               </li>
             ))}
           </ul>
+          ) : (
+            <p className="no-jobs">No jobs found.</p>
+          )}
         </div>
       )}
     </div>
-
   );
 }
-
 
 export default OfferedJobs;
