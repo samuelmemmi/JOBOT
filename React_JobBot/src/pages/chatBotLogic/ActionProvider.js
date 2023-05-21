@@ -94,10 +94,9 @@ class ActionProvider {
     node.setNextResponse(node.getNextResponse().children[0].children[1])
     this.addMessageToState(message,node);
 
-    // var genaralStat=["areas","job Types","field","experience level"]
-
-    // axios.post("/getGeneralStatistics", {
-    //   calcData: genaralStat
+    // var goal="view_feedback"
+    // axios.post("/getStatistics", {
+    //   goal: goal
     // }, {
     //   headers: {
     //   'Content-type': 'application/json; charset=UTF-8' } 
@@ -112,6 +111,27 @@ class ActionProvider {
     // })
     // .catch((err) => {
     //   console.log("Error getting statistics: ", err.message);
+    // });
+
+    // var categories=["it has not job title i want","it is complicated system","i found jobs","good jobs but it ugly display"]
+    // var statName="rachel checking"
+    // axios.post("/createNewStatistics", {
+    //   categories: categories,
+    //   statName: statName
+    // }, {
+    //   headers: {
+    //   'Content-type': 'application/json; charset=UTF-8' } 
+    // })
+    // .then((response) => {
+    //   if (response.data.success) {
+    //     console.log("Server returned new statistics:", response.data.message);
+
+    //   } else {
+    //     console.log("Server did not return new statistics: ", response.data.message);
+    //   }
+    // })
+    // .catch((err) => {
+    //   console.log("Error getting new statistics: ", err.message);
     // });
 
   };

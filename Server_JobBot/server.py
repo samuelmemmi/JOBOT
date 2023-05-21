@@ -691,8 +691,8 @@ def client_history():
     # result['history'] = []
     # print(result['history'])
     # collection.update_one({'_id':result['_id']}, {"$set": result})
-    result2 = collection.find_one({"user_name": username, "password": password})
-    print(result2)
+    # result2 = collection.find_one({"user_name": username, "password": password})
+    # print(result2)
 
     # # retrieve the current value of the history field $$$$$$$$$$$$
     # result = collection.find_one({"user_name": username, "password": password}, {"history": 1})
@@ -800,11 +800,10 @@ def preprocess(response):
 
 
 # function to identify user intent based on chatGPT
-def identify_intent(response):
-    relevant_intents = []
-    intents = ["I found enough jobs here", "I prefer self job search", "I'm interested in a shorter process"]
-    question = "For which of the intents in the list " + str(
-        intents) + " the sentence '" + response + "' corresponds? Return the indexes (which start from 1) of the corresponding intents according to the following template: 'intent #: Yes', If this intent fits and 'intent #: No' else."
+def identify_intent(response,intents):
+    relevant_intents=[]
+    # intents=["I found enough jobs here","I prefer self job search","I'm interested in a shorter process"]
+    question="For which of the intents in the list "+ str(intents) +" the sentence '"+response+"' corresponds? Return the indexes (which start from 1) of the corresponding intents according to the following template: 'intent #: Yes', If this intent fits and 'intent #: No' else."
     print("question:")
     print(question)
     response_gpt = chatgpt(question)
@@ -819,99 +818,159 @@ def identify_intent(response):
 
 
 # function to extract relevant information for each intent
-def save_intents_in_DB(intents, collection):
+
+def save_intents_in_DB(intents, statName):
+    # connexion to the MongoDB database
+    cluster = MongoClient("mongodb+srv://samuelmemmi:1234@cluster0.e4sf8mm.mongodb.net/?retryWrites=true"
+                "&w=majority")
+    db = cluster["chatbot"]
+
+    collec_users = db["users"]
+    users_len=len(list(collec_users.find()))-2
+
+    today = str(date.today())
+
+    collec_admin_stats=db["admin_statistics"]
+    document=collec_admin_stats.find_one({"statName":statName})
+    if document:
+        prev_intent_info=document["stat"]
+    else:
+        collec_admin_stats.insert_one({"statName": statName, "stat": {},"update date":"","users number":0})
+        document=collec_admin_stats.find_one({"statName":statName})
+        prev_intent_info=document["stat"]
+
     # pass on intents in db and update the counter
     for intent in intents:
-        prev_intent_info = collection.find_one({"intent": intent})
-        if prev_intent_info:
-            new_count = prev_intent_info["count"] + 1
-            newvalues = {"$set": {"intent": intent, "count": new_count}}
-            collection.update_one(prev_intent_info, newvalues)
+        if intent in prev_intent_info:
+            prev_intent_info[intent]=prev_intent_info[intent]+1
         else:
-            collection.insert_one({"intent": intent, "count": 1})
-    for x in collection.find():
+            prev_intent_info[intent]=1
+
+    collec_admin_stats.update_one(
+        {"statName":statName},
+        {"$set": {"stat": prev_intent_info,"update date":today,"users number":users_len}}
+    )
+    for x in collec_admin_stats.find():
         print(x)
 
 
-# route for general statistics
-@app.route("/getGeneralStatistics", methods=["POST"])
-def getGeneralStatistics():
-    # connexion to the MongoDB database
+
+
+def getStatsFromDB(statName):
+    cluster = MongoClient("mongodb+srv://samuelmemmi:1234@cluster0.e4sf8mm.mongodb.net/?retryWrites=true"
+                "&w=majority")
+    db = cluster["chatbot"]
+    collec_admin_stats=db["admin_statistics"]
+    document=collec_admin_stats.find_one({"statName":statName})
+    del document["_id"]
+    return document
+
+def calculateGeneralStats(subjects):
     cluster = MongoClient("mongodb+srv://samuelmemmi:1234@cluster0.e4sf8mm.mongodb.net/?retryWrites=true"
                           "&w=majority")
     db = cluster["chatbot"]
-    # collection1 = db["statistics"]
+    collec_users = db["users"]
+    users_len=len(list(collec_users.find()))-2
 
-    # import pymongo
+    today = str(date.today())
 
-    # myclient = pymongo.MongoClient('mongodb://localhost:27017/')
+    genaralStat={"areas":{"South":0,"North":0,"Central":0},"job Types":{"Part_time":0,"Full_time":0},\
+    "field":{"Engineering":0, "Marketing":0, "Human Resources":0, "Healthcare":0, "Arts & Design":0, "Finance & Accounting":0, "Other":0},\
+    "experience level":{"Intern":0,"Junior":0,"Senior":0,"Other":0}}
+    for subject in subjects:
+        for user in collec_users.find():
+            if "history" in user:
+                for history in user['history']:
+                    if subject!="field":
+                        print(history['selected features'])
+                        if subject in history['selected features']:
+                            for cat in history['selected features'][subject]:
+                                if cat=="All":
+                                    genaralStat[subject]["South"]=genaralStat[subject]["South"]+1
+                                    genaralStat[subject]["North"]=genaralStat[subject]["North"]+1
+                                    genaralStat[subject]["Central"]=genaralStat[subject]["Central"]+1
+                                else:
+                                    genaralStat[subject][cat]=genaralStat[subject][cat]+1
+                    else:
+                        cat=history['selected features'][subject]
+                        genaralStat[subject][cat]=genaralStat[subject][cat]+1
 
-    # mydb = myclient['mydatabase']
+    collec_admin_stats=db["admin_statistics"]
+    collec_admin_stats.update_one(
+        {"statName":"general_statistics"},
+        {"$set": {"stat": genaralStat,"update date":today,"users number":users_len}}
+    )
+    print("after update genaralStat")
+    print(collec_admin_stats.find_one({"statName":"general_statistics"}))
+    
+def updateAllfeedbacksInDB():
+    cluster = MongoClient("mongodb+srv://samuelmemmi:1234@cluster0.e4sf8mm.mongodb.net/?retryWrites=true"
+                          "&w=majority")
+    db = cluster["chatbot"]
+    collec_users = db["users"]
 
-    # mycol = mydb["customers"]
-
-    # # collection created!
-
-    # print(mydb.list_collection_names())
-
-    today = date.today()
-    print("Today's date:", today)
-
-    collection = db["users"]
-    users_len = len(list(collection.find()))
-    stat = "areas"
-    genaralStat = {"areas": {"South": 0, "North": 0, "Central": 0}, "job Types": {"Part_time": 0, "Full_time": 0}, \
-                   "field": {"Engineering": 0, "Marketing": 0, "Human Resources": 0, "Healthcare": 0,
-                             "Arts & Design": 0, "Finance & Accounting": 0, "Other": 0}, \
-                   "experience level": {"Intern": 0, "Junior": 0, "Senior": 0, "Other": 0}, "update date": today,
-                   "users number": users_len}
-    for user in collection.find():
+    feedbacks=[]
+    for user in collec_users.find():
         if "history" in user:
             for history in user['history']:
-                if stat != "field":
-                    print(history['selected features'])
-                    if stat in history['selected features']:
-                        for cat in history['selected features'][stat]:
-                            if cat == "All":
-                                genaralStat[stat]["South"] = genaralStat[stat]["South"] + 1
-                                genaralStat[stat]["North"] = genaralStat[stat]["North"] + 1
-                                genaralStat[stat]["Central"] = genaralStat[stat]["Central"] + 1
-                            else:
-                                genaralStat[stat][cat] = genaralStat[stat][cat] + 1
-                else:
-                    cat = history['selected features'][stat]
-                    genaralStat[stat][cat] = genaralStat[stat][cat] + 1
-    print("genaralStat")
-    print(genaralStat)
+                # print(history)
+                if history['feedback on termination']!="-":
+                    feedbacks.append(history['feedback on termination'])
+    # print(feedbacks)
 
-    # # get the username and password
-    # user_name = request.json.get("user_name")
-    # password = request.json.get("password")
+    collec_admin_stats=db["admin_statistics"]
+    # document=collec_admin_stats.find_one({"statName":"feedback"})
+    # print(document)
+    
+    collec_admin_stats.update_one(
+        {"statName":"feedback"},
+        {"$set": {"all feedbacks": feedbacks}}
+    )
 
-    # # check if the user is already existing
-    # existing_user = collection.find_one({"user_name": user_name,"password": password})
-    # if existing_user:
-    #     return jsonify({"success": False, "message": "User name already exists"})
+    document=collec_admin_stats.find_one({"statName":"feedback"})
+    print(document)
 
-    # # this user is new, so we add him to the DB
-    # collection.insert_one({"user_name": user_name, "password": password})
-    return jsonify({"success": True, "message": "Finish calculate"})
+# route for getting statistics
+@app.route("/getStatistics", methods=["POST"])
+def getStatistics():
+    goal = request.json.get("goal")
+    # print(goal)
+    if goal=="view_general_stats":
+        document=getStatsFromDB("general_statistics")
+        return jsonify({"success": True, "message": document})
+    elif(goal=="calculate_general_stats"):
+        subjects=["areas","job Types","field","experience level"]
+        calculateGeneralStats(subjects)
+        updatedDocument=getStatsFromDB("general_statistics")
+        return jsonify({"success": True, "message": updatedDocument})
+    elif(goal=="view_feedback"):
+        document=getStatsFromDB("feedback")
+        return jsonify({"success": True, "message": document})
+
+#מחקתי כאן של היצירה
 
 
 @app.route("/getIsFeedback", methods=["POST"])
 def test_response():
-    # connexion to the MongoDB database
-    cluster = MongoClient("mongodb+srv://samuelmemmi:1234@cluster0.e4sf8mm.mongodb.net/?retryWrites=true"
-                          "&w=majority")
-    db = cluster["chatbot"]
-    collection = db["statistics"]
-
     feedback = request.json.get("message")
     # identify intents using chatGPT
-    intents = identify_intent(feedback)
+    intents_to_check=["I found enough jobs here","I prefer self job search","I'm interested in a shorter process"]
+    intents = identify_intent(feedback,intents_to_check)
+    
+    # add the new feedback to the list of feedbacks in db
+    cluster = MongoClient("mongodb+srv://samuelmemmi:1234@cluster0.e4sf8mm.mongodb.net/?retryWrites=true"
+                "&w=majority")
+    db = cluster["chatbot"]
+    collec_admin_stats=db["admin_statistics"]
+    document=collec_admin_stats.find_one({"statName":"feedback"})
+    document["all feedbacks"].append(feedback)
+    collec_admin_stats.update_one(
+        {"statName":"feedback"},
+        {"$set": {"all feedbacks": document["all feedbacks"]}}
+    )
 
     # save the identified intents in DB
-    save_intents_in_DB(intents, collection)
+    save_intents_in_DB(intents, "feedback")
 
     JOBOT_response = ""
     if len(intents) == 1 and intents[0] == "I found enough jobs here":
