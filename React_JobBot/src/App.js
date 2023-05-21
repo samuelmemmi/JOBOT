@@ -12,6 +12,9 @@ import Logout from "./pages/logout/Logout.jsx";
 import UserDetails from "./pages/clientArea/UserDetails.jsx";
 import ClientHistory from "./pages/adminArea/ClientHistory.jsx";
 import Statistics from "./pages/adminArea/Statistics.jsx";
+import ConversationsPage from "./pages/adminArea/ConversationsPage.jsx";
+import OfferedJobs from "./pages/adminArea/OfferedJobs.jsx";
+
 
 function App() {
   return (
@@ -28,6 +31,8 @@ function App() {
       <Route path="/details" element={<UserDetails />}/>
       <Route path="/history" element={<ClientHistory />}/>
       <Route path="/statistics" element={<Statistics />}/>
+      <Route path="/conversations" element={<ConversationsPage />}/>
+      <Route path="/offeredJobs" element={<OfferedJobs />}/>
     </Routes>
   );
 }
