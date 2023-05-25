@@ -8,6 +8,7 @@ from nltk.stem import WordNetLemmatizer
 import openai
 import time
 from datetime import date
+import key
 
 # initialize NLTK libraries
 nltk.download('stopwords')
@@ -875,7 +876,8 @@ def test_response():
 
 
 def chatgpt(question):
-    API_KEY = open("API_KEY.txt", "r").read().strip()
+    # API_KEY = open("API_KEY.txt", "r").read().strip()
+    API_KEY = key.api_key
     openai.api_key = API_KEY
     chat_log = [{"role": "user", "content": question}]
     response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=chat_log)
