@@ -15,19 +15,18 @@ NUMBER_OF_ADMINS = 2
 SECTER_KEY = 'secret-key-'
 BOT_DECISION_TREE_PATH = '../React_JobBot/src/pages/chatBotLogic/decisionTree.json'
 CITIES_AND_AREAS = {"South": ["Qiryat Gat", "Ashdod", "South", "Southern", "Israel"],
-                 "North": ["Haifa", "North", "Northern", "Israel"],
-                 "Central": ["Herzliya", "Jerusalem", "Netanya", "Petah Tikva", "Raanana", "Ramat Gan",
-                             "Rishon LeZiyyon", "Tel Aviv", "Tel Aviv-Yafo", "Kfar Saba", "Rehovot", "Hod HaSharon",
-                             "Bnei Brak", "Giv`atayim", "Lod", "Holon", "Yavne", "Ness Ziona","Central", "Israel"],
-                 "All": ["Haifa", "North", "Northern", "Qiryat Gat","Ashdod", "South", "Southern", "Herzliya",
-                         "Jerusalem", "Netanya", "Petah Tikva", "Raanana", "Ramat Gan",
-                         "Rishon LeZiyyon", "Tel Aviv", "Tel Aviv-Yafo", "Kfar Saba", "Rehovot", "Hod HaSharon",
-                         "Bnei Brak", "Giv`atayim", "Lod", "Holon", "Yavne", "Ness Ziona", "Central", "Israel"]}
+                    "North": ["Haifa", "North", "Northern", "Israel"],
+                    "Central": ["Herzliya", "Jerusalem", "Netanya", "Petah Tikva", "Raanana", "Ramat Gan",
+                                "Rishon LeZiyyon", "Tel Aviv", "Tel Aviv-Yafo", "Kfar Saba", "Rehovot", "Hod HaSharon",
+                                "Bnei Brak", "Giv`atayim", "Lod", "Holon", "Yavne", "Ness Ziona", "Central", "Israel"],
+                    "All": ["Haifa", "North", "Northern", "Qiryat Gat", "Ashdod", "South", "Southern", "Herzliya",
+                            "Jerusalem", "Netanya", "Petah Tikva", "Raanana", "Ramat Gan",
+                            "Rishon LeZiyyon", "Tel Aviv", "Tel Aviv-Yafo", "Kfar Saba", "Rehovot", "Hod HaSharon",
+                            "Bnei Brak", "Giv`atayim", "Lod", "Holon", "Yavne", "Ness Ziona", "Central", "Israel"]}
 MAXIMUM_JOBS_FOR_DISPLAYING = 15
 CLUSTER_NAME = "chatbot"
 MAX_JOBS_FOR_GPT = 6
-MAX_SECONDS_FOR_SLEEPING = 20 #12
-
+MAX_SECONDS_FOR_SLEEPING = 20  # 12
 
 # initialize NLTK libraries
 nltk.download('stopwords')
@@ -44,13 +43,13 @@ other_list_human = ["Digital Key Account", "Global HR Planning & Operations", "T
 other_list_finance = ["VP Finance", "Business Development", "Finance Controller"]
 other_list_engineer = ["QA Engineer", "Network Engineer", "Software Engineer"]
 
+
 def get_collection_by_field(field):
     # connection to the MongoDB database
     cluster = MongoClient(MONGODB_CONNECTION_STRING)
     db = cluster[CLUSTER_NAME]
     collection = db[field]
     return collection
-
 
 
 # route for login
@@ -66,7 +65,7 @@ def login():
     # if "admin" not in user:
     if user:
         # check if the user is admin or client
-        if "admin" in  user and user["admin"] == "Yes":
+        if "admin" in user and user["admin"] == "Yes":
             return jsonify({"success": True, "message": "Admin login success"})
         else:
             return jsonify({"success": True, "message": "Client login success"})
@@ -111,7 +110,7 @@ def register():
     user_name = request.json.get("user_name")
     password = request.json.get("password")
     # check if username or password are valid
-    if user_name=="" or password=="":
+    if user_name == "" or password == "":
         return jsonify({"success": False, "message": "Invalid username or password"})
 
     # connexion to the MongoDB database
@@ -120,7 +119,7 @@ def register():
     existing_user = collection.find_one({"user_name": user_name, "password": password})
     if existing_user:
         return jsonify({"success": False, "message": "User name already exists"})
-    
+
     # this user is new, so we add him to the DB
     collection.insert_one({"user_name": user_name, "password": password})
     return jsonify({"success": True, "message": "Your new user is created"})
@@ -141,6 +140,7 @@ def logout():
     response.delete_cookie('session')
     return response
 
+
 # route for updating the decision tree
 @app.route("/write-json", methods=["POST"])
 def writeJson():
@@ -156,10 +156,11 @@ def writeJson():
 @app.route("/cities", methods=["POST"])
 def getCities():
     areas = request.json.get("areas")
-    areas_to_remove=["Central","North", "Northern","South", "Southern", "Israel"]
+    areas_to_remove = ["Central", "North", "Northern", "South", "Southern", "Israel"]
     # TODO: Check for edge cases! something + "All" as unit test
-    res = getCitiesFromAreas(areas,areas_to_remove)
+    res = getCitiesFromAreas(areas, areas_to_remove)
     return jsonify({"success": True, "cities": res})
+
 
 # R
 def first_help_get_first_jobs(new_documents, list_jobs, title, company, city, other_list):
@@ -225,8 +226,8 @@ def what_field(field):
     return other_list, field
 
 
-def getCitiesFromAreas(areas,areas_to_remove):
-    res=[]
+def getCitiesFromAreas(areas, areas_to_remove):
+    res = []
     if "All" in areas:
         res += list(set(CITIES_AND_AREAS["All"]) - set(areas_to_remove))
     else:
@@ -284,7 +285,7 @@ def get_first_jobs():
     # for i in range(len(areas)):
     #     city.append(area_dict[areas[i]])
     # city = [item for sublist in city for item in sublist]
-    citiesByAreas=getCitiesFromAreas(areas,[])
+    citiesByAreas = getCitiesFromAreas(areas, [])
 
     print("CITIES MINE:")
     print(citiesByAreas)
@@ -301,7 +302,8 @@ def get_first_jobs():
     # Create a new list of dictionaries with all fields and "id" converted to str
     new_documents = [{k: (str(v) if k == '_id' else v) for k, v in doc.items()} for doc in documents]
     list_jobs = []
-    unique_jobs = second_help_get_first_jobs(new_documents, list_jobs, title, company, citiesByAreas, other_list, job_type, field,
+    unique_jobs = second_help_get_first_jobs(new_documents, list_jobs, title, company, citiesByAreas, other_list,
+                                             job_type, field,
                                              db)
     # connexion to the MongoDB database
     collection = get_collection_by_field("users")
@@ -339,23 +341,23 @@ def second_help_get_first_jobs(new_documents, list_jobs, title, company, city, o
         else:
             return list_jobs
     for document in new_documents:
-        #TODO: explain words2 + A BETTER NAME!!!
+        # TODO: explain words2 + A BETTER NAME!!!
         words2 = set(document["job"].lower().split())
         if len(list_jobs) < MAXIMUM_JOBS_FOR_DISPLAYING:
-            #TODO: why > 1 ? is 1 a constant?
+            # TODO: why > 1 ? is 1 a constant?
             if len(title) > 1 and len(company) > 1:
-                #TODO: title = titles? company = companies? CHANGE THIS.
+                # TODO: title = titles? company = companies? CHANGE THIS.
                 for ti in title:
                     for comp in company:
-                        #TODO: explain words1 + A BETTER NAME!!!
+                        # TODO: explain words1 + A BETTER NAME!!!
                         words1 = set(ti.lower().split())
                         are_all_words_present = words1.issubset(words2)
-                        #TODO: extract conditions to avariables if used multiple times. then use chatGPT.
+                        # TODO: extract conditions to avariables if used multiple times. then use chatGPT.
                         if ti != "Other":
                             if comp == "I'm open to any company":
                                 if are_all_words_present and document["city"] in city:
                                     list_jobs.append(document)
-                                elif all(word in document["description"].lower() for word in words1)\
+                                elif all(word in document["description"].lower() for word in words1) \
                                         and document["city"] in city:
                                     list_jobs.append(document)
                             else:
@@ -409,7 +411,7 @@ def second_help_get_first_jobs(new_documents, list_jobs, title, company, city, o
         # Find all documents in the collection
         documents2 = collection2.find()
         # Create a new list of dictionaries with all fields except "id"
-        #TODO: create a function?
+        # TODO: create a function?
         new_documents2 = [{k: (str(v) if k == '_id' else v) for k, v in doc.items()} for doc in documents2]
         for doc in new_documents2:
             if len(list_jobs) < MAXIMUM_JOBS_FOR_DISPLAYING and doc["job"] != "":
@@ -431,7 +433,7 @@ def get_jobs_from_chatGpt(unique_jobs, experience_education):
     gpt_list = []
     index = 1
     # If there are more than MAX_JOBS_FOR_GPT jobs, we will not use chatgpt for the last rest jobs
-    #TODO: are 6 and 7 constants?
+    # TODO: are 6 and 7 constants?
     if len(unique_jobs) > MAX_JOBS_FOR_GPT:
         temp_len = MAX_JOBS_FOR_GPT
     else:
@@ -454,7 +456,7 @@ def get_jobs_from_chatGpt(unique_jobs, experience_education):
         if (str(index + 1) + ": Yes") in response_gpt:
             gpt_list.append(unique_jobs[i + 1])
         if (i + 1 != (lengt - 1)):
-            #TODO: is 20/12 constants?MAX_SECONDS_FOR_SLEEPING = 20
+            # TODO: is 20/12 constants?MAX_SECONDS_FOR_SLEEPING = 20
             time.sleep(MAX_SECONDS_FOR_SLEEPING)
         index += 2
 
@@ -620,7 +622,7 @@ def offered_jobs():
     username = details["userName"]
     password = details["password"]
     user = collection.find_one({'user_name': username, 'password': password})
-    size=0
+    size = 0
     if "history" in user:
         size = len(user['history'])
     if size > 0:
@@ -640,15 +642,15 @@ def selected_jobs():
     username = details["userName"]
     password = details["password"]
     user = collection.find_one({'user_name': username, 'password': password})
-    size=0
-    jobs=[]
+    size = 0
+    jobs = []
     if "history" in user:
         size = len(user['history'])
     if size > 0:
         selected_jobs_ids = user['history'][size - 1]['selected jobs']
         if selected_jobs_ids == "-":
             return jsonify({"success": True, "jobs": jobs})
-        displayed_jobs=offered_jobs().json.get("jobs")
+        displayed_jobs = offered_jobs().json.get("jobs")
         if displayed_jobs:
             jobs = [job for job in displayed_jobs if job["_id"] in selected_jobs_ids]
         return jsonify({"success": True, "jobs": jobs})
@@ -666,7 +668,7 @@ def view_history():
     username = details["userName"]
     password = details["password"]
     user = collection.find_one({'user_name': username, 'password': password})
-    size=0
+    size = 0
     if "history" in user:
         size = len(user['history'])
     if size > 0:
@@ -803,6 +805,7 @@ def preprocess(response):
     # return preprocessed response
     return " ".join(lemmatized_tokens)
 
+
 # function to identify user intent based on chatGPT
 def identify_intent(response, intents):
     relevant_intents = []
@@ -823,7 +826,6 @@ def identify_intent(response, intents):
 
 
 # function to extract relevant information for each intent
-
 
 
 def save_intents_in_DB(intents, statName):
@@ -993,7 +995,6 @@ def chatgpt(question):
 
 
 if __name__ == "__main__":
-
     # # using set function
     # num = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     # num_to_remove = [1, 3, 5, 7, 9,20]
@@ -1006,8 +1007,6 @@ if __name__ == "__main__":
     # areas_to_remove=["Central","North", "Northern","South", "Southern", "Israel"]
     # x=list(set(CITIES_AND_AREAS["North"]+CITIES_AND_AREAS["South"]) - set(areas_to_remove))
     # print(x)
-
-
 
     app.run(port=5000, debug=True)
 
