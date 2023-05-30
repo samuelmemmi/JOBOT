@@ -145,31 +145,6 @@ def getCities():
     return jsonify({"success": True, "cities": res})
 
 
-def first_help_get_first_jobs(new_documents, list_jobs, titles, companies, cities, other_list):
-    for document in new_documents:
-        words2 = set(document["job"].lower().split())
-        if len(list_jobs) < MAXIMUM_JOBS_FOR_DISPLAYING:
-            if "Other" in titles:
-                for company in companies:
-                    if document["company"] == company and document["city"] in cities and document["job"].lower() not \
-                            in other_list:
-                        list_jobs.append(document)
-            else:
-                for job_title in titles:
-                    for company in companies:
-                        words1 = set(job_title.lower().split())
-                        are_all_words_present = words1.issubset(words2)
-                        if document["company"] == company and are_all_words_present and document["city"] in cities:
-                            list_jobs.append(document)
-                        elif document["company"] == company and all(
-                                [word in document["description"].lower() for word in words1]) and document["city"] in cities:
-                            list_jobs.append(document)
-        else:
-            break
-
-    return list_jobs
-
-
 def what_field(field):
     if field == "Arts & Design":
         field = "design"
@@ -199,6 +174,63 @@ def getCitiesFromAreas(areas, areas_to_remove):
             res += CITIES_AND_AREAS[area]
         res = list(set(res) - set(areas_to_remove))
     return res
+
+
+def is_company_eligible(document, titles, companies, cities, other_list):
+    job_words = set(document["job"].lower().split())
+    company_doc = document["company"]
+    city_doc = document["city"]
+
+    if "Other" in titles:
+        if company_doc in companies and city_doc in cities and \
+                document["job"].lower() not in other_list:
+            return True
+    else:
+        for job_title in titles:
+            title_words = set(job_title.lower().split())
+            if company_doc in companies and city_doc in cities:
+                if title_words.issubset(job_words) or \
+                        all(word in document["description"].lower() for word in title_words):
+                    return True
+    return False
+
+
+def filter_jobs_company(new_documents, list_jobs, titles, companies, cities, other_list):
+    for document in new_documents:
+        if len(list_jobs) >= MAXIMUM_JOBS_FOR_DISPLAYING:
+            break
+
+        if is_company_eligible(document, titles, companies, cities, other_list):
+            list_jobs.append(document)
+
+    return list_jobs
+
+
+def help_get_first_jobs_from_gpt(request_details, unique_jobs):
+    # connexion to the MongoDB database
+    collection = get_collection_by_field("users")
+    userDetails = {"user_name": request_details["client details"]["userName"],
+                   "password": request_details["client details"]["password"]}
+    user = collection.find_one(userDetails)
+
+    # search in client histories if there are his experiance & education in the selected field
+    experi_educa = "-"
+    if "history" in user:
+        histories_list = user["history"]
+        # go through the list of histories starting from the most recent history to the oldest
+        for history in reversed(histories_list):
+            # print(history['field'])
+            if history["field"] == request_details["field"]:
+                experi_educa = history["experiance & education"]
+                if experi_educa != "-":
+                    break
+
+    # call chatgpt with the experiance & education we found
+    gpt_list = unique_jobs
+    if len(unique_jobs) != 0 and experi_educa != "-":
+        gpt_list = get_jobs_from_chatGpt(unique_jobs, experi_educa)
+
+    return gpt_list
 
 
 @app.route("/getfirstjobs", methods=["POST"])
@@ -231,89 +263,67 @@ def get_first_jobs():
     # Create a new list of dictionaries with all fields and "id" converted to str
     new_documents = [{k: (str(v) if k == '_id' else v) for k, v in doc.items()} for doc in documents]
     list_jobs = []
-    unique_jobs = second_help_get_first_jobs(new_documents, list_jobs, title, company, citiesByAreas, other_list,
-                                             job_type, field,
-                                             db)
-    # connexion to the MongoDB database
-    collection = get_collection_by_field("users")
-    userDetails = {"user_name": request_details["client details"]["userName"],
-                   "password": request_details["client details"]["password"]}
-    user = collection.find_one(userDetails)
-
-    # search in client histories if there are his experiance & education in the selected field
-    experi_educa = "-"
-    if "history" in user:
-        histories_list = user["history"]
-        # go through the list of histories starting from the most recent history to the oldest
-        for history in reversed(histories_list):
-            # print(history['field'])
-            if history["field"] == request_details["field"]:
-                experi_educa = history["experiance & education"]
-                if experi_educa != "-":
-                    break
-
-    # call chatgpt with the experiance & education we found
-    gpt_list = unique_jobs
-    if len(unique_jobs) != 0 and experi_educa != "-":
-        gpt_list = get_jobs_from_chatGpt(unique_jobs, experi_educa)
+    unique_jobs = help_get_first_jobs(new_documents, list_jobs, title, company, citiesByAreas, other_list,
+                                      job_type, field,
+                                      db)
+    gpt_list = help_get_first_jobs_from_gpt(request_details, unique_jobs)
 
     return jsonify({"success": True, "list_jobs": gpt_list})
 
 
-def second_help_get_first_jobs(new_documents, list_jobs, titles, companies, cities, other_list, time, field, db):
-    if "I'm open to any company" not in companies:
-        list_jobs = first_help_get_first_jobs(new_documents, list_jobs, titles, companies, cities, other_list)
+def is_document_eligible(document, titles, cities, other_list):
+    job_words = set(document["job"].lower().split())
+    city_doc = document["city"]
 
-        if len(list_jobs) < MAXIMUM_JOBS_FOR_DISPLAYING:
-            companies.append("I'm open to any company")
-        else:
-            return list_jobs
+    if "Other" in titles:
+        if city_doc in cities and document["job"].lower() not in other_list:
+            return True
+    else:
+        for job_title in titles:
+            title_words = set(job_title.lower().split())
+            if title_words.issubset(job_words) and city_doc in cities:
+                return True
+            elif all(word in document["description"].lower() for word in title_words) and city_doc in cities:
+                return True
+    return False
 
+
+def filter_jobs(new_documents, list_jobs, titles, cities, other_list):
     for document in new_documents:
-        words2 = set(document["job"].lower().split())
-        if len(list_jobs) < MAXIMUM_JOBS_FOR_DISPLAYING:
-            if "Other" in titles:
-                for company in companies:
-                    if company == "I'm open to any company":
-                        if document["city"] in cities and document["job"].lower() not in other_list:
-                            list_jobs.append(document)
-                    else:
-                        if document["company"] == company and document["city"] in cities and document["job"].lower() not \
-                                in other_list:
-                            list_jobs.append(document)
-            else:
-                for job_title in titles:
-                    for company in companies:
-                        words1 = set(job_title.lower().split())
-                        are_all_words_present = words1.issubset(words2)
-                        if company == "I'm open to any company":
-                            if are_all_words_present and document["city"] in cities:
-                                list_jobs.append(document)
-                            elif all(
-                                    [word in document["description"].lower() for word in words1]) and \
-                                    document["city"] in cities:
-                                list_jobs.append(document)
-                        else:
-                            if document["company"] == company and are_all_words_present and document["city"] in cities:
-                                list_jobs.append(document)
-                            elif document["company"] == company and all(
-                                    [word in document["description"].lower() for word in words1]) and document["city"] in cities:
-                                list_jobs.append(document)
-
-        else:
+        if len(list_jobs) >= MAXIMUM_JOBS_FOR_DISPLAYING:
             break
 
+        if is_document_eligible(document, titles, cities, other_list):
+            list_jobs.append(document)
+
+    return list_jobs
+
+
+def help_part_time(field, db, list_jobs):
+    job2 = field.lower() + "_" + "intern"
+    collection2 = db[job2]
+    # Find all documents in the collection
+    documents2 = collection2.find()
+    # Create a new list of dictionaries with all fields except "id"
+    # TODO: create a function?
+    new_documents2 = [{k: (str(v) if k == '_id' else v) for k, v in doc.items()} for doc in documents2]
+    for doc in new_documents2:
+        if len(list_jobs) < MAXIMUM_JOBS_FOR_DISPLAYING and doc["job"] != "":
+            list_jobs.append(doc)
+    return list_jobs
+
+
+def help_get_first_jobs(new_documents, list_jobs, titles, companies, cities, other_list, time, field, db):
+    if "I'm open to any company" not in companies:
+        list_jobs = filter_jobs_company(new_documents, list_jobs, titles, companies, cities, other_list)
+
+        if len(list_jobs) >= MAXIMUM_JOBS_FOR_DISPLAYING:
+            return list_jobs
+
+    list_jobs = filter_jobs(new_documents, list_jobs, titles, cities, other_list)
+
     if time[0].lower() == "part_time" and len(list_jobs) < MAXIMUM_JOBS_FOR_DISPLAYING:
-        job2 = field.lower() + "_" + "intern"
-        collection2 = db[job2]
-        # Find all documents in the collection
-        documents2 = collection2.find()
-        # Create a new list of dictionaries with all fields except "id"
-        # TODO: create a function?
-        new_documents2 = [{k: (str(v) if k == '_id' else v) for k, v in doc.items()} for doc in documents2]
-        for doc in new_documents2:
-            if len(list_jobs) < MAXIMUM_JOBS_FOR_DISPLAYING and doc["job"] != "":
-                list_jobs.append(doc)
+        list_jobs = help_part_time(field, db, list_jobs)
 
     set_res = set([job["_id"] for job in list_jobs])
     unique_jobs = []
@@ -433,9 +443,9 @@ def get_second_jobs():
     # Create a new list of dictionaries with all fields and "id" converted to str
     new_documents = [{k: (str(v) if k == '_id' else v) for k, v in doc.items()} for doc in documents]
     list_jobs = []
-    unique_jobs = second_help_get_first_jobs(new_documents, list_jobs, jobtitle, company, city, other_list, level,
-                                             field,
-                                             db)
+    unique_jobs = help_get_first_jobs(new_documents, list_jobs, jobtitle, company, city, other_list, level,
+                                      field,
+                                      db)
 
     display_jobs_ids = [job["_id"] for job in display_jobs]
     unique_jobs_second_jobs = [job for job in unique_jobs if job["_id"] not in display_jobs_ids]
