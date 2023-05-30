@@ -200,13 +200,18 @@ def is_company_eligible(document, titles, companies, cities, other_list):
                     return True
     return False
 
-def filter_jobs_company(new_documents, list_jobs, titles, companies, cities, other_list):
+def filter_jobs_company(new_documents, list_jobs, titles, companies, cities, other_list,seen_jobs_ids):
     for document in new_documents:
         if len(list_jobs) >= MAXIMUM_JOBS_FOR_DISPLAYING:
             break
 
+        if(document["_id"] in seen_jobs_ids):
+            continue
+
         if is_company_eligible(document, titles, companies, cities, other_list):
             list_jobs.append(document)
+            seen_jobs_ids.append(document["_id"])
+    
     return list_jobs
 
 
@@ -273,9 +278,7 @@ def get_first_jobs():
     # Create a new list of dictionaries with all fields and "id" converted to str
     new_documents = str_convert(documents)
     list_jobs = []
-    unique_jobs = help_get_first_jobs(new_documents, list_jobs, title, company, citiesByAreas, other_list,
-                                      job_type, field,
-                                      db)
+    unique_jobs = help_get_first_jobs(new_documents, list_jobs, title, company, citiesByAreas, other_list,job_type, field,db,[])
     gpt_list = help_get_first_jobs_from_gpt(request_details, unique_jobs)
 
     return jsonify({"success": True, "list_jobs": gpt_list})
@@ -298,18 +301,21 @@ def is_document_eligible(document, titles, cities, other_list):
     return False
 
 
-def filter_jobs(new_documents, list_jobs, titles, cities, other_list):
+def filter_jobs(new_documents, list_jobs, titles, cities, other_list,seen_jobs_ids):
     for document in new_documents:
         if len(list_jobs) >= MAXIMUM_JOBS_FOR_DISPLAYING:
             break
-
+        
+        if(document["_id"] in seen_jobs_ids):
+            continue
         if is_document_eligible(document, titles, cities, other_list):
             list_jobs.append(document)
+            seen_jobs_ids.append(document["_id"])
 
     return list_jobs
 
 
-def help_part_time(field, db, list_jobs):
+def help_part_time(field, db, list_jobs,seen_jobs_ids):
     job2 = field.lower() + "_" + "intern"
     collection2 = db[job2]
     # Find all documents in the collection
@@ -317,22 +323,28 @@ def help_part_time(field, db, list_jobs):
     # Create a new list of dictionaries with all fields except "id"
     new_documents2 = str_convert(documents2)
     for doc in new_documents2:
+        print("Intern document id",doc["_id"])
+       
+        if(doc["_id"] in seen_jobs_ids):
+            continue
         if len(list_jobs) < MAXIMUM_JOBS_FOR_DISPLAYING and doc["job"] != "":
             list_jobs.append(doc)
+            seen_jobs_ids.append(doc["_id"])
+
     return list_jobs
 
 
-def help_get_first_jobs(new_documents, list_jobs, titles, companies, cities, other_list, time, field, db):
+def help_get_first_jobs(new_documents, list_jobs, titles, companies, cities, other_list, time, field, db,seen_jobs_ids):
     if "I'm open to any company" not in companies:
-        list_jobs = filter_jobs_company(new_documents, list_jobs, titles, companies, cities, other_list)
+        list_jobs = filter_jobs_company(new_documents, list_jobs, titles, companies, cities, other_list,seen_jobs_ids)
 
         if len(list_jobs) >= MAXIMUM_JOBS_FOR_DISPLAYING:
             return list_jobs
-
-    list_jobs = filter_jobs(new_documents, list_jobs, titles, cities, other_list)
+    
+    list_jobs = filter_jobs(new_documents, list_jobs, titles, cities, other_list,seen_jobs_ids)
 
     if time[0].lower() == "part_time" and len(list_jobs) < MAXIMUM_JOBS_FOR_DISPLAYING:
-        list_jobs = help_part_time(field, db, list_jobs)
+        list_jobs = help_part_time(field, db, list_jobs,seen_jobs_ids)
 
     set_res = set([job["_id"] for job in list_jobs])
     unique_jobs = []
@@ -457,8 +469,9 @@ def get_second_jobs():
     # Create a new list of dictionaries with all fields and "id" converted to str
     new_documents = str_convert(documents)
     list_jobs = []
-
-    unique_jobs = help_get_first_jobs(new_documents, list_jobs, jobtitle, company, citiesByAreas, other_list, level,field,db)
+    
+    seen_jobs_ids = [job["_id"] for job in display_jobs]
+    unique_jobs = help_get_first_jobs(new_documents, list_jobs, jobtitle, company, citiesByAreas, other_list, level,field,db,seen_jobs_ids)
 
     display_jobs_ids = [job["_id"] for job in display_jobs]
     unique_jobs_second_jobs = [job for job in unique_jobs if job["_id"] not in display_jobs_ids]
