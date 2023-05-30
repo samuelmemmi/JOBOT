@@ -103,7 +103,7 @@ const EmailDisplay = (props) => {
         {options.map((opt,index) =>{
           return(
           <label key={index}>
-            <br />
+            {/* <br /> */}
             <input
             className="checkbox"
             type="checkbox"

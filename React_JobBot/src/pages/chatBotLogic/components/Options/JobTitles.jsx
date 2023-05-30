@@ -43,7 +43,7 @@ const JobTitles = (props) => {
         {options.map((opt,index) =>{//<div className="d-flex flex-column" key={index}>
           return(
           <label key={index}>
-            <br />
+            {/* <br /> */}
             <input
             className="checkbox"
             type="checkbox"

@@ -5,6 +5,7 @@ from flask import session
 import openai
 import time
 from datetime import date
+import copy
 import key
 
 SECRET_KEY = 'secret-key-'
@@ -27,6 +28,16 @@ CITIES_AND_AREAS = {"South": ["Qiryat Gat", "Ashdod", "South", "Southern", "Isra
 MAXIMUM_JOBS_FOR_DISPLAYING = 15
 CLUSTER_NAME = "chatbot"
 MAX_JOBS_FOR_GPT = 6
+
+
+GENERAL_STATS = {"areas": {"South": 0, "North": 0, "Central": 0}, "job Types": {"Part_time": 0, "Full_time": 0}, \
+                   "field": {"Engineering": 0, "Marketing": 0, "Human Resources": 0, "Healthcare": 0,
+                             "Arts & Design": 0, "Finance & Accounting": 0, "Other": 0}, \
+                   "experience level": {"Intern": 0, "Junior": 0, "Senior": 0, "Other": 0}}
+JOBOT_RESPONSE_FOR_FEEDBACK_1 = "I'm glad to hear you found a job"
+JOBOT_RESPONSE_FOR_FEEDBACK_2 = "Thanks for the feedback. We are always looking for ways to improve our services."
+INTENTS_TO_CHECK = ["I found enough jobs here", "I prefer self job search", "I'm interested in a shorter process"]
+
 MAX_SECONDS_FOR_SLEEPING = 20  # 12
 
 OTHER_LIST_HEALTHCARE = ["medical assistant", "health representative", "production scientist"]
@@ -149,7 +160,7 @@ def what_field(field):
         "human resources": ("humanresources", OTHER_LIST_HUMAN),
         "finance & accounting": ("finance", OTHER_LIST_FINANCE),
         "engineering": ("engineer", OTHER_LIST_ENGINEER),
-        "healthcare": (None, OTHER_LIST_HEALTHCARE)
+        "healthcare": ("Healthcare", OTHER_LIST_HEALTHCARE)
     }
     lowercase_field = field.lower()
     if lowercase_field in field_mappings:
@@ -189,7 +200,6 @@ def is_company_eligible(document, titles, companies, cities, other_list):
                     return True
     return False
 
-
 def filter_jobs_company(new_documents, list_jobs, titles, companies, cities, other_list):
     for document in new_documents:
         if len(list_jobs) >= MAXIMUM_JOBS_FOR_DISPLAYING:
@@ -197,7 +207,6 @@ def filter_jobs_company(new_documents, list_jobs, titles, companies, cities, oth
 
         if is_company_eligible(document, titles, companies, cities, other_list):
             list_jobs.append(document)
-
     return list_jobs
 
 
@@ -336,8 +345,37 @@ def help_get_first_jobs(new_documents, list_jobs, titles, companies, cities, oth
     return unique_jobs
 
 
+def getJobString(job,index):
+    job_string = "This is the " + str(index) + " job\n" + "job title: " + job['job'] +\
+    ", job description: " + job['description'] + "\n"
+    return job_string
+
+def getQuestionForGPT(experience_education,jobs_string):
+    question = "I have a person who his experience and education are: '" + experience_education + "'" \
+            ". Are the description jobs below fit for him: " + jobs_string + \
+            "Return an answer according to the following template: 'job #: Yes' if this job is fit and 'job #: No' else."
+    return question
+
+def appendApprovedJobs(potential_jobs,index,response_gpt,gpt_list):
+    for job in potential_jobs:
+        if (str(index) + ": Yes") in response_gpt:
+            gpt_list.append(job)
+        index+=1
+
+def chatgptConnection(question):
+    API_KEY = key.api_key
+    openai.api_key = API_KEY
+    chat_log = [{"role": "user", "content": question}]
+    response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=chat_log)
+    assistant_response = response['choices'][0]['message']['content']
+    print("chatgpt: ", assistant_response.strip("\n").strip())
+    chat_log.append({"role": "assistant", "content": assistant_response.strip("\n").strip()})
+    return assistant_response.strip("\n").strip()
+
 # use chatgpt to get more precise job (use experience and education)
 def get_jobs_from_chatGpt(unique_jobs, experience_education):
+    print("len of jobs")
+    print(len(unique_jobs))
     gpt_list = []
     index = 1
     # If there are more than MAX_JOBS_FOR_GPT jobs, we will not use chatgpt for the last rest jobs
@@ -345,37 +383,26 @@ def get_jobs_from_chatGpt(unique_jobs, experience_education):
         temp_len = MAX_JOBS_FOR_GPT
     else:
         temp_len = len(unique_jobs)
-    lengt = int(temp_len / 2) * 2
+    lengt = int((temp_len / 2) * 2)
     for i in range(0, lengt, 2):
-        job_string1 = "This is the " + str(index) + " job\n" + "job title: " + unique_jobs[i][
-            'job'] + ", job description: " + unique_jobs[i]['description'] + "\n"
-        job_string2 = "This is the " + str(index + 1) + " job\n" + "job title: " + unique_jobs[i + 1][
-            'job'] + ", job description: " + unique_jobs[i + 1]['description'] + "\n"
-        question = "I have a person who his experience and education are: '" + experience_education + "'" \
-                                                                                                      ". Are the description jobs below fit for him: " + job_string1 + job_string2 + \
-                   "Return an answer according to the following template: 'job #: Yes' if this job is fit and 'job #: No' else."
+        if i+1<lengt:
+            jobs_string = getJobString(unique_jobs[i],index) + getJobString(unique_jobs[i+1],index+1)
+        else:
+            jobs_string = getJobString(unique_jobs[i],index)
+        question = getQuestionForGPT(experience_education,jobs_string)
+        response_gpt = chatgptConnection(question)
 
-        response_gpt = chatgpt_connexion(question)
-
-        if (str(index) + ": Yes") in response_gpt:
-            gpt_list.append(unique_jobs[i])
-        if (str(index + 1) + ": Yes") in response_gpt:
-            gpt_list.append(unique_jobs[i + 1])
-        if i + 1 != (lengt - 1):
-            time.sleep(MAX_SECONDS_FOR_SLEEPING)
+        if i+1<lengt:
+            potential_jobs=[unique_jobs[i],unique_jobs[i+1]]
+            appendApprovedJobs(potential_jobs,index,response_gpt,gpt_list)
+            if (i + 1 != (lengt - 1)):
+                time.sleep(MAX_SECONDS_FOR_SLEEPING) 
+        else:
+            potential_jobs=[unique_jobs[i]]
+            appendApprovedJobs(potential_jobs,index,response_gpt,gpt_list)
+            if (i != (lengt - 1)) :
+                time.sleep(MAX_SECONDS_FOR_SLEEPING)
         index += 2
-
-    i += 2
-    for i in range(i, lengt):
-        job_string = "This is the " + str(index) + " job\n" + "job title: " + unique_jobs[i][
-            'job'] + ", job description: " + unique_jobs[i]['description'] + "\n"
-        question = "I have a person who his experience and education are: '" + experience_education + "'" \
-                                                                                                      ". Are the description jobs below fit for him: " + job_string + \
-                   "Return an answer according to the following template: 'job #: Yes' if this job is fit and 'job #: No' else."
-
-        response_gpt = chatgpt_connexion(question)
-        if (str(index) + ": Yes") in response_gpt:
-            gpt_list.append(unique_jobs[i])
 
     # if there are more than 6 jobs in unique_jobs we also send to client from the seventh job onwards
     j = MAX_JOBS_FOR_GPT
@@ -413,23 +440,10 @@ def get_second_jobs():
         id = 1
 
     if "cities" in second_list:
-        city = second_list["cities"]
+        citiesByAreas = second_list["cities"]
     else:
         areas = second_list["areas"]
-        area_dict = {"South": ["Qiryat Gat", "Ashdod", "South", "Southern", "Israel"],
-                     "North": ["Haifa", "North", "Northern", "Israel"],
-                     "Central": ["Central", "Herzliya", "Jerusalem", "Netanya", "Petah Tikva", "Raanana", "Ramat Gan",
-                                 "Rishon LeZiyyon", "Tel Aviv", "Tel Aviv-Yafo", "Kfar Saba", "Rehovot", "Hod HaSharon",
-                                 "Bnei Brak", "Giv`atayim", "Israel", "Lod", "Holon", "Yavne", "Ness Ziona"],
-                     "All": ["Haifa", "North", "Northern", "Ashdod", "South", "Southern", "Central", "Herzliya",
-                             "Jerusalem", "Netanya", "Petah Tikva", "Raanana", "Ramat Gan",
-                             "Rishon LeZiyyon", "Tel Aviv", "Tel Aviv-Yafo", "Kfar Saba", "Rehovot", "Hod HaSharon",
-                             "Bnei Brak", "Giv`atayim", "Israel", "Lod", "Holon", "Yavne", "Ness Ziona"]}
-
-        city = []
-        for i in range(len(areas)):
-            city.append(area_dict[areas[i]])
-        city = [item for sublist in city for item in sublist]
+        citiesByAreas=getCitiesFromAreas(areas,[])
 
     if "job Requirements" in second_list:
         requirements = second_list["job Requirements"]
@@ -443,9 +457,8 @@ def get_second_jobs():
     # Create a new list of dictionaries with all fields and "id" converted to str
     new_documents = str_convert(documents)
     list_jobs = []
-    unique_jobs = help_get_first_jobs(new_documents, list_jobs, jobtitle, company, city, other_list, level,
-                                      field,
-                                      db)
+
+    unique_jobs = help_get_first_jobs(new_documents, list_jobs, jobtitle, company, citiesByAreas, other_list, level,field,db)
 
     display_jobs_ids = [job["_id"] for job in display_jobs]
     unique_jobs_second_jobs = [job for job in unique_jobs if job["_id"] not in display_jobs_ids]
@@ -549,13 +562,11 @@ def selected_jobs():
 
 @app.route("/viewhistory", methods=["POST"])
 def view_history():
-    # connexion to the MongoDB database
-    cluster = MongoClient(MONGODB_CONNECTION_STRING)
-    db = cluster[CLUSTER_NAME]
     details = request.json.get('clientDetails')
-    collection = db["users"]
     username = details["userName"]
     password = details["password"]
+    
+    collection = get_collection_by_field("users")
     user = collection.find_one({'user_name': username, 'password': password})
     size = 0
     if "history" in user:
@@ -565,6 +576,7 @@ def view_history():
         return jsonify({"success": True, "content": content})
     else:
         return jsonify({"success": True, "content": []})
+
 
 
 @app.route("/clienthistory", methods=["POST"])
@@ -590,7 +602,6 @@ def client_history():
 
     return jsonify({"success": True, "message": "update database"})
 
-
 # function to identify user intent based on chatGPT
 def identify_intent(response, intents):
     relevant_intents = []
@@ -598,7 +609,7 @@ def identify_intent(response, intents):
     question = "For which of the intents in the list " + str(
         intents) + " the sentence '" + response + "' corresponds? Return the indexes (which start from 1) of the corresponding intents according to the following template: 'intent #: Yes', If this intent fits and 'intent #: No' else."
 
-    response_gpt = chatgpt_connexion(question)
+    response_gpt = chatgptConnection(question)
     for i in range(len(intents)):
         if (str(i + 1) + ": Yes") in response_gpt:
             relevant_intents.append(intents[i])
@@ -645,9 +656,7 @@ def save_intents_in_DB(intents, statName):
 
 
 def getStatsFromDB(statName):
-    cluster = MongoClient(MONGODB_CONNECTION_STRING)
-    db = cluster[CLUSTER_NAME]
-    collec_admin_stats = db["admin_statistics"]
+    collec_admin_stats = get_collection_by_field("admin_statistics")
     document = collec_admin_stats.find_one({"statName": statName})
     del document["_id"]
     return document
@@ -661,35 +670,34 @@ def calculateGeneralStats(subjects):
 
     today = str(date.today())
 
-    genaralStat = {"areas": {"South": 0, "North": 0, "Central": 0}, "job Types": {"Part_time": 0, "Full_time": 0}, \
-                   "field": {"Engineering": 0, "Marketing": 0, "Human Resources": 0, "Healthcare": 0,
-                             "Arts & Design": 0, "Finance & Accounting": 0, "Other": 0}, \
-                   "experience level": {"Intern": 0, "Junior": 0, "Senior": 0, "Other": 0}}
+    genaralStat = copy.deepcopy(GENERAL_STATS)
     for subject in subjects:
         for user in collec_users.find():
             if "history" in user:
                 for history in user['history']:
                     if subject != "field":
-                        print(history['selected features'])
+                        # print(history['selected features'])
                         if subject in history['selected features']:
                             for cat in history['selected features'][subject]:
                                 if cat == "All":
-                                    genaralStat[subject]["South"] = genaralStat[subject]["South"] + 1
-                                    genaralStat[subject]["North"] = genaralStat[subject]["North"] + 1
-                                    genaralStat[subject]["Central"] = genaralStat[subject]["Central"] + 1
+                                    genaralStat[subject]["South"] += 1
+                                    genaralStat[subject]["North"] += 1
+                                    genaralStat[subject]["Central"] += 1
                                 else:
-                                    genaralStat[subject][cat] = genaralStat[subject][cat] + 1
+                                    genaralStat[subject][cat] += 1
                     else:
                         cat = history['selected features'][subject]
-                        genaralStat[subject][cat] = genaralStat[subject][cat] + 1
+                        genaralStat[subject][cat] += 1
 
     collec_admin_stats = db["admin_statistics"]
     collec_admin_stats.update_one(
         {"statName": "general_statistics"},
         {"$set": {"stat": genaralStat, "update date": today, "users number": users_len}}
     )
-    print("after update genaralStat")
-    print(collec_admin_stats.find_one({"statName": "general_statistics"}))
+    # print("after update genaralStat")
+    # print(collec_admin_stats.find_one({"statName": "general_statistics"}))
+    # print("GENERAL_STATS")
+    # print(GENERAL_STATS)
 
 
 def updateAllfeedbacksInDB():
@@ -739,13 +747,10 @@ def getStatistics():
 def test_response():
     feedback = request.json.get("message")
     # identify intents using chatGPT
-    intents_to_check = ["I found enough jobs here", "I prefer self job search", "I'm interested in a shorter process"]
-    intents = identify_intent(feedback, intents_to_check)
+    intents = identify_intent(feedback, INTENTS_TO_CHECK)
 
     # add the new feedback to the list of feedbacks in db
-    cluster = MongoClient(MONGODB_CONNECTION_STRING)
-    db = cluster[CLUSTER_NAME]
-    collec_admin_stats = db["admin_statistics"]
+    collec_admin_stats = get_collection_by_field("admin_statistics")
     document = collec_admin_stats.find_one({"statName": "feedback"})
     document["all feedbacks"].append(feedback)
     collec_admin_stats.update_one(
@@ -758,22 +763,12 @@ def test_response():
 
     JOBOT_response = ""
     if len(intents) == 1 and intents[0] == "I found enough jobs here":
-        JOBOT_response = "I'm glad to hear you found a job"
+        JOBOT_response = JOBOT_RESPONSE_FOR_FEEDBACK_1
     else:
-        JOBOT_response = "Thanks for the feedback. We are always looking for ways to improve our services."
+        JOBOT_response = JOBOT_RESPONSE_FOR_FEEDBACK_2
     print(f"User response: {feedback}")
     return jsonify({"success": True, "message": JOBOT_response})
 
-
-def chatgpt_connexion(question):
-    API_KEY = key.api_key
-    openai.api_key = API_KEY
-    chat_log = [{"role": "user", "content": question}]
-    response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=chat_log)
-    assistant_response = response['choices'][0]['message']['content']
-    print("chatgpt: ", assistant_response.strip("\n").strip())
-    chat_log.append({"role": "assistant", "content": assistant_response.strip("\n").strip()})
-    return assistant_response.strip("\n").strip()
 
 
 def find_best_job(field):
@@ -828,7 +823,6 @@ def find_best_city(field):
     # Print the top 5 companies
     for result in results:
         print(result["_id"], result["count"])
-
 
 if __name__ == "__main__":
     app.run(port=5000, debug=True)

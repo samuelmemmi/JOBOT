@@ -86,7 +86,7 @@ const JobTypes = (props) => {
         {options.map((opt,index) =>{
           return(
           <label key={index}>
-            <br />
+            {/* <br /> */}
             <input
             type="radio"
             value={opt}
