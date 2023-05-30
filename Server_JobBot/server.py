@@ -6,25 +6,30 @@ import openai
 import time
 from datetime import date
 import copy
+import key
+
+SECRET_KEY = 'secret-key-'
+app = Flask(__name__)
+app.secret_key = SECRET_KEY
 
 # CONSTANTS
 MONGODB_CONNECTION_STRING = "mongodb+srv://samuelmemmi:1234@cluster0.e4sf8mm.mongodb.net/?retryWrites=true&w=majority"
 NUMBER_OF_ADMINS = 2
-SECTER_KEY = 'secret-key-'
 BOT_DECISION_TREE_PATH = '../React_JobBot/src/pages/chatBotLogic/decisionTree.json'
 CITIES_AND_AREAS = {"South": ["Qiryat Gat", "Ashdod", "South", "Southern", "Israel"],
-                 "North": ["Haifa", "North", "Northern", "Israel"],
-                 "Central": ["Herzliya", "Jerusalem", "Netanya", "Petah Tikva", "Raanana", "Ramat Gan",
-                             "Rishon LeZiyyon", "Tel Aviv", "Tel Aviv-Yafo", "Kfar Saba", "Rehovot", "Hod HaSharon",
-                             "Bnei Brak", "Giv`atayim", "Lod", "Holon", "Yavne", "Ness Ziona","Central", "Israel"],
-                 "All": ["Haifa", "North", "Northern", "Qiryat Gat","Ashdod", "South", "Southern", "Herzliya",
-                         "Jerusalem", "Netanya", "Petah Tikva", "Raanana", "Ramat Gan",
-                         "Rishon LeZiyyon", "Tel Aviv", "Tel Aviv-Yafo", "Kfar Saba", "Rehovot", "Hod HaSharon",
-                         "Bnei Brak", "Giv`atayim", "Lod", "Holon", "Yavne", "Ness Ziona", "Central", "Israel"]}
+                    "North": ["Haifa", "North", "Northern", "Israel"],
+                    "Central": ["Herzliya", "Jerusalem", "Netanya", "Petah Tikva", "Raanana", "Ramat Gan",
+                                "Rishon LeZiyyon", "Tel Aviv", "Tel Aviv-Yafo", "Kfar Saba", "Rehovot", "Hod HaSharon",
+                                "Bnei Brak", "Giv`atayim", "Lod", "Holon", "Yavne", "Ness Ziona", "Central", "Israel"],
+                    "All": ["Haifa", "North", "Northern", "Qiryat Gat", "Ashdod", "South", "Southern", "Herzliya",
+                            "Jerusalem", "Netanya", "Petah Tikva", "Raanana", "Ramat Gan",
+                            "Rishon LeZiyyon", "Tel Aviv", "Tel Aviv-Yafo", "Kfar Saba", "Rehovot", "Hod HaSharon",
+                            "Bnei Brak", "Giv`atayim", "Lod", "Holon", "Yavne", "Ness Ziona", "Central", "Israel"]}
 MAXIMUM_JOBS_FOR_DISPLAYING = 15
 CLUSTER_NAME = "chatbot"
 MAX_JOBS_FOR_GPT = 6
-MAX_SECONDS_FOR_SLEEPING = 20 #12
+
+
 GENERAL_STATS = {"areas": {"South": 0, "North": 0, "Central": 0}, "job Types": {"Part_time": 0, "Full_time": 0}, \
                    "field": {"Engineering": 0, "Marketing": 0, "Human Resources": 0, "Healthcare": 0,
                              "Arts & Design": 0, "Finance & Accounting": 0, "Other": 0}, \
@@ -33,15 +38,35 @@ JOBOT_RESPONSE_FOR_FEEDBACK_1 = "I'm glad to hear you found a job"
 JOBOT_RESPONSE_FOR_FEEDBACK_2 = "Thanks for the feedback. We are always looking for ways to improve our services."
 INTENTS_TO_CHECK = ["I found enough jobs here", "I prefer self job search", "I'm interested in a shorter process"]
 
-app = Flask(__name__)
-app.secret_key = SECTER_KEY
+MAX_SECONDS_FOR_SLEEPING = 20  # 12
 
-other_list_healthcare = ["Medical Assistant", "Health representative", "Production Scientist"]
-other_list_marketing = ["Product Marketing", "Data Analyst", "Marketing Designer"]
-other_list_design = ["Designer", "Chip Design Architect", "Front End Developer"]
-other_list_human = ["Digital Key Account", "Global HR Planning & Operations", "Talent Acquisition Specialist"]
-other_list_finance = ["VP Finance", "Business Development", "Finance Controller"]
-other_list_engineer = ["QA Engineer", "Network Engineer", "Software Engineer"]
+OTHER_LIST_HEALTHCARE = ["medical assistant", "health representative", "production scientist"]
+OTHER_LIST_MARKETING = ["product marketing", "data analyst", "marketing designer"]
+OTHER_LIST_DESIGN = ["designer", "chip design architect", "front end developer"]
+OTHER_LIST_HUMAN = ["digital key account", "global hr planning & operations", "talent acquisition specialist"]
+OTHER_LIST_FINANCE = ["vp finance", "business development", "finance controller"]
+OTHER_LIST_ENGINEER = ["qa engineer", "network engineer", "software engineer"]
+
+TITLE_MAPPINGS = {
+    "Health representative": "representative",
+    "Production Scientist": "scientist",
+    "Digital Key Account": "account",
+    "Global HR Planning & Operations": "HR Planning",
+    "Talent Acquisition Specialist": "Talent Specialist",
+    "Chip Design Architect": "Chip Design"
+}
+
+DESIGN_JOBS = ["design_full_time", "design_part_time", "design_intern", "design_junior", "design_senior"]
+ENGINEER_JOBS = ["engineer_full_time", "engineer_part_time", "engineer_intern", "engineer_junior",
+                 "engineer_senior"]
+FINANCE_JOBS = ["finance_full_time", "finance_part_time", "finance_intern", "finance_junior", "finance_senior"]
+HEALTHCARE_JOBS = ["healthcare_full_time", "healthcare_part_time", "healthcare_intern", "healthcare_junior",
+                   "healthcare_senior"]
+MARKETING_JOBS = ["marketing_full_time", "marketing_part_time", "marketing_intern", "marketing_junior",
+                  "marketing_senior"]
+HUMAN_JOBS = ["humanresources_full_time", "humanresources_part_time", "humanresources_intern",
+              "humanresources_junior", "humanresources_senior"]
+
 
 def get_collection_by_field(field):
     # connection to the MongoDB database
@@ -49,7 +74,6 @@ def get_collection_by_field(field):
     db = cluster[CLUSTER_NAME]
     collection = db[field]
     return collection
-
 
 
 # route for login
@@ -62,15 +86,15 @@ def login():
     password = request.json.get("Password")
     # check if the user is already existing
     user = collection.find_one({"user_name": user_name, "password": password})
-    # if "admin" not in user:
     if user:
         # check if the user is admin or client
-        if "admin" in  user and user["admin"] == "Yes":
+        if "admin" in user and user["admin"] == "Yes":
             return jsonify({"success": True, "message": "Admin login success"})
         else:
             return jsonify({"success": True, "message": "Client login success"})
     else:
         return jsonify({"success": False, "message": "Username or password incorrect"})
+
 
 # route for register
 @app.route("/register", methods=["POST"])
@@ -79,7 +103,7 @@ def register():
     user_name = request.json.get("user_name")
     password = request.json.get("password")
     # check if username or password are valid
-    if user_name=="" or password=="":
+    if user_name == "" or password == "":
         return jsonify({"success": False, "message": "Invalid username or password"})
 
     # connexion to the MongoDB database
@@ -88,7 +112,6 @@ def register():
     existing_user = collection.find_one({"user_name": user_name, "password": password})
     if existing_user:
         return jsonify({"success": False, "message": "User name already exists"})
-    
     # this user is new, so we add him to the DB
     collection.insert_one({"user_name": user_name, "password": password})
     return jsonify({"success": True, "message": "Your new user is created"})
@@ -109,6 +132,7 @@ def logout():
     response.delete_cookie('session')
     return response
 
+
 # route for updating the decision tree
 @app.route("/write-json", methods=["POST"])
 def writeJson():
@@ -124,77 +148,31 @@ def writeJson():
 @app.route("/cities", methods=["POST"])
 def getCities():
     areas = request.json.get("areas")
-    areas_to_remove=["Central","North", "Northern","South", "Southern", "Israel"]
+    areas_to_remove = ["Central", "North", "Northern", "South", "Southern", "Israel"]
     # TODO: Check for edge cases! something + "All" as unit test
-    res = getCitiesFromAreas(areas,areas_to_remove)
+    res = getCitiesFromAreas(areas, areas_to_remove)
     return jsonify({"success": True, "cities": res})
-
-# R
-def first_help_get_first_jobs(new_documents, list_jobs, title, company, city, other_list):
-    for document in new_documents:
-        words2 = set(document["job"].lower().split())
-        if len(list_jobs) < MAXIMUM_JOBS_FOR_DISPLAYING:
-            if len(title) > 1 and len(company) > 1:
-                for ti in title:
-                    for comp in company:
-                        words1 = set(ti.lower().split())
-                        are_all_words_present = words1.issubset(words2)
-                        if ti != "Other":
-                            if document["company"] == comp and are_all_words_present and document[
-                                "city"] in city:
-                                list_jobs.append(document)
-                            elif document["company"] == comp and all(
-                                    [word in document["description"].lower() for word in words1]) and \
-                                    document["city"] in city:
-                                list_jobs.append(document)
-                        else:
-                            if document["company"] == comp and document["city"] in city:
-                                list_jobs.append(document)
-
-            else:
-                for comp in company:
-                    words1 = set(title[0].lower().split())
-                    are_all_words_present = words1.issubset(words2)
-                    if title[0] != "Other":
-                        if document["company"] == comp and are_all_words_present and document[
-                            "city"] in city:
-                            list_jobs.append(document)
-                        elif all(word in document["description"].lower() for word in words1) and document[
-                            "company"] == comp and document[
-                            "city"] in city:
-                            list_jobs.append(document)
-                    else:
-                        if document["company"] == comp and document["job"].lower() not in other_list and document[
-                            "city"] in city:
-                            list_jobs.append(document)
-        else:
-            break
-
-    return list_jobs
 
 
 def what_field(field):
-    if field == "Arts & Design":
-        field = "design"
-        other_list = other_list_design
-    elif field == "Human Resources":
-        field = "humanresources"
-        other_list = other_list_human
-    elif field == "Finance & Accounting":
-        field = "finance"
-        other_list = other_list_finance
-    elif field == "Engineering":
-        field = "engineer"
-        other_list = other_list_engineer
-    elif field == "Healthcare":
-        other_list = other_list_healthcare
+    field_mappings = {
+        "arts & design": ("design", OTHER_LIST_DESIGN),
+        "human resources": ("humanresources", OTHER_LIST_HUMAN),
+        "finance & accounting": ("finance", OTHER_LIST_FINANCE),
+        "engineering": ("engineer", OTHER_LIST_ENGINEER),
+        "healthcare": ("Healthcare", OTHER_LIST_HEALTHCARE)
+    }
+    lowercase_field = field.lower()
+    if lowercase_field in field_mappings:
+        field, other_list = field_mappings[lowercase_field]
     else:
-        other_list = other_list_marketing
+        raise ValueError("Invalid field: " + field)
+
     return other_list, field
 
 
-def getCitiesFromAreas(areas,areas_to_remove):
-    res=[]
+def getCitiesFromAreas(areas, areas_to_remove):
+    res = []
     if "All" in areas:
         res += list(set(CITIES_AND_AREAS["All"]) - set(areas_to_remove))
     else:
@@ -204,56 +182,35 @@ def getCitiesFromAreas(areas,areas_to_remove):
     return res
 
 
-@app.route("/getfirstjobs", methods=["POST"])
-def get_first_jobs():
-    request_details = request.json.get("responses")
-    field = request_details["field"]
-    job_type = request_details["job Types"]
+def is_company_eligible(document, titles, companies, cities, other_list):
+    job_words = set(document["job"].lower().split())
+    company_doc = document["company"]
+    city_doc = document["city"]
 
-    # TODO: change what_field to a dictonary
-    other_list, field = what_field(field)
+    if "Other" in titles:
+        if company_doc in companies and city_doc in cities and \
+                document["job"].lower() not in other_list:
+            return True
+    else:
+        for job_title in titles:
+            title_words = set(job_title.lower().split())
+            if company_doc in companies and city_doc in cities:
+                if title_words.issubset(job_words) or \
+                        all(word in document["description"].lower() for word in title_words):
+                    return True
+    return False
 
-    job = field.lower() + "_" + job_type[0].lower()
-    collection = get_collection_by_field(job)
+def filter_jobs_company(new_documents, list_jobs, titles, companies, cities, other_list):
+    for document in new_documents:
+        if len(list_jobs) >= MAXIMUM_JOBS_FOR_DISPLAYING:
+            break
 
-    company = request_details["companies"]
-    title = request_details["JobTitles"]
+        if is_company_eligible(document, titles, companies, cities, other_list):
+            list_jobs.append(document)
+    return list_jobs
 
-    # TODO: ask chatgpt to change that to use a dictonary
-    for i in range(len(title)):
-        if title[i] == "Health representative":
-            title[i] = "representative"
-        elif title[i] == "Production Scientist":
-            title[i] = "scientist"
-        elif title[i] == "Digital Key Account":
-            title[i] = "account"
-        elif title[i] == "Global HR Planning & Operations":
-            title[i] = "HR Planning"
-        elif title[i] == "Talent Acquisition Specialist":
-            title[i] = "Talent Specialist"
-        elif title[i] == "Chip Design Architect":
-            title[i] = "Chip Design"
 
-    areas = request_details["areas"]
-    citiesByAreas=getCitiesFromAreas(areas,[])
-
-    print("CITIES MINE:")
-    print(citiesByAreas)
-
-    # connection to the MongoDB database
-    cluster = MongoClient(MONGODB_CONNECTION_STRING)
-
-    db = cluster[CLUSTER_NAME]
-
-    # Find all documents in the collection
-    documents = collection.find()
-    # Create a new list of dictionaries with all fields except "id"
-    # new_documents = [{k: v for k, v in doc.items() if k != "_id"} for doc in documents]
-    # Create a new list of dictionaries with all fields and "id" converted to str
-    new_documents = [{k: (str(v) if k == '_id' else v) for k, v in doc.items()} for doc in documents]
-    list_jobs = []
-    unique_jobs = second_help_get_first_jobs(new_documents, list_jobs, title, company, citiesByAreas, other_list, job_type, field,
-                                             db)
+def help_get_first_jobs_from_gpt(request_details, unique_jobs):
     # connexion to the MongoDB database
     collection = get_collection_by_field("users")
     userDetails = {"user_name": request_details["client details"]["userName"],
@@ -267,104 +224,115 @@ def get_first_jobs():
         # go through the list of histories starting from the most recent history to the oldest
         for history in reversed(histories_list):
             # print(history['field'])
-            if (history["field"] == request_details["field"]):
+            if history["field"] == request_details["field"]:
                 experi_educa = history["experiance & education"]
                 if experi_educa != "-":
                     break
-    # print("experi_educa: ", experi_educa)
 
     # call chatgpt with the experiance & education we found
     gpt_list = unique_jobs
     if len(unique_jobs) != 0 and experi_educa != "-":
         gpt_list = get_jobs_from_chatGpt(unique_jobs, experi_educa)
 
+    return gpt_list
+
+
+def str_convert(documents):
+    # Create a new list of dictionaries with all fields and "id" converted to str
+    new_documents = [{k: (str(v) if k == '_id' else v) for k, v in doc.items()} for doc in documents]
+    return new_documents
+
+
+@app.route("/getfirstjobs", methods=["POST"])
+def get_first_jobs():
+    request_details = request.json.get("responses")
+    field = request_details["field"]
+    job_type = request_details["job Types"]
+
+    other_list, field = what_field(field)
+
+    job = field.lower() + "_" + job_type[0].lower()
+    collection = get_collection_by_field(job)
+
+    company = request_details["companies"]
+    title = request_details["JobTitles"]
+
+    for i in range(len(title)):
+        if title[i] in TITLE_MAPPINGS:
+            title[i] = TITLE_MAPPINGS[title[i]]
+
+    areas = request_details["areas"]
+    citiesByAreas = getCitiesFromAreas(areas, [])
+
+    # connection to the MongoDB database
+    cluster = MongoClient(MONGODB_CONNECTION_STRING)
+    db = cluster[CLUSTER_NAME]
+
+    # Find all documents in the collection
+    documents = collection.find()
+    # Create a new list of dictionaries with all fields and "id" converted to str
+    new_documents = str_convert(documents)
+    list_jobs = []
+    unique_jobs = help_get_first_jobs(new_documents, list_jobs, title, company, citiesByAreas, other_list,
+                                      job_type, field,
+                                      db)
+    gpt_list = help_get_first_jobs_from_gpt(request_details, unique_jobs)
+
     return jsonify({"success": True, "list_jobs": gpt_list})
 
 
-def second_help_get_first_jobs(new_documents, list_jobs, title, company, city, other_list, time, field, db):
-    if "I'm open to any company" not in company:
-        list_jobs = first_help_get_first_jobs(new_documents, list_jobs, title, company, city, other_list)
+def is_document_eligible(document, titles, cities, other_list):
+    job_words = set(document["job"].lower().split())
+    city_doc = document["city"]
 
-        if len(list_jobs) < MAXIMUM_JOBS_FOR_DISPLAYING:
-            company.append("I'm open to any company")
-        else:
-            return list_jobs
+    if "Other" in titles:
+        if city_doc in cities and document["job"].lower() not in other_list:
+            return True
+    else:
+        for job_title in titles:
+            title_words = set(job_title.lower().split())
+            if title_words.issubset(job_words) and city_doc in cities:
+                return True
+            elif all(word in document["description"].lower() for word in title_words) and city_doc in cities:
+                return True
+    return False
+
+
+def filter_jobs(new_documents, list_jobs, titles, cities, other_list):
     for document in new_documents:
-        #TODO: explain words2 + A BETTER NAME!!!
-        words2 = set(document["job"].lower().split())
-        if len(list_jobs) < MAXIMUM_JOBS_FOR_DISPLAYING:
-            #TODO: why > 1 ? is 1 a constant?
-            if len(title) > 1 and len(company) > 1:
-                #TODO: title = titles? company = companies? CHANGE THIS.
-                for ti in title:
-                    for comp in company:
-                        #TODO: explain words1 + A BETTER NAME!!!
-                        words1 = set(ti.lower().split())
-                        are_all_words_present = words1.issubset(words2)
-                        #TODO: extract conditions to avariables if used multiple times. then use chatGPT.
-                        if ti != "Other":
-                            if comp == "I'm open to any company":
-                                if are_all_words_present and document["city"] in city:
-                                    list_jobs.append(document)
-                                elif all(word in document["description"].lower() for word in words1)\
-                                        and document["city"] in city:
-                                    list_jobs.append(document)
-                            else:
-                                if document["company"] == comp and are_all_words_present and document[
-                                    "city"] in city:
-                                    list_jobs.append(document)
-                                elif document["company"] == comp and all(
-                                        word in document["description"].lower() for word in words1) and \
-                                        document["city"] in city:
-                                    list_jobs.append(document)
-                        else:
-                            if comp == "I'm open to any company":
-                                if document["city"] in city:
-                                    list_jobs.append(document)
-                            else:
-                                if document["company"] == comp and document["city"] in city:
-                                    list_jobs.append(document)
-            else:
-                for comp in company:
-                    words1 = set(title[0].lower().split())
-                    are_all_words_present = words1.issubset(words2)
-                    if title[0] != "Other":
-                        if comp != "I'm open to any company":
-                            if document["company"] == comp and are_all_words_present and document[
-                                "city"] in city:
-                                list_jobs.append(document)
-                            elif document["company"] == comp and all(
-                                    word in document["description"].lower() for word in words1) and document[
-                                "city"] in city:
-                                list_jobs.append(document)
-                        else:
-                            if are_all_words_present and document["city"] in city:
-                                list_jobs.append(document)
-                            elif all(word in document["description"].lower() for word in words1) and document[
-                                "city"] in city:
-                                list_jobs.append(document)
-                    else:
-                        if comp != "I'm open to any company":
-                            if document["company"] == comp and document["job"].lower() not in other_list and document[
-                                "city"] in city:
-                                list_jobs.append(document)
-                        else:
-                            if document["job"].lower() not in other_list and document["city"] in city:
-                                list_jobs.append(document)
-        else:
+        if len(list_jobs) >= MAXIMUM_JOBS_FOR_DISPLAYING:
             break
 
+        if is_document_eligible(document, titles, cities, other_list):
+            list_jobs.append(document)
+
+    return list_jobs
+
+
+def help_part_time(field, db, list_jobs):
+    job2 = field.lower() + "_" + "intern"
+    collection2 = db[job2]
+    # Find all documents in the collection
+    documents2 = collection2.find()
+    # Create a new list of dictionaries with all fields except "id"
+    new_documents2 = str_convert(documents2)
+    for doc in new_documents2:
+        if len(list_jobs) < MAXIMUM_JOBS_FOR_DISPLAYING and doc["job"] != "":
+            list_jobs.append(doc)
+    return list_jobs
+
+
+def help_get_first_jobs(new_documents, list_jobs, titles, companies, cities, other_list, time, field, db):
+    if "I'm open to any company" not in companies:
+        list_jobs = filter_jobs_company(new_documents, list_jobs, titles, companies, cities, other_list)
+
+        if len(list_jobs) >= MAXIMUM_JOBS_FOR_DISPLAYING:
+            return list_jobs
+
+    list_jobs = filter_jobs(new_documents, list_jobs, titles, cities, other_list)
+
     if time[0].lower() == "part_time" and len(list_jobs) < MAXIMUM_JOBS_FOR_DISPLAYING:
-        job2 = field.lower() + "_" + "intern"
-        collection2 = db[job2]
-        # Find all documents in the collection
-        documents2 = collection2.find()
-        # Create a new list of dictionaries with all fields except "id"
-        #TODO: create a function?
-        new_documents2 = [{k: (str(v) if k == '_id' else v) for k, v in doc.items()} for doc in documents2]
-        for doc in new_documents2:
-            if len(list_jobs) < MAXIMUM_JOBS_FOR_DISPLAYING and doc["job"] != "":
-                list_jobs.append(doc)
+        list_jobs = help_part_time(field, db, list_jobs)
 
     set_res = set([job["_id"] for job in list_jobs])
     unique_jobs = []
@@ -394,6 +362,15 @@ def appendApprovedJobs(potential_jobs,index,response_gpt,gpt_list):
             gpt_list.append(job)
         index+=1
 
+def chatgptConnection(question):
+    API_KEY = key.api_key
+    openai.api_key = API_KEY
+    chat_log = [{"role": "user", "content": question}]
+    response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=chat_log)
+    assistant_response = response['choices'][0]['message']['content']
+    print("chatgpt: ", assistant_response.strip("\n").strip())
+    chat_log.append({"role": "assistant", "content": assistant_response.strip("\n").strip()})
+    return assistant_response.strip("\n").strip()
 
 # use chatgpt to get more precise job (use experience and education)
 def get_jobs_from_chatGpt(unique_jobs, experience_education):
@@ -413,7 +390,7 @@ def get_jobs_from_chatGpt(unique_jobs, experience_education):
         else:
             jobs_string = getJobString(unique_jobs[i],index)
         question = getQuestionForGPT(experience_education,jobs_string)
-        response_gpt = chatgpt(question)
+        response_gpt = chatgptConnection(question)
 
         if i+1<lengt:
             potential_jobs=[unique_jobs[i],unique_jobs[i+1]]
@@ -453,8 +430,6 @@ def get_second_jobs():
     if "additional job title" in second_list:
         jobtitle = second_list["additional job title"]
         jobtitle = [jobtitle] + second_list["JobTitles"]
-        print("titles")
-        print(jobtitle)
     else:
         jobtitle = second_list["JobTitles"]
 
@@ -480,11 +455,10 @@ def get_second_jobs():
     # Find all documents in the collection
     documents = collection.find()
     # Create a new list of dictionaries with all fields and "id" converted to str
-    new_documents = [{k: (str(v) if k == '_id' else v) for k, v in doc.items()} for doc in documents]
+    new_documents = str_convert(documents)
     list_jobs = []
-    unique_jobs = second_help_get_first_jobs(new_documents, list_jobs, jobtitle, company, citiesByAreas, other_list, level,
-                                             field,
-                                             db)
+
+    unique_jobs = help_get_first_jobs(new_documents, list_jobs, jobtitle, company, citiesByAreas, other_list, level,field,db)
 
     display_jobs_ids = [job["_id"] for job in display_jobs]
     unique_jobs_second_jobs = [job for job in unique_jobs if job["_id"] not in display_jobs_ids]
@@ -493,7 +467,6 @@ def get_second_jobs():
     if len(unique_jobs_second_jobs) != 0:
         gpt_list = get_jobs_from_chatGpt(unique_jobs_second_jobs, requirements)
     # UNIT TEST #
-
     return jsonify({"success": True, "list_jobs": gpt_list})
 
 
@@ -504,7 +477,7 @@ def get_jobs_from_view(jobs, db):
         # Find all jobs in the design collection
         documents = collection.find()
         # Create a new list of dictionaries with all fields except "id"
-        new_documents = [{k: v for k, v in doc.items() if k != "_id"} for doc in documents]
+        new_documents = str_convert(documents)
         for document in new_documents:
             listt.append(document)
     # Convert each dictionary to a tuple, add all tuples to a set, then convert each tuple back to a dictionary
@@ -517,23 +490,13 @@ def view_jobs():
     # connexion to the MongoDB database
     cluster = MongoClient(MONGODB_CONNECTION_STRING)
     db = cluster[CLUSTER_NAME]
-    design_jobs = ["design_full_time", "design_part_time", "design_intern", "design_junior", "design_senior"]
-    engineer_jobs = ["engineer_full_time", "engineer_part_time", "engineer_intern", "engineer_junior",
-                     "engineer_senior"]
-    finance_jobs = ["finance_full_time", "finance_part_time", "finance_intern", "finance_junior", "finance_senior"]
-    healthcare_jobs = ["healthcare_full_time", "healthcare_part_time", "healthcare_intern", "healthcare_junior",
-                       "healthcare_senior"]
-    marketing_jobs = ["marketing_full_time", "marketing_part_time", "marketing_intern", "marketing_junior",
-                      "marketing_senior"]
-    humanresources_jobs = ["humanresources_full_time", "humanresources_part_time", "humanresources_intern",
-                           "humanresources_junior", "humanresources_senior"]
 
-    list_design = get_jobs_from_view(design_jobs, db)
-    list_engineer = get_jobs_from_view(engineer_jobs, db)
-    list_finance = get_jobs_from_view(finance_jobs, db)
-    list_healthcare = get_jobs_from_view(healthcare_jobs, db)
-    list_marketing = get_jobs_from_view(marketing_jobs, db)
-    list_humanresources = get_jobs_from_view(humanresources_jobs, db)
+    list_design = get_jobs_from_view(DESIGN_JOBS, db)
+    list_engineer = get_jobs_from_view(ENGINEER_JOBS, db)
+    list_finance = get_jobs_from_view(FINANCE_JOBS, db)
+    list_healthcare = get_jobs_from_view(HEALTHCARE_JOBS, db)
+    list_marketing = get_jobs_from_view(MARKETING_JOBS, db)
+    list_humanresources = get_jobs_from_view(HUMAN_JOBS, db)
     total_list = list_humanresources + list_marketing + list_healthcare + list_design + list_finance + list_engineer
     return jsonify({"success": True, "total_list": total_list})
 
@@ -546,10 +509,8 @@ def view_users():
     # Find all user in the collection users
     documents = collection.find()
     # Create a new list of dictionaries with all fields except "id"
-    new_documents = [{k: v for k, v in doc.items() if k != "_id"} for doc in documents]
+    new_documents = str_convert(documents)
     for document in new_documents:
-        # print("user")
-        # print(f'{document.get("user_name")} password {document.get("password")} from {document.get("admin")}')
         users_list.append(document)
 
     return jsonify({"success": True, "users_list": users_list})
@@ -563,7 +524,7 @@ def offered_jobs():
     username = details["userName"]
     password = details["password"]
     user = collection.find_one({'user_name': username, 'password': password})
-    size=0
+    size = 0
     if "history" in user:
         size = len(user['history'])
     if size > 0:
@@ -583,15 +544,15 @@ def selected_jobs():
     username = details["userName"]
     password = details["password"]
     user = collection.find_one({'user_name': username, 'password': password})
-    size=0
-    jobs=[]
+    size = 0
+    jobs = []
     if "history" in user:
         size = len(user['history'])
     if size > 0:
         selected_jobs_ids = user['history'][size - 1]['selected jobs']
         if selected_jobs_ids == "-":
             return jsonify({"success": True, "jobs": jobs})
-        displayed_jobs=offered_jobs().json.get("jobs")
+        displayed_jobs = offered_jobs().json.get("jobs")
         if displayed_jobs:
             jobs = [job for job in displayed_jobs if job["_id"] in selected_jobs_ids]
         return jsonify({"success": True, "jobs": jobs})
@@ -601,19 +562,19 @@ def selected_jobs():
 
 @app.route("/viewhistory", methods=["POST"])
 def view_history():
-    collection = get_collection_by_field("users")
     details = request.json.get('clientDetails')
     username = details["userName"]
     password = details["password"]
+    
+    collection = get_collection_by_field("users")
     user = collection.find_one({'user_name': username, 'password': password})
-    size=0
+    size = 0
     if "history" in user:
         size = len(user['history'])
     if size > 0:
         content = user['history'][size - 1]['conversation content']
         return jsonify({"success": True, "content": content})
     else:
-        # return jsonify({"success": True, "content": "no content"})  # Return an empty array if no history found
         return jsonify({"success": True, "content": []})
 
 
@@ -641,70 +602,14 @@ def client_history():
 
     return jsonify({"success": True, "message": "update database"})
 
-
-def find_best_job(field):
-    collection = get_collection_by_field(field)
-
-    # Use aggregation to group by company and count the number of jobs per company
-    pipeline = [
-        {"$group": {"_id": "$company", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}},
-        {"$limit": 15}
-    ]
-
-    # Execute the pipeline and get the results
-    results = list(collection.aggregate(pipeline))
-
-    # Print the top 5 companies
-    for result in results:
-        print(result["_id"], result["count"])
-
-
-def find_best_title(field):
-    collection = get_collection_by_field(field)
-
-    # Use aggregation to group by company and count the number of jobs per company
-    pipeline = [
-        {"$group": {"_id": "$job", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}},
-        {"$limit": 15}
-    ]
-
-    # Execute the pipeline and get the results
-    results = list(collection.aggregate(pipeline))
-
-    # Print the top 5 companies
-    for result in results:
-        print(result["_id"], result["count"])
-
-
-def find_best_city(field):
-    collection = get_collection_by_field(field)
-
-    # Use aggregation to group by company and count the number of jobs per company
-    pipeline = [
-        {"$group": {"_id": "$city", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}},
-        {"$limit": 15}
-    ]
-
-    # Execute the pipeline and get the results
-    results = list(collection.aggregate(pipeline))
-
-    # Print the top 5 companies
-    for result in results:
-        print(result["_id"], result["count"])
-
-
 # function to identify user intent based on chatGPT
 def identify_intent(response, intents):
     relevant_intents = []
     # intents=["I found enough jobs here","I prefer self job search","I'm interested in a shorter process"]
     question = "For which of the intents in the list " + str(
         intents) + " the sentence '" + response + "' corresponds? Return the indexes (which start from 1) of the corresponding intents according to the following template: 'intent #: Yes', If this intent fits and 'intent #: No' else."
-    print("question:")
-    print(question)
-    response_gpt = chatgpt(question)
+
+    response_gpt = chatgptConnection(question)
     for i in range(len(intents)):
         if (str(i + 1) + ": Yes") in response_gpt:
             relevant_intents.append(intents[i])
@@ -716,9 +621,6 @@ def identify_intent(response, intents):
 
 
 # function to extract relevant information for each intent
-
-
-
 def save_intents_in_DB(intents, statName):
     # connexion to the MongoDB database
     cluster = MongoClient(MONGODB_CONNECTION_STRING)
@@ -868,19 +770,63 @@ def test_response():
     return jsonify({"success": True, "message": JOBOT_response})
 
 
-def chatgpt(question):
-    API_KEY = open("API_KEY.txt", "r").read().strip()
-    openai.api_key = API_KEY
-    chat_log = [{"role": "user", "content": question}]
-    response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=chat_log)
-    assistant_response = response['choices'][0]['message']['content']
-    print("chatgpt: ", assistant_response.strip("\n").strip())
-    chat_log.append({"role": "assistant", "content": assistant_response.strip("\n").strip()})
-    return assistant_response.strip("\n").strip()
 
+def find_best_job(field):
+    collection = get_collection_by_field(field)
+
+    # Use aggregation to group by company and count the number of jobs per company
+    pipeline = [
+        {"$group": {"_id": "$company", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 15}
+    ]
+
+    # Execute the pipeline and get the results
+    results = list(collection.aggregate(pipeline))
+
+    # Print the top 5 companies
+    for result in results:
+        print(result["_id"], result["count"])
+
+
+def find_best_title(field):
+    collection = get_collection_by_field(field)
+
+    # Use aggregation to group by company and count the number of jobs per company
+    pipeline = [
+        {"$group": {"_id": "$job", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 15}
+    ]
+
+    # Execute the pipeline and get the results
+    results = list(collection.aggregate(pipeline))
+
+    # Print the top 5 companies
+    for result in results:
+        print(result["_id"], result["count"])
+
+
+def find_best_city(field):
+    collection = get_collection_by_field(field)
+
+    # Use aggregation to group by company and count the number of jobs per company
+    pipeline = [
+        {"$group": {"_id": "$city", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 15}
+    ]
+
+    # Execute the pipeline and get the results
+    results = list(collection.aggregate(pipeline))
+
+    # Print the top 5 companies
+    for result in results:
+        print(result["_id"], result["count"])
 
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
+
     # find_best_title("healthcare_full_time")
     # find_best_title("marketing_full_time")
     # find_best_title("finance_full_time")
