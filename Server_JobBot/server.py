@@ -75,7 +75,6 @@ def login():
     password = request.json.get("Password")
     # check if the user is already existing
     user = collection.find_one({"user_name": user_name, "password": password})
-    # if "admin" not in user:
     if user:
         # check if the user is admin or client
         if "admin" in user and user["admin"] == "Yes":
@@ -102,7 +101,6 @@ def register():
     existing_user = collection.find_one({"user_name": user_name, "password": password})
     if existing_user:
         return jsonify({"success": False, "message": "User name already exists"})
-
     # this user is new, so we add him to the DB
     collection.insert_one({"user_name": user_name, "password": password})
     return jsonify({"success": True, "message": "Your new user is created"})
@@ -146,22 +144,19 @@ def getCities():
 
 
 def what_field(field):
-    if field == "Arts & Design":
-        field = "design"
-        other_list = OTHER_LIST_DESIGN
-    elif field == "Human Resources":
-        field = "humanresources"
-        other_list = OTHER_LIST_HUMAN
-    elif field == "Finance & Accounting":
-        field = "finance"
-        other_list = OTHER_LIST_FINANCE
-    elif field == "Engineering":
-        field = "engineer"
-        other_list = OTHER_LIST_ENGINEER
-    elif field == "Healthcare":
-        other_list = OTHER_LIST_HEALTHCARE
+    field_mappings = {
+        "arts & design": ("design", OTHER_LIST_DESIGN),
+        "human resources": ("humanresources", OTHER_LIST_HUMAN),
+        "finance & accounting": ("finance", OTHER_LIST_FINANCE),
+        "engineering": ("engineer", OTHER_LIST_ENGINEER),
+        "healthcare": (None, OTHER_LIST_HEALTHCARE)
+    }
+    lowercase_field = field.lower()
+    if lowercase_field in field_mappings:
+        field, other_list = field_mappings[lowercase_field]
     else:
-        other_list = OTHER_LIST_MARKETING
+        raise ValueError("Invalid field: " + field)
+
     return other_list, field
 
 
@@ -233,6 +228,12 @@ def help_get_first_jobs_from_gpt(request_details, unique_jobs):
     return gpt_list
 
 
+def str_convert(documents):
+    # Create a new list of dictionaries with all fields and "id" converted to str
+    new_documents = [{k: (str(v) if k == '_id' else v) for k, v in doc.items()} for doc in documents]
+    return new_documents
+
+
 @app.route("/getfirstjobs", methods=["POST"])
 def get_first_jobs():
     request_details = request.json.get("responses")
@@ -261,7 +262,7 @@ def get_first_jobs():
     # Find all documents in the collection
     documents = collection.find()
     # Create a new list of dictionaries with all fields and "id" converted to str
-    new_documents = [{k: (str(v) if k == '_id' else v) for k, v in doc.items()} for doc in documents]
+    new_documents = str_convert(documents)
     list_jobs = []
     unique_jobs = help_get_first_jobs(new_documents, list_jobs, title, company, citiesByAreas, other_list,
                                       job_type, field,
@@ -305,8 +306,7 @@ def help_part_time(field, db, list_jobs):
     # Find all documents in the collection
     documents2 = collection2.find()
     # Create a new list of dictionaries with all fields except "id"
-    # TODO: create a function?
-    new_documents2 = [{k: (str(v) if k == '_id' else v) for k, v in doc.items()} for doc in documents2]
+    new_documents2 = str_convert(documents2)
     for doc in new_documents2:
         if len(list_jobs) < MAXIMUM_JOBS_FOR_DISPLAYING and doc["job"] != "":
             list_jobs.append(doc)
@@ -355,7 +355,7 @@ def get_jobs_from_chatGpt(unique_jobs, experience_education):
                                                                                                       ". Are the description jobs below fit for him: " + job_string1 + job_string2 + \
                    "Return an answer according to the following template: 'job #: Yes' if this job is fit and 'job #: No' else."
 
-        response_gpt = chatgpt(question)
+        response_gpt = chatgpt_connexion(question)
 
         if (str(index) + ": Yes") in response_gpt:
             gpt_list.append(unique_jobs[i])
@@ -373,7 +373,7 @@ def get_jobs_from_chatGpt(unique_jobs, experience_education):
                                                                                                       ". Are the description jobs below fit for him: " + job_string + \
                    "Return an answer according to the following template: 'job #: Yes' if this job is fit and 'job #: No' else."
 
-        response_gpt = chatgpt(question)
+        response_gpt = chatgpt_connexion(question)
         if (str(index) + ": Yes") in response_gpt:
             gpt_list.append(unique_jobs[i])
 
@@ -441,7 +441,7 @@ def get_second_jobs():
     # Find all documents in the collection
     documents = collection.find()
     # Create a new list of dictionaries with all fields and "id" converted to str
-    new_documents = [{k: (str(v) if k == '_id' else v) for k, v in doc.items()} for doc in documents]
+    new_documents = str_convert(documents)
     list_jobs = []
     unique_jobs = help_get_first_jobs(new_documents, list_jobs, jobtitle, company, city, other_list, level,
                                       field,
@@ -464,7 +464,7 @@ def get_jobs_from_view(jobs, db):
         # Find all jobs in the design collection
         documents = collection.find()
         # Create a new list of dictionaries with all fields except "id"
-        new_documents = [{k: v for k, v in doc.items() if k != "_id"} for doc in documents]
+        new_documents = str_convert(documents)
         for document in new_documents:
             listt.append(document)
     # Convert each dictionary to a tuple, add all tuples to a set, then convert each tuple back to a dictionary
@@ -496,7 +496,7 @@ def view_users():
     # Find all user in the collection users
     documents = collection.find()
     # Create a new list of dictionaries with all fields except "id"
-    new_documents = [{k: v for k, v in doc.items() if k != "_id"} for doc in documents]
+    new_documents = str_convert(documents)
     for document in new_documents:
         users_list.append(document)
 
@@ -552,8 +552,8 @@ def view_history():
     # connexion to the MongoDB database
     cluster = MongoClient(MONGODB_CONNECTION_STRING)
     db = cluster[CLUSTER_NAME]
-    collection = db["users"]
     details = request.json.get('clientDetails')
+    collection = db["users"]
     username = details["userName"]
     password = details["password"]
     user = collection.find_one({'user_name': username, 'password': password})
@@ -591,60 +591,6 @@ def client_history():
     return jsonify({"success": True, "message": "update database"})
 
 
-def find_best_job(field):
-    collection = get_collection_by_field(field)
-
-    # Use aggregation to group by company and count the number of jobs per company
-    pipeline = [
-        {"$group": {"_id": "$company", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}},
-        {"$limit": 15}
-    ]
-
-    # Execute the pipeline and get the results
-    results = list(collection.aggregate(pipeline))
-
-    # Print the top 5 companies
-    for result in results:
-        print(result["_id"], result["count"])
-
-
-def find_best_title(field):
-    collection = get_collection_by_field(field)
-
-    # Use aggregation to group by company and count the number of jobs per company
-    pipeline = [
-        {"$group": {"_id": "$job", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}},
-        {"$limit": 15}
-    ]
-
-    # Execute the pipeline and get the results
-    results = list(collection.aggregate(pipeline))
-
-    # Print the top 5 companies
-    for result in results:
-        print(result["_id"], result["count"])
-
-
-def find_best_city(field):
-    collection = get_collection_by_field(field)
-
-    # Use aggregation to group by company and count the number of jobs per company
-    pipeline = [
-        {"$group": {"_id": "$city", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}},
-        {"$limit": 15}
-    ]
-
-    # Execute the pipeline and get the results
-    results = list(collection.aggregate(pipeline))
-
-    # Print the top 5 companies
-    for result in results:
-        print(result["_id"], result["count"])
-
-
 # function to identify user intent based on chatGPT
 def identify_intent(response, intents):
     relevant_intents = []
@@ -652,7 +598,7 @@ def identify_intent(response, intents):
     question = "For which of the intents in the list " + str(
         intents) + " the sentence '" + response + "' corresponds? Return the indexes (which start from 1) of the corresponding intents according to the following template: 'intent #: Yes', If this intent fits and 'intent #: No' else."
 
-    response_gpt = chatgpt(question)
+    response_gpt = chatgpt_connexion(question)
     for i in range(len(intents)):
         if (str(i + 1) + ": Yes") in response_gpt:
             relevant_intents.append(intents[i])
@@ -819,7 +765,7 @@ def test_response():
     return jsonify({"success": True, "message": JOBOT_response})
 
 
-def chatgpt(question):
+def chatgpt_connexion(question):
     API_KEY = key.api_key
     openai.api_key = API_KEY
     chat_log = [{"role": "user", "content": question}]
@@ -828,6 +774,60 @@ def chatgpt(question):
     print("chatgpt: ", assistant_response.strip("\n").strip())
     chat_log.append({"role": "assistant", "content": assistant_response.strip("\n").strip()})
     return assistant_response.strip("\n").strip()
+
+
+def find_best_job(field):
+    collection = get_collection_by_field(field)
+
+    # Use aggregation to group by company and count the number of jobs per company
+    pipeline = [
+        {"$group": {"_id": "$company", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 15}
+    ]
+
+    # Execute the pipeline and get the results
+    results = list(collection.aggregate(pipeline))
+
+    # Print the top 5 companies
+    for result in results:
+        print(result["_id"], result["count"])
+
+
+def find_best_title(field):
+    collection = get_collection_by_field(field)
+
+    # Use aggregation to group by company and count the number of jobs per company
+    pipeline = [
+        {"$group": {"_id": "$job", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 15}
+    ]
+
+    # Execute the pipeline and get the results
+    results = list(collection.aggregate(pipeline))
+
+    # Print the top 5 companies
+    for result in results:
+        print(result["_id"], result["count"])
+
+
+def find_best_city(field):
+    collection = get_collection_by_field(field)
+
+    # Use aggregation to group by company and count the number of jobs per company
+    pipeline = [
+        {"$group": {"_id": "$city", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 15}
+    ]
+
+    # Execute the pipeline and get the results
+    results = list(collection.aggregate(pipeline))
+
+    # Print the top 5 companies
+    for result in results:
+        print(result["_id"], result["count"])
 
 
 if __name__ == "__main__":
