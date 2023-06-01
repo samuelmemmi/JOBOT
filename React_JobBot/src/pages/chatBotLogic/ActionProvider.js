@@ -1,4 +1,5 @@
 import axios from "axios";
+// import ErrorMessages from "./components/Options/ErrorMessages";
 
 class ActionProvider {
   constructor(createChatBotMessage, setStateFunc) {
@@ -8,37 +9,45 @@ class ActionProvider {
 
   saveHistoryInDB=(node)=>{
     node.getSelected()["displayed jobs"] && delete node.getSelected()["displayed jobs"];
-    // const current = new Date();
-    // const date = `${current.getDate()}/${current.getMonth()+1}/${current.getFullYear()}`;
-    // var history={
-    //   ...node.getSavedInDB(),
-    //   "client details":node.getRegistrationDetails(),
-    //   "field":node.getSelected().field,
-    //   "conversation content":node.getHistoryChat(),
-    //   "displayed jobs":node.getSavedInDB()["displayed jobs"]?node.getSavedInDB()["displayed jobs"]:"-",
-    //   "selected jobs":node.getSavedInDB()["selected jobs"]?node.getSavedInDB()["selected jobs"]:"-",
-    //   "experiance & education":node.getSelected()["job Requirements"]?node.getSelected()["job Requirements"]:"-",
-    //   "feedback on termination":node.getSavedInDB()["feedback on termination"]?node.getSavedInDB()["feedback on termination"]:"-",
-    //   "selected features":node.getSelected(),
-    //   "date":date
-    //   }
-    //   // console.log("save data in DB ",history)
-    // node.setSavedInDB(history);
+    const current = new Date();
+    const date = `${current.getDate()}/${current.getMonth()+1}/${current.getFullYear()}`;
+    var history={
+      ...node.getSavedInDB(),
+      "client details":node.getRegistrationDetails(),
+      "field":node.getSelected().field,
+      "conversation content":node.getHistoryChat(),
+      "displayed jobs":node.getSavedInDB()["displayed jobs"]?node.getSavedInDB()["displayed jobs"]:"-",
+      "selected jobs":node.getSavedInDB()["selected jobs"]?node.getSavedInDB()["selected jobs"]:"-",
+      "experiance & education":node.getSelected()["job Requirements"]?node.getSelected()["job Requirements"]:"-",
+      "feedback on termination":node.getSavedInDB()["feedback on termination"]?node.getSavedInDB()["feedback on termination"]:"-",
+      "selected features":node.getSelected(),
+      "date":date
+      }
+      // console.log("save data in DB ",history)
+    node.setSavedInDB(history);
 
-    // //call server with 'history' var
-    //   axios.post('/clienthistory', {
-    //     history: history
-    //   }, {
-    //     headers: {
-    //     'Content-type': 'application/json; charset=UTF-8' } 
-    //   })
-    //   .then((response) => {
-    //     console.log(response.data.message);
-    //     console.log("save data in DB ",history)
-    //   })
-    //   .catch((error) => {
-    //     console.error(error.response.data.error);
-    //   });
+    //call server with 'history' var
+      // axios.post('/clienthistory', {
+      //   history: history
+      // }, {
+      //   headers: {
+      //   'Content-type': 'application/json; charset=UTF-8' } 
+      // })
+      // .then((response) => {
+      //   console.log(response.data.message);
+      //   console.log("save data in DB ",history)
+      // })
+      // .catch((error) => {
+      //   console.error(error.response.data.error);
+      // });
+  }
+
+  errorMessages = (node,errorMessage) => {
+    const message = this.createChatBotMessage(errorMessage,
+      {
+        widget: "errorMessages",
+      });
+    this.addMessageToState(message,node);
   }
 
   selfSearch = (node,Freetxt) => {
@@ -282,17 +291,6 @@ class ActionProvider {
     .then((response) => {
       if (response.data.success) {
         console.log("Server returned matching jobs:", response.data.list_jobs);
-        // Add a message for each job to the chatbot's message history
-        // response.data.list_jobs.forEach((job) => {
-        //   const jobMessage = this.createChatBotMessage(
-        //     `Job title: ${job.job}\nCompany: ${job.company}\nLocation: ${job.city}`
-        //   );
-        //   this.addMessageToState(jobMessage,node);
-        // });
-        // while(response.data.list_jobs===[]){}
-        
-        // node.setJobs(response.data.list_jobs);
-
         node.setJobs(response.data.list_jobs);
 
         // node.setJobs(["A","B","C","D","E","F","G","H","I","J","Nothing fits"]);
@@ -334,6 +332,17 @@ class ActionProvider {
       }
     })
     .catch((err) => {
+      // var ermes="Internet down. Please refresh the page. Thank you for your patience."
+      //"Internet down. Working on it. Thank you for your patience."
+      // {<ErrorMessages/>}
+      // const message = this.createChatBotMessage(err.message,
+      // {
+      //   widget: "errorMessages",
+      // });
+      // this.addMessageToState(message,node);
+
+      this.errorMessages(node,err.message)
+
       console.log("Error getting matching jobs: ", err.message);
     });
 
@@ -419,9 +428,9 @@ class ActionProvider {
     }
   }
 
-  handleEmailDisplay(node,opts){
+  handleEmailDisplay(node,opt){
     //user selected 'Just keep going'
-    if(opts[0]==="Just keep going"){
+    if(opt==="Just keep going"){
       var txt=node.getNextResponse().children[0].text;
       const message = this.createChatBotMessage(
         txt,
@@ -429,13 +438,13 @@ class ActionProvider {
           widget: "approval",
         }
       );
-      node.setHistoryChat([...node.getHistoryChat(),{user:opts},{bot:[txt]}])
+      node.setHistoryChat([...node.getHistoryChat(),{user:[opt]},{bot:[txt]}])
       console.log("history ",node.getHistoryChat());
       node.setNextResponse(node.getNextResponse().children[0])
       this.addMessageToState(message,node);
     }
     //user selected 'Display choices'
-    else if(opts.length===1 && opts.includes("Display my choices again")){
+    else{
       var txt1=node.getNextResponse().children[1].text;
       const message1=this.createChatBotMessage(
         txt1,
@@ -451,46 +460,9 @@ class ActionProvider {
           widget: "approval",
         }
       );
-      node.setHistoryChat([...node.getHistoryChat(),{user:opts},{bot:[txt1,txt2]}])
+      node.setHistoryChat([...node.getHistoryChat(),{user:[opt]},{bot:[txt1,txt2]}])
       console.log("history ",node.getHistoryChat());
       node.setNextResponse(node.getNextResponse().children[1].children[0])
-      this.addMessageToState(message2,node);
-    }
-    //user selected 'Email them to me'
-    else if((opts.length===1 && opts.includes("Email them to me"))){
-      var txt=node.getNextResponse().children[2].text;
-      const message=this.createChatBotMessage(
-        txt,
-        {
-          widget: "email",//enter email
-        }
-      );
-      node.setHistoryChat([...node.getHistoryChat(),{user:opts},{bot:[txt]}])
-      console.log("history ",node.getHistoryChat());
-      node.setNextResponse(node.getNextResponse().children[2])
-      this.addMessageToState(message,node);
-    }
-    //user selected 'Display choices and Email them to me'
-    else {
-      var txt1=node.getNextResponse().children[3].text;
-      const message1 = this.createChatBotMessage(
-        txt1,
-        {
-          widget: "displaySelectedJobs",
-        }
-      );
-      this.addMessageToState(message1,node);
-
-      var txt2=node.getNextResponse().children[3].children[0].text;
-      const message2 = this.createChatBotMessage(
-        txt2,
-        {
-          widget: "email",//enter email
-        }
-      );
-      node.setHistoryChat([...node.getHistoryChat(),{user:opts},{bot:[txt1,txt2]}])
-      console.log("history ",node.getHistoryChat());
-      node.setNextResponse(node.getNextResponse().children[3].children[0])
       this.addMessageToState(message2,node);
     }
   }
@@ -781,6 +753,12 @@ class ActionProvider {
       }
     })
     .catch((err) => {
+      // const message = this.createChatBotMessage(err.message,
+      //   {
+      //     widget: "errorMessages",
+      //   });
+      // this.addMessageToState(message,node);
+      this.errorMessages(node,err.message)
       console.log("Error getting matching jobs: ", err.message);
     });
   }

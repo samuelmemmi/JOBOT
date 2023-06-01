@@ -19,6 +19,7 @@ import Cities from "./components/Options/Cities";
 import Email from "./components/Options/Email";
 import JobTitleTyping from "./components/Options/JobTitleTyping";
 import MyCustomChatMessage from "./MyCustomChatMessage";
+import ErrorMessages from "./components/Options/ErrorMessages";
 
 const config = {
   botName: "JOBOT",
@@ -162,6 +163,13 @@ const config = {
     {
       widgetName: "jobTitleTyping",
       widgetFunc: (props) => <JobTitleTyping {...props} />,
+      props: {
+        node:dec_tree
+      }
+    },
+    {
+      widgetName: "errorMessages",
+      widgetFunc: (props) => <ErrorMessages {...props} />,
       props: {
         node:dec_tree
       }

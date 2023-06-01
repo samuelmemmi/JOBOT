@@ -1,3 +1,8 @@
+// import '../../../adminArea/JobsPage.css';
+import starImage from '../../../adminArea/star.avif';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import LaunchIcon from '@mui/icons-material/Launch';
+
 const JobCard = ({ job, isSelected, onCardClick }) => {
     if (job._id==="Nothing fits"){
       return(
@@ -16,10 +21,16 @@ const JobCard = ({ job, isSelected, onCardClick }) => {
         {isSelected?"-":"+"}
       </div>
       {isSelected && (
-          <div className="job-details">
-            <p><strong>description:</strong><br/> {job.description}</p>
-            <p><strong>date:</strong><br/>{job.date}</p>
-            <p><strong>link:</strong><br/>{job.link}</p>
+          <div style={{textAlign:"center"}} >
+          {job.rating&&<p className="job-rating"><span><img className="star" src={starImage} alt="Star" /></span> {job.rating}</p>}
+          {job.date&&<p className="job-date"><AccessTimeIcon color="primary" fontSize=""/>{"  "+job.date}</p>}
+          {job.link&&<p className="job-link">
+            <a href={job.link} target="_blank" rel="noopener noreferrer">
+              <LaunchIcon color="primary"/>
+              {"     "+`${job.link.slice(0, 30)}...`}
+            </a>
+          </p>}
+          <p className="job-description" style={{margin: "0 2rem 2rem"}}>{job.description}</p>
           </div>
         )}
     </div>

@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
-// import Typography from "@mui/material/Typography";
+import Typography from "@mui/material/Typography";
+import CircularProgress from '@mui/material/CircularProgress';
 
 import './UsersPage.css';
 
@@ -44,19 +45,9 @@ function UsersPage() {
   }
 
   return (
-    // <div className="users-page">
-    //   <h1 className="title">JOBOT Users</h1>
-    //   <ul className="users-list">
-    //     {users.map((user, index) => (
-    //       <li key={index} className="user-item" id="user-item" onClick={()=>handleHistory(user)}>
-    //         <h2 className="user-name">{user.user_name}</h2>
-    //         <p className="user-password">{user.password}</p>
-    //         Admin:<p className="user-admin">{user.admin}</p>
-    //       </li>
-    //     ))}
-    //   </ul>
-    // </div>
-    (isLoading)?(
+    <div>
+    <Typography variant='h4' align="center" m={2} fontFamily="Serif">Users</Typography>
+    {(isLoading)?(
       <div>
       <Tabs value={selectedTab} onChange={handleTabChange} centered>
         <Tab label="Admin Users" />
@@ -64,13 +55,12 @@ function UsersPage() {
       </Tabs>
 
       {selectedTab === 0 && (
-        <div>
-          {/* <Typography variant="h6">Admin Users:</Typography> */}
-          <ul>
+        <div className="w-100 d-flex flex-column justify-content-center align-items-center mt-2 wider-box">
+          <ul className="w-50 d-flex flex-column justify-content-center align-items-center mt-2 wider-box">
             {adminUsers.map(user => (
               <li className="user-item" key={user.user_name}>
-                <p>username: {user.user_name}</p>
-                <p>password: {user.password}</p>
+                <p>{user.user_name}</p>
+                <p>{user.password}</p>
               </li>
             ))}
           </ul>
@@ -78,9 +68,8 @@ function UsersPage() {
       )}
 
       {selectedTab === 1 && (
-        <div>
-          {/* <Typography variant="h6">Non-Admin Users:</Typography> */}
-          <ul>
+        <div className="w-100 d-flex flex-column justify-content-center align-items-center mt-2 wider-box">
+          <ul className="w-50 d-flex flex-column justify-content-center align-items-center mt-2 wider-box">
             {nonAdminUsers.map(user => (
               <li className="user-item" id="user-item" key={user.user_name} onClick={() => handleHistory(user)}>
                 <p>{user.user_name}</p>
@@ -91,7 +80,8 @@ function UsersPage() {
         </div>
       )}
     </div>
-    ):(<p className="loading">Loading...</p>)
+    ):(<div className="loading"><CircularProgress /></div>)}
+    </div>
   );
 }
 

@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 // import './ConversationsPage.css';
 // import ChatMsg from '@mui-treasury/components/chatMsg/ChatMsg';
+import CircularProgress from '@mui/material/CircularProgress';
 
 function ConversationsPage(props) {
   // const location = useLocation();
@@ -32,7 +33,7 @@ function ConversationsPage(props) {
   return (
     <div className="conversations-page">
       {(!result) ? (
-        <p className="loading">Loading...</p>):(
+        <div className="loading"><CircularProgress /></div>):(
       (historyItem&&historyItem.length > 0)?(
       <div
       style={{

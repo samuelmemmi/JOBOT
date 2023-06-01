@@ -16,7 +16,9 @@ import { Pie } from 'react-chartjs-2';
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
-import PendingIcon from '@mui/icons-material/Pending';
+// import PendingIcon from '@mui/icons-material/Pending';
+import CircularProgress from '@mui/material/CircularProgress';
+
 
 ChartJS.register(
     CategoryScale,
@@ -40,6 +42,8 @@ function parseStatisticsData(res){
       statName="Experience Levels"
     }else if(res["statName"]==="field"){
       statName="Fields"
+    }else if(res["statName"]==="areas"){
+      statName="Areas"
     }
     console.log({"statName":statName,"stats":{"labels":labels,"values":values}})
     return {"statName":statName,"stats":{"labels":labels,"values":values}}
@@ -123,7 +127,7 @@ const Statistics = () => {
                     },[])
                   } 
                   </div>
-            </div>):<div className='d-flex justify-content-center align-items-center' style={{marginTop: "5rem"}}><PendingIcon color="primary" fontSize="large"/>  wait... </div>}
+            </div>):<div className="loading"><CircularProgress /></div>}
             </TabPanel>
             <TabPanel value={value} index={1}>
             {(isPie)?(
@@ -203,6 +207,7 @@ const Statistics = () => {
     return (
     <div>
       {/* <h1>Statistics</h1> */}
+      <Typography variant='h4' align="center" m={2} fontFamily="Serif">Statistics</Typography>
       <p className="sentence">The statistics here refer to the total number of <strong>chats</strong> made with JOBOT by the website's users</p>
       <  BasicTabs/>
     </div>

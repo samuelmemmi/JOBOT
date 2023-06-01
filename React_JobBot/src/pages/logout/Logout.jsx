@@ -26,7 +26,7 @@ const Logout = ({setUserType}) => {
 
   return (
     <div className='d-flex flex-column align-items-center justify-content-center mt-5'>
-          <button
+    <button
       onClick={handleLogout}
       style={{
         padding: '10px 20px',

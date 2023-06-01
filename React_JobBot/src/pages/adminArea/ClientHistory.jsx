@@ -37,21 +37,8 @@ function ClientHistory() {
       setValue(newValue);
     };
     return (
-      // <div>
-      //   <h1>History By Fields</h1>
-      //   <nav>
-      //     Tabs of:
-      //     <ul>
-      //       <li>
-      //         <button onClick={() => handleNavigate('/./conversations')}>Conversations</button>
-      //       </li>
-      //       <li>
-      //         <button onClick={() => handleNavigate('/./offeredJobs')}>Offered jobs</button>
-      //       </li>
-      //     </ul>
-      //   </nav>
-      // </div>
       <>
+      <Typography variant='h4' align="center" m={2} fontFamily="Serif">History of {clientDetails.userName}</Typography>
       <Tabs value={value} onChange={handleChange} centered>
       <Tab label="Last Chat Content" />
       <Tab label="Last Offered Jobs" />

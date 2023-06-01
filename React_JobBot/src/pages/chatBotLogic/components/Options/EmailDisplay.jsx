@@ -6,13 +6,13 @@
 // const EmailDisplay = (props) => {
 //   const [options, setOptions] = useState([]);
 //   const [selectedOptions, setSelectedOptions] = useState([]);
-//   const [submitted,setSubmitted]=useState(false);
+//   const [submitted,setSubmitted]=useState(true);
 
-//   useEffect(()=>{
-//     console.log("which node? ",props.node.getNextResponse())
-//     setOptions(props.node.getNextResponse().options)
-//   },[]);//maybe props.node_if_options>0
-
+//   useEffect(
+//     ()=>{
+//       setOptions(props.node.getNextResponse().options)
+//     }
+//     ,[]);//maybe props.node_if_options>0
 
 //   const handleOptionChange = (event) => {
 //     const option = event.target.value;
@@ -23,33 +23,42 @@
 //     }
 //   };
 
+//   const isFormValid = () => {
+//     return Object.values(selectedOptions).some((isChecked) => isChecked)&&submitted;
+//   };
+
 //   const handleSubmit = (event) => {
 //     event.preventDefault();
-//     console.log("Selected Options: ", selectedOptions);
+//     console.log("Selected Options1: ", selectedOptions);
 //     // handle submission logic
-//     setSubmitted(true);
-//     props.actionProvider.handleEmailDisplay(props.node,selectedOptions);
-    
+//     setSubmitted(false);
+//     if(selectedOptions.includes("Just keep going")){
+//       props.actionProvider.handleEmailDisplay(props.node,["Just keep going"]);
+//     }else{
+//       props.actionProvider.handleEmailDisplay(props.node,selectedOptions);
+//     }
 //   };
 
 //   return (
 //     <form onSubmit={handleSubmit}>
-//       <label>
+//       <label className="listOptions">
 //         {options.map((opt,index) =>{
 //           return(
 //           <label key={index}>
-//             <br />
+//             {/* <br /> */}
 //             <input
+//             className="checkbox"
 //             type="checkbox"
 //             value={opt}
-//             onChange={handleOptionChange} />
+//             onChange={handleOptionChange}
+//             disabled={(opt!=="Just keep going")&&selectedOptions.includes("Just keep going")} />
 //             {opt}
 //           </label>);
 //         },[])
 //         }
 //       </label>
 //       <br />
-//       <button type="submit" className="option-button" disabled={submitted}>Submit</button>
+//       <button type="submit" className="option-button" disabled={!isFormValid()}>Submit</button>
 //     </form>
 //   );
 // };
@@ -63,38 +72,21 @@ import "./Options.css";
 
 const EmailDisplay = (props) => {
   const [options, setOptions] = useState([]);
-  const [selectedOptions, setSelectedOptions] = useState([]);
-  const [submitted,setSubmitted]=useState(true);
+  const [selectedOption, setSelectedOption] = useState("Display my choices again");
+  const [submitted,setSubmitted]=useState(false);
 
-  useEffect(
-    ()=>{
-      setOptions(props.node.getNextResponse().options)
-    }
-    ,[]);//maybe props.node_if_options>0
+  useEffect(()=>{setOptions(props.node.getNextResponse().options)},[]);//maybe props.node_if_options>0
 
   const handleOptionChange = (event) => {
-    const option = event.target.value;
-    if (selectedOptions.includes(option)) {
-      setSelectedOptions(selectedOptions.filter((selectedOption) => selectedOption !== option));
-    } else {
-      setSelectedOptions([...selectedOptions, option]);
-    }
-  };
-
-  const isFormValid = () => {
-    return Object.values(selectedOptions).some((isChecked) => isChecked)&&submitted;
+    setSelectedOption(event.target.value);
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log("Selected Options1: ", selectedOptions);
+    console.log("Selected d/j radio: ", selectedOption);
     // handle submission logic
-    setSubmitted(false);
-    if(selectedOptions.includes("Just keep going")){
-      props.actionProvider.handleEmailDisplay(props.node,["Just keep going"]);
-    }else{
-      props.actionProvider.handleEmailDisplay(props.node,selectedOptions);
-    }
+    setSubmitted(true);
+    props.actionProvider.handleEmailDisplay(props.node,selectedOption)
   };
 
   return (
@@ -105,21 +97,24 @@ const EmailDisplay = (props) => {
           <label key={index}>
             {/* <br /> */}
             <input
-            className="checkbox"
-            type="checkbox"
+            type="radio"
             value={opt}
-            onChange={handleOptionChange}
-            disabled={(opt!=="Just keep going")&&selectedOptions.includes("Just keep going")} />
+            name="approval"
+            checked={selectedOption === opt}
+            onChange={handleOptionChange} 
+            />
             {opt}
           </label>);
         },[])
         }
       </label>
       <br />
-      <button type="submit" className="option-button" disabled={!isFormValid()}>Submit</button>
-    </form>
-  );
+      <button type="submit" className="option-button" disabled={submitted}>Submit</button>
+    </form>);
 };
 
 export default EmailDisplay;
+
+
+
 

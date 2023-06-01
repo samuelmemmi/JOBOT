@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import Typography from "@mui/material/Typography";
 
 import chatFlow from "../chatBotLogic/convert_tree_to_json";
 import "./viewChatFlow.css"
@@ -89,8 +90,9 @@ function ViewChatFlow() {
 
   return (
     <div className="pedigree-tree">
+      <Typography variant='h4' align="center" m={2} fontFamily="Serif">Decision Tree of the Chat Bot</Typography>
       <RenderObject object={myObject}/>
-      <button onClick={exportObject}>Export</button>
+      <button onClick={exportObject} style={{'margin-left': '20px'}}>Export</button>
     </div>
   );
 }

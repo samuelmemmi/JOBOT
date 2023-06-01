@@ -42,6 +42,13 @@ class MessageParser {
         }
       })
       .catch((err) => {
+        // const message = this.createChatBotMessage(err.message,
+        //   {
+        //     widget: "errorMessages",
+        //   });
+        // this.addMessageToState(message,this.props.head);
+
+        this.actionProvider.errorMessages(this.props.head,err.message)
         console.log("Error getting bot response: ", err.message);
       });
 

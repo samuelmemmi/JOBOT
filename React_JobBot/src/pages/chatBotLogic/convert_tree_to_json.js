@@ -4,7 +4,7 @@ var selfJobSearch;
 var goodBy2;
 var displayingAdaptedJobs;
 var isAdditionalJobs;
-var enterEmail;
+// var enterEmail;
 var areas={
   title: "",
   text: "In which areas are you interested?",
@@ -80,8 +80,8 @@ var areas={
                                         {...selfJobSearch,title: "user selected 'Nothing fits"},
                                         successfulEnding={
                                           title: "user selected at least 1 job",
-                                          text: "Wonderful, how would you like to continute? (Multiple choice)",
-                                          options: ["Display my choices again","Email them to me","Just keep going"],
+                                          text: "Wonderful, how would you like to continute?",
+                                          options: ["Display my choices again","Just keep going"],
                                           children:
                                           [
                                             isAdditionalJobs={
@@ -102,29 +102,29 @@ var areas={
                                                 isAdditionalJobs
                                               ]
                                             },
-                                            enterEmail={
-                                              title: "user selected 'email me'",
-                                              text: "Please enter an email",
-                                              children:
-                                              [
-                                                {
-                                                  title: "user sended an email",
-                                                  text: "The jobs were sent",
-                                                  children:
-                                                  [
-                                                    isAdditionalJobs
-                                                  ]
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              title: "user selected 'display and email me'",
-                                              text: "There are your selected jobs",
-                                              children:
-                                              [
-                                                {...enterEmail, title: "Request to enter an email"}
-                                              ]
-                                            }
+                                            // enterEmail={
+                                            //   title: "user selected 'email me'",
+                                            //   text: "Please enter an email",
+                                            //   children:
+                                            //   [
+                                            //     {
+                                            //       title: "user sended an email",
+                                            //       text: "The jobs were sent",
+                                            //       children:
+                                            //       [
+                                            //         isAdditionalJobs
+                                            //       ]
+                                            //     }
+                                            //   ]
+                                            // },
+                                            // {
+                                            //   title: "user selected 'display and email me'",
+                                            //   text: "There are your selected jobs",
+                                            //   children:
+                                            //   [
+                                            //     {...enterEmail, title: "Request to enter an email"}
+                                            //   ]
+                                            // }
                                           ]
                                         }
                                       ]
