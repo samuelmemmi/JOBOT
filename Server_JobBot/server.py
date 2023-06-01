@@ -8,10 +8,6 @@ from datetime import date
 import copy
 import key
 
-SECRET_KEY = 'secret-key-'
-app = Flask(__name__)
-app.secret_key = SECRET_KEY
-
 # CONSTANTS
 MONGODB_CONNECTION_STRING = "mongodb+srv://samuelmemmi:1234@cluster0.e4sf8mm.mongodb.net/?retryWrites=true&w=majority"
 NUMBER_OF_ADMINS = 2
@@ -66,7 +62,11 @@ MARKETING_JOBS = ["marketing_full_time", "marketing_part_time", "marketing_inter
                   "marketing_senior"]
 HUMAN_JOBS = ["humanresources_full_time", "humanresources_part_time", "humanresources_intern",
               "humanresources_junior", "humanresources_senior"]
+SECRET_KEY = 'secret-key-'
 
+# set up server
+app = Flask(__name__)
+app.secret_key = SECRET_KEY
 
 def get_collection_by_field(field):
     # connection to the MongoDB database
@@ -400,19 +400,23 @@ def get_jobs_from_chatGpt(unique_jobs, experience_education):
         else:
             jobs_string = getJobString(unique_jobs[i],index)
         question = getQuestionForGPT(experience_education,jobs_string)
-        response_gpt = chatgptConnection(question)
 
-        if i+1<lengt:
-            potential_jobs=[unique_jobs[i],unique_jobs[i+1]]
-            appendApprovedJobs(potential_jobs,index,response_gpt,gpt_list)
-            if (i + 1 != (lengt - 1)):
-                time.sleep(MAX_SECONDS_FOR_SLEEPING) 
-        else:
-            potential_jobs=[unique_jobs[i]]
-            appendApprovedJobs(potential_jobs,index,response_gpt,gpt_list)
-            if (i != (lengt - 1)) :
-                time.sleep(MAX_SECONDS_FOR_SLEEPING)
-        index += 2
+        try:
+            response_gpt = chatgptConnection(question)
+            if i+1<lengt:
+                potential_jobs=[unique_jobs[i],unique_jobs[i+1]]
+                appendApprovedJobs(potential_jobs,index,response_gpt,gpt_list)
+                if (i + 1 != (lengt - 1)):
+                    time.sleep(MAX_SECONDS_FOR_SLEEPING) 
+            else:
+                potential_jobs=[unique_jobs[i]]
+                appendApprovedJobs(potential_jobs,index,response_gpt,gpt_list)
+                if (i != (lengt - 1)) :
+                    time.sleep(MAX_SECONDS_FOR_SLEEPING)
+            index += 2
+        except:
+            print("An exception has occurred in gpt api connection!")
+            return unique_jobs
 
     # if there are more than 6 jobs in unique_jobs we also send to client from the seventh job onwards
     j = MAX_JOBS_FOR_GPT
@@ -620,15 +624,19 @@ def identify_intent(response, intents):
     question = "For which of the intents in the list " + str(
         intents) + " the sentence '" + response + "' corresponds? Return the indexes (which start from 1) of the corresponding intents according to the following template: 'intent #: Yes', If this intent fits and 'intent #: No' else."
 
-    response_gpt = chatgptConnection(question)
-    for i in range(len(intents)):
-        if (str(i + 1) + ": Yes") in response_gpt:
-            relevant_intents.append(intents[i])
-    if len(relevant_intents) == 0:
-        relevant_intents.append("Other")
-    print("relevant_intents: ", end="")
-    print(relevant_intents)
-    return relevant_intents
+    try:
+        response_gpt = chatgptConnection(question)
+        for i in range(len(intents)):
+            if (str(i + 1) + ": Yes") in response_gpt:
+                relevant_intents.append(intents[i])
+        if len(relevant_intents) == 0:
+            relevant_intents.append("Other")
+        print("relevant_intents: ", end="")
+        print(relevant_intents)
+        return relevant_intents
+    except:
+        print("An exception has occurred in gpt api connection!")
+        return -1
 
 # pass on intents in db and update the counters
 def incIntents(intents_stats,intents):
@@ -710,10 +718,6 @@ def calculateGeneralStats(subjects):
         {"statName": "general_statistics"},
         {"$set": {"stat": genaralStat, "update date": today, "users number": users_len}}
     )
-    # print("after update genaralStat")
-    # print(collec_admin_stats.find_one({"statName": "general_statistics"}))
-    # print("GENERAL_STATS")
-    # print(GENERAL_STATS)
 
 
 def updateAllfeedbacksInDB():
@@ -765,6 +769,9 @@ def test_response():
     # identify intents using chatGPT
     intents = identify_intent(feedback, INTENTS_TO_CHECK)
 
+    if intents==-1:
+        return jsonify({"success": True, "message": JOBOT_RESPONSE_FOR_FEEDBACK_2})
+
     # add the new feedback to the list of feedbacks in db
     collec_admin_stats = get_collection_by_field("admin_statistics")
     document = collec_admin_stats.find_one({"statName": "feedback"})
@@ -786,80 +793,6 @@ def test_response():
     return jsonify({"success": True, "message": JOBOT_response})
 
 
-
-def find_best_job(field):
-    collection = get_collection_by_field(field)
-
-    # Use aggregation to group by company and count the number of jobs per company
-    pipeline = [
-        {"$group": {"_id": "$company", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}},
-        {"$limit": 15}
-    ]
-
-    # Execute the pipeline and get the results
-    results = list(collection.aggregate(pipeline))
-
-    # Print the top 5 companies
-    for result in results:
-        print(result["_id"], result["count"])
-
-
-def find_best_title(field):
-    collection = get_collection_by_field(field)
-
-    # Use aggregation to group by company and count the number of jobs per company
-    pipeline = [
-        {"$group": {"_id": "$job", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}},
-        {"$limit": 15}
-    ]
-
-    # Execute the pipeline and get the results
-    results = list(collection.aggregate(pipeline))
-
-    # Print the top 5 companies
-    for result in results:
-        print(result["_id"], result["count"])
-
-
-def find_best_city(field):
-    collection = get_collection_by_field(field)
-
-    # Use aggregation to group by company and count the number of jobs per company
-    pipeline = [
-        {"$group": {"_id": "$city", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}},
-        {"$limit": 15}
-    ]
-
-    # Execute the pipeline and get the results
-    results = list(collection.aggregate(pipeline))
-
-    # Print the top 5 companies
-    for result in results:
-        print(result["_id"], result["count"])
-
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
 
-    # find_best_title("healthcare_full_time")
-    # find_best_title("marketing_full_time")
-    # find_best_title("finance_full_time")
-    # find_best_title("design_full_time")
-    # find_best_title("humanresources_full_time")
-    # find_best_title("engineer_full_time")
-
-    # find_best_job("healthcare_full_time")
-    # find_best_job("marketing_full_time")
-    # find_best_job("finance_full_time")
-    # find_best_job("design_full_time")
-    # find_best_job("humanresources_full_time")
-    # find_best_job("engineer_full_time")
-
-    # find_best_city("healthcare_full_time")
-    # find_best_city("marketing_full_time")
-    # find_best_city("finance_full_time")
-    # find_best_city("design_full_time")
-    # find_best_city("humanresources_full_time")
-    # find_best_city("engineer_full_time")
