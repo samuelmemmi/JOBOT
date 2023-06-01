@@ -8,7 +8,9 @@ const Logout = ({setUserType}) => {
 
   const handleLogout = () => {
     // setUserType("")$$$$$$$$$$$$$$$$$$$$
+    console.log("A")
     setUserType({})
+    console.log("B")
     axios.post('/logout')
       .then(response => {
         if (response.data.success) {

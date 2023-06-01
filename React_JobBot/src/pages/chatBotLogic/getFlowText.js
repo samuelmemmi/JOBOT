@@ -1,7 +1,7 @@
 import chatFlow from "./convert_tree_to_json";
 import axios from 'axios';
 
-class FetchText{
+export class FetchText{
     constructor(){
         this.registrationDetails={}
         this.head={}

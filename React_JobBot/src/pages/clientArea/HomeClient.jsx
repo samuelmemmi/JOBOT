@@ -10,10 +10,13 @@ import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlin
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import { Link } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
+import { useUser } from "../../UserProvider"
+
 
 export default function Home() {
     const location = useLocation();
-    const clientDetails = location.state;
+    const { userType } = useUser()
+    const clientDetails = userType.details
     console.log(clientDetails)
     
     

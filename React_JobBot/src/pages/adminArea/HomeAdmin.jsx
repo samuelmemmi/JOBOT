@@ -16,11 +16,17 @@ import PieChartIcon from '@mui/icons-material/PieChart';
 // import BarChartIcon from '@mui/icons-material/BarChart';
 import PeopleIcon from '@mui/icons-material/People';
 // import InfoIcon from '@mui/icons-material/Info';
+import { useUser } from "../../UserProvider.js"
+
 
 export default function HomeAdmin() {
-    const location = useLocation();
-    const adminDetails = location.state;
+    // const location = useLocation();
+    // const clientDetails = location.state;
+    // console.log(clientDetails);
+    const { userType } = useUser()
+    const adminDetails = userType.details
     console.log(adminDetails)
+
     
     
       const dense = false;

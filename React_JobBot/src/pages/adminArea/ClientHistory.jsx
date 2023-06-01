@@ -6,6 +6,7 @@ import Typography from "@mui/material/Typography";
 
 import ConversationsPage from './ConversationsPage'
 import OfferedJobs from './OfferedJobs'
+import { useUser } from "../../UserProvider.js"
 
 
 
@@ -23,6 +24,9 @@ function ClientHistory() {
   const location = useLocation();
   const clientDetails = location.state;
   console.log(clientDetails);
+  // const { userType } = useUser()
+  // const clientDetails = userType.details
+  // console.log(clientDetails)
 
   // const navigate = useNavigate();
 
