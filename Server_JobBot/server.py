@@ -106,7 +106,7 @@ def register():
     if user_name == "" or password == "":
         return jsonify({"success": False, "message": "Invalid username or password"})
 
-    # connexion to the MongoDB database
+    # connection to the MongoDB database
     collection = get_collection_by_field("users")
     # check if the user is already existing
     existing_user = collection.find_one({"user_name": user_name, "password": password})
@@ -216,7 +216,7 @@ def filter_jobs_company(new_documents, list_jobs, titles, companies, cities, oth
 
 
 def help_get_first_jobs_from_gpt(request_details, unique_jobs):
-    # connexion to the MongoDB database
+    # connection to the MongoDB database
     collection = get_collection_by_field("users")
     userDetails = {"user_name": request_details["client details"]["userName"],
                    "password": request_details["client details"]["password"]}
@@ -322,9 +322,7 @@ def help_part_time(field, db, list_jobs,seen_jobs_ids):
     documents2 = collection2.find()
     # Create a new list of dictionaries with all fields except "id"
     new_documents2 = str_convert(documents2)
-    for doc in new_documents2:
-        print("Intern document id",doc["_id"])
-       
+    for doc in new_documents2:       
         if(doc["_id"] in seen_jobs_ids):
             continue
         if len(list_jobs) < MAXIMUM_JOBS_FOR_DISPLAYING and doc["job"] != "":
@@ -335,7 +333,7 @@ def help_part_time(field, db, list_jobs,seen_jobs_ids):
 
 
 def help_get_first_jobs(new_documents, list_jobs, titles, companies, cities, other_list, time, field, db,seen_jobs_ids):
-    if "I'm open to any company" not in companies:
+    if "I'm open to any company" not in companies or (("I'm open to any company" in companies) and len(companies)>1):
         list_jobs = filter_jobs_company(new_documents, list_jobs, titles, companies, cities, other_list,seen_jobs_ids)
 
         if len(list_jobs) >= MAXIMUM_JOBS_FOR_DISPLAYING:
@@ -427,7 +425,7 @@ def get_jobs_from_chatGpt(unique_jobs, experience_education):
 
 @app.route("/getsecondjobs", methods=["POST"])
 def get_second_jobs():
-    # connexion to the MongoDB database
+    # connection to the MongoDB database
     cluster = MongoClient(MONGODB_CONNECTION_STRING)
     db = cluster[CLUSTER_NAME]
     second_list = request.json.get("responses")
@@ -500,7 +498,7 @@ def get_jobs_from_view(jobs, db):
 
 @app.route("/viewjobs", methods=["POST"])
 def view_jobs():
-    # connexion to the MongoDB database
+    # connection to the MongoDB database
     cluster = MongoClient(MONGODB_CONNECTION_STRING)
     db = cluster[CLUSTER_NAME]
 
@@ -531,7 +529,7 @@ def view_users():
 
 @app.route("/offeredjobs", methods=["POST"])
 def offered_jobs():
-    # connexion to the MongoDB database
+    # connection to the MongoDB database
     collection = get_collection_by_field("users")
     details = request.json.get('clientDetails')
     username = details["userName"]
@@ -551,7 +549,7 @@ def offered_jobs():
 
 @app.route("/selectededjobs", methods=["POST"])
 def selected_jobs():
-    # connexion to the MongoDB database
+    # connection to the MongoDB database
     collection = get_collection_by_field("users")
     details = request.json.get('clientDetails')
     username = details["userName"]
@@ -632,10 +630,19 @@ def identify_intent(response, intents):
     print(relevant_intents)
     return relevant_intents
 
+# pass on intents in db and update the counters
+def incIntents(intents_stats,intents):
+    for intent in intents:
+        if intent in intents_stats:
+            intents_stats[intent] = intents_stats[intent] + 1
+        else:
+            intents_stats[intent] = 1
+    return intents_stats
+
 
 # function to extract relevant information for each intent
 def save_intents_in_DB(intents, statName):
-    # connexion to the MongoDB database
+    # connection to the MongoDB database
     cluster = MongoClient(MONGODB_CONNECTION_STRING)
     db = cluster[CLUSTER_NAME]
 
@@ -653,12 +660,8 @@ def save_intents_in_DB(intents, statName):
         document = collec_admin_stats.find_one({"statName": statName})
         prev_intent_info = document["stat"]
 
-    # pass on intents in db and update the counter
-    for intent in intents:
-        if intent in prev_intent_info:
-            prev_intent_info[intent] = prev_intent_info[intent] + 1
-        else:
-            prev_intent_info[intent] = 1
+    # pass on intents in db and update the counters
+    prev_intent_info=incIntents(prev_intent_info,intents)
 
     collec_admin_stats.update_one(
         {"statName": statName},
