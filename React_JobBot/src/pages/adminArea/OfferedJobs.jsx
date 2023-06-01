@@ -7,6 +7,9 @@ import {CardsTable} from "./CardsTable.jsx"
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LaunchIcon from '@mui/icons-material/Launch';
 import CircularProgress from '@mui/material/CircularProgress';
+import { useUser } from "../../UserProvider.js"
+
+
 
 
 function OfferedJobs(props) {
@@ -15,6 +18,8 @@ function OfferedJobs(props) {
   const state=props.propValue
   const clientDetails = state.clientDetails;
   console.log(clientDetails);
+
+  
 
   const [jobs, setJobs] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
