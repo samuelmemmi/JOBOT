@@ -29,11 +29,10 @@ MAXIMUM_JOBS_FOR_DISPLAYING = 15
 CLUSTER_NAME = "chatbot"
 MAX_JOBS_FOR_GPT = 6
 
-
-GENERAL_STATS = {"areas": {"South": 0, "North": 0, "Central": 0}, "job Types": {"Part_time": 0, "Full_time": 0}, \
-                   "field": {"Engineering": 0, "Marketing": 0, "Human Resources": 0, "Healthcare": 0,
-                             "Arts & Design": 0, "Finance & Accounting": 0, "Other": 0}, \
-                   "experience level": {"Intern": 0, "Junior": 0, "Senior": 0, "Other": 0}}
+GENERAL_STATS = {"areas": {"South": 0, "North": 0, "Central": 0}, "job Types": {"Part_time": 0, "Full_time": 0},
+                 "field": {"Engineering": 0, "Marketing": 0, "Human Resources": 0, "Healthcare": 0,
+                           "Arts & Design": 0, "Finance & Accounting": 0, "Other": 0},
+                 "experience level": {"Intern": 0, "Junior": 0, "Senior": 0, "Other": 0}}
 JOBOT_RESPONSE_FOR_FEEDBACK_1 = "I'm glad to hear you found a job"
 JOBOT_RESPONSE_FOR_FEEDBACK_2 = "Thanks for the feedback. We are always looking for ways to improve our services."
 INTENTS_TO_CHECK = ["I found enough jobs here", "I prefer self job search", "I'm interested in a shorter process"]
@@ -182,16 +181,34 @@ def getCitiesFromAreas(areas, areas_to_remove):
     return res
 
 
+def help_is_company_eligible(document, titles, companies, cities, other_list):
+    list_with_other = []
+    rest_list = []
+
+    for item in titles:
+        if item == "Other":
+            list_with_other.append(item)
+        else:
+            rest_list.append(item)
+
+    result_other = is_company_eligible(document, list_with_other, companies, cities, other_list)
+    result = is_company_eligible(document, rest_list, companies, cities, other_list)
+    return result or result_other
+
+
 def is_company_eligible(document, titles, companies, cities, other_list):
     job_words = set(document["job"].lower().split())
     company_doc = document["company"]
     city_doc = document["city"]
 
     if "Other" in titles:
-        if company_doc in companies and city_doc in cities and \
-                document["job"].lower() not in other_list:
-            return True
-    else:
+        if len(titles) > 1:  # Other + Something
+            return help_is_company_eligible(document, titles, companies, cities, other_list)
+        else:  # Just Other
+            if company_doc in companies and city_doc in cities and \
+                    document["job"].lower() not in other_list:
+                return True
+    else:  # Just titles
         for job_title in titles:
             title_words = set(job_title.lower().split())
             if company_doc in companies and city_doc in cities:
@@ -200,18 +217,19 @@ def is_company_eligible(document, titles, companies, cities, other_list):
                     return True
     return False
 
-def filter_jobs_company(new_documents, list_jobs, titles, companies, cities, other_list,seen_jobs_ids):
+
+def filter_jobs_company(new_documents, list_jobs, titles, companies, cities, other_list, seen_jobs_ids):
     for document in new_documents:
         if len(list_jobs) >= MAXIMUM_JOBS_FOR_DISPLAYING:
             break
 
-        if(document["_id"] in seen_jobs_ids):
+        if document["_id"] in seen_jobs_ids:
             continue
 
         if is_company_eligible(document, titles, companies, cities, other_list):
             list_jobs.append(document)
             seen_jobs_ids.append(document["_id"])
-    
+
     return list_jobs
 
 
@@ -253,12 +271,9 @@ def get_first_jobs():
     request_details = request.json.get("responses")
     field = request_details["field"]
     job_type = request_details["job Types"]
-
     other_list, field = what_field(field)
-
     job = field.lower() + "_" + job_type[0].lower()
     collection = get_collection_by_field(job)
-
     company = request_details["companies"]
     title = request_details["JobTitles"]
 
@@ -268,20 +283,34 @@ def get_first_jobs():
 
     areas = request_details["areas"]
     citiesByAreas = getCitiesFromAreas(areas, [])
-
     # connection to the MongoDB database
     cluster = MongoClient(MONGODB_CONNECTION_STRING)
     db = cluster[CLUSTER_NAME]
-
     # Find all documents in the collection
     documents = collection.find()
     # Create a new list of dictionaries with all fields and "id" converted to str
     new_documents = str_convert(documents)
     list_jobs = []
-    unique_jobs = help_get_first_jobs(new_documents, list_jobs, title, company, citiesByAreas, other_list,job_type, field,db,[])
+    unique_jobs = help_get_first_jobs(new_documents, list_jobs, title, company, citiesByAreas, other_list, job_type,
+                                      field, db, [])
     gpt_list = help_get_first_jobs_from_gpt(request_details, unique_jobs)
 
     return jsonify({"success": True, "list_jobs": gpt_list})
+
+
+def help_is_document_eligible(document, titles, cities, other_list):
+    list_with_other = []
+    rest_list = []
+
+    for item in titles:
+        if item == "Other":
+            list_with_other.append(item)
+        else:
+            rest_list.append(item)
+
+    result_other = is_document_eligible(document, list_with_other, cities, other_list)
+    result = is_document_eligible(document, rest_list, cities, other_list)
+    return result or result_other
 
 
 def is_document_eligible(document, titles, cities, other_list):
@@ -289,8 +318,11 @@ def is_document_eligible(document, titles, cities, other_list):
     city_doc = document["city"]
 
     if "Other" in titles:
-        if city_doc in cities and document["job"].lower() not in other_list:
-            return True
+        if len(titles) > 1:  # Other + Something
+            return help_is_document_eligible(document, titles, cities, other_list)
+        else:
+            if city_doc in cities and document["job"].lower() not in other_list:
+                return True
     else:
         for job_title in titles:
             title_words = set(job_title.lower().split())
@@ -301,12 +333,12 @@ def is_document_eligible(document, titles, cities, other_list):
     return False
 
 
-def filter_jobs(new_documents, list_jobs, titles, cities, other_list,seen_jobs_ids):
+def filter_jobs(new_documents, list_jobs, titles, cities, other_list, seen_jobs_ids):
     for document in new_documents:
         if len(list_jobs) >= MAXIMUM_JOBS_FOR_DISPLAYING:
             break
-        
-        if(document["_id"] in seen_jobs_ids):
+
+        if document["_id"] in seen_jobs_ids:
             continue
         if is_document_eligible(document, titles, cities, other_list):
             list_jobs.append(document)
@@ -315,15 +347,15 @@ def filter_jobs(new_documents, list_jobs, titles, cities, other_list,seen_jobs_i
     return list_jobs
 
 
-def help_part_time(field, db, list_jobs,seen_jobs_ids):
+def help_part_time(field, db, list_jobs, seen_jobs_ids):
     job2 = field.lower() + "_" + "intern"
     collection2 = db[job2]
     # Find all documents in the collection
     documents2 = collection2.find()
     # Create a new list of dictionaries with all fields except "id"
     new_documents2 = str_convert(documents2)
-    for doc in new_documents2:       
-        if(doc["_id"] in seen_jobs_ids):
+    for doc in new_documents2:
+        if doc["_id"] in seen_jobs_ids:
             continue
         if len(list_jobs) < MAXIMUM_JOBS_FOR_DISPLAYING and doc["job"] != "":
             list_jobs.append(doc)
@@ -332,17 +364,18 @@ def help_part_time(field, db, list_jobs,seen_jobs_ids):
     return list_jobs
 
 
-def help_get_first_jobs(new_documents, list_jobs, titles, companies, cities, other_list, time, field, db,seen_jobs_ids):
-    if "I'm open to any company" not in companies or (("I'm open to any company" in companies) and len(companies)>1):
-        list_jobs = filter_jobs_company(new_documents, list_jobs, titles, companies, cities, other_list,seen_jobs_ids)
+def help_get_first_jobs(new_documents, list_jobs, titles, companies, cities, other_list, time, field, db,
+                        seen_jobs_ids):
+    if "I'm open to any company" not in companies or (("I'm open to any company" in companies) and len(companies) > 1):
+        list_jobs = filter_jobs_company(new_documents, list_jobs, titles, companies, cities, other_list, seen_jobs_ids)
 
         if len(list_jobs) >= MAXIMUM_JOBS_FOR_DISPLAYING:
             return list_jobs
-    
-    list_jobs = filter_jobs(new_documents, list_jobs, titles, cities, other_list,seen_jobs_ids)
+
+    list_jobs = filter_jobs(new_documents, list_jobs, titles, cities, other_list, seen_jobs_ids)
 
     if time[0].lower() == "part_time" and len(list_jobs) < MAXIMUM_JOBS_FOR_DISPLAYING:
-        list_jobs = help_part_time(field, db, list_jobs,seen_jobs_ids)
+        list_jobs = help_part_time(field, db, list_jobs, seen_jobs_ids)
 
     set_res = set([job["_id"] for job in list_jobs])
     unique_jobs = []
@@ -355,22 +388,29 @@ def help_get_first_jobs(new_documents, list_jobs, titles, companies, cities, oth
     return unique_jobs
 
 
-def getJobString(job,index):
-    job_string = "This is the " + str(index) + " job\n" + "job title: " + job['job'] +\
-    ", job description: " + job['description'] + "\n"
+def getJobString(job, index):
+    job_string = "This is the " + str(index) + " job\n" + "job title: " + job['job'] + \
+                 ", job description: " + job['description'] + "\n"
     return job_string
 
-def getQuestionForGPT(experience_education,jobs_string):
+
+def getQuestionForGPT(experience_education, jobs_string):
     question = "I have a person who his experience and education are: '" + experience_education + "'" \
-            ". Are the description jobs below fit for him: " + jobs_string + \
-            "Return an answer according to the following template: 'job #: Yes' if this job is fit and 'job #: No' else."
+                                                                                                  ". Are the " \
+                                                                                                  "description jobs " \
+                                                                                                  "below fit for him: " \
+                                                                                                  "" + jobs_string + \
+               "Return an answer according to the following template: 'job #: Yes' if this job is fit and 'job #: No' " \
+               "else. "
     return question
 
-def appendApprovedJobs(potential_jobs,index,response_gpt,gpt_list):
+
+def appendApprovedJobs(potential_jobs, index, response_gpt, gpt_list):
     for job in potential_jobs:
         if (str(index) + ": Yes") in response_gpt:
             gpt_list.append(job)
-        index+=1
+        index += 1
+
 
 def chatgptConnection(question):
     API_KEY = key.api_key
@@ -382,10 +422,9 @@ def chatgptConnection(question):
     chat_log.append({"role": "assistant", "content": assistant_response.strip("\n").strip()})
     return assistant_response.strip("\n").strip()
 
+
 # use chatgpt to get more precise job (use experience and education)
 def get_jobs_from_chatGpt(unique_jobs, experience_education):
-    print("len of jobs")
-    print(len(unique_jobs))
     gpt_list = []
     index = 1
     # If there are more than MAX_JOBS_FOR_GPT jobs, we will not use chatgpt for the last rest jobs
@@ -395,30 +434,28 @@ def get_jobs_from_chatGpt(unique_jobs, experience_education):
         temp_len = len(unique_jobs)
     lengt = int((temp_len / 2) * 2)
     for i in range(0, lengt, 2):
-        if i+1<lengt:
-            jobs_string = getJobString(unique_jobs[i],index) + getJobString(unique_jobs[i+1],index+1)
+        if i + 1 < lengt:
+            jobs_string = getJobString(unique_jobs[i], index) + getJobString(unique_jobs[i + 1], index + 1)
         else:
-            jobs_string = getJobString(unique_jobs[i],index)
-        question = getQuestionForGPT(experience_education,jobs_string)
+            jobs_string = getJobString(unique_jobs[i], index)
+        question = getQuestionForGPT(experience_education, jobs_string)
         response_gpt = chatgptConnection(question)
 
-        if i+1<lengt:
-            potential_jobs=[unique_jobs[i],unique_jobs[i+1]]
-            appendApprovedJobs(potential_jobs,index,response_gpt,gpt_list)
-            if (i + 1 != (lengt - 1)):
-                time.sleep(MAX_SECONDS_FOR_SLEEPING) 
+        if i + 1 < lengt:
+            potential_jobs = [unique_jobs[i], unique_jobs[i + 1]]
+            appendApprovedJobs(potential_jobs, index, response_gpt, gpt_list)
+            if i + 1 != (lengt - 1):
+                time.sleep(MAX_SECONDS_FOR_SLEEPING)
         else:
-            potential_jobs=[unique_jobs[i]]
-            appendApprovedJobs(potential_jobs,index,response_gpt,gpt_list)
-            if (i != (lengt - 1)) :
+            potential_jobs = [unique_jobs[i]]
+            appendApprovedJobs(potential_jobs, index, response_gpt, gpt_list)
+            if i != (lengt - 1):
                 time.sleep(MAX_SECONDS_FOR_SLEEPING)
         index += 2
 
     # if there are more than 6 jobs in unique_jobs we also send to client from the seventh job onwards
     j = MAX_JOBS_FOR_GPT
     for j in range(j, len(unique_jobs)):
-        print("rest indexes")
-        print(j)
         gpt_list.append(unique_jobs[j])
     return gpt_list
 
@@ -453,7 +490,7 @@ def get_second_jobs():
         citiesByAreas = second_list["cities"]
     else:
         areas = second_list["areas"]
-        citiesByAreas=getCitiesFromAreas(areas,[])
+        citiesByAreas = getCitiesFromAreas(areas, [])
 
     if "job Requirements" in second_list:
         requirements = second_list["job Requirements"]
@@ -467,9 +504,10 @@ def get_second_jobs():
     # Create a new list of dictionaries with all fields and "id" converted to str
     new_documents = str_convert(documents)
     list_jobs = []
-    
+
     seen_jobs_ids = [job["_id"] for job in display_jobs]
-    unique_jobs = help_get_first_jobs(new_documents, list_jobs, jobtitle, company, citiesByAreas, other_list, level,field,db,seen_jobs_ids)
+    unique_jobs = help_get_first_jobs(new_documents, list_jobs, jobtitle, company, citiesByAreas, other_list, level,
+                                      field, db, seen_jobs_ids)
 
     display_jobs_ids = [job["_id"] for job in display_jobs]
     unique_jobs_second_jobs = [job for job in unique_jobs if job["_id"] not in display_jobs_ids]
@@ -477,7 +515,7 @@ def get_second_jobs():
     gpt_list = []
     if len(unique_jobs_second_jobs) != 0:
         gpt_list = get_jobs_from_chatGpt(unique_jobs_second_jobs, requirements)
-    # UNIT TEST #
+
     return jsonify({"success": True, "list_jobs": gpt_list})
 
 
@@ -509,6 +547,7 @@ def view_jobs():
     list_marketing = get_jobs_from_view(MARKETING_JOBS, db)
     list_humanresources = get_jobs_from_view(HUMAN_JOBS, db)
     total_list = list_humanresources + list_marketing + list_healthcare + list_design + list_finance + list_engineer
+
     return jsonify({"success": True, "total_list": total_list})
 
 
@@ -576,7 +615,7 @@ def view_history():
     details = request.json.get('clientDetails')
     username = details["userName"]
     password = details["password"]
-    
+
     collection = get_collection_by_field("users")
     user = collection.find_one({'user_name': username, 'password': password})
     size = 0
@@ -587,7 +626,6 @@ def view_history():
         return jsonify({"success": True, "content": content})
     else:
         return jsonify({"success": True, "content": []})
-
 
 
 @app.route("/clienthistory", methods=["POST"])
@@ -613,12 +651,15 @@ def client_history():
 
     return jsonify({"success": True, "message": "update database"})
 
+
 # function to identify user intent based on chatGPT
 def identify_intent(response, intents):
     relevant_intents = []
     # intents=["I found enough jobs here","I prefer self job search","I'm interested in a shorter process"]
     question = "For which of the intents in the list " + str(
-        intents) + " the sentence '" + response + "' corresponds? Return the indexes (which start from 1) of the corresponding intents according to the following template: 'intent #: Yes', If this intent fits and 'intent #: No' else."
+        intents) + " the sentence '" + response + "' corresponds? Return the indexes (which start from 1) of the " \
+                                                  "corresponding intents according to the following template: 'intent " \
+                                                  "#: Yes', If this intent fits and 'intent #: No' else. "
 
     response_gpt = chatgptConnection(question)
     for i in range(len(intents)):
@@ -630,8 +671,9 @@ def identify_intent(response, intents):
     print(relevant_intents)
     return relevant_intents
 
+
 # pass on intents in db and update the counters
-def incIntents(intents_stats,intents):
+def incIntents(intents_stats, intents):
     for intent in intents:
         if intent in intents_stats:
             intents_stats[intent] = intents_stats[intent] + 1
@@ -661,7 +703,7 @@ def save_intents_in_DB(intents, statName):
         prev_intent_info = document["stat"]
 
     # pass on intents in db and update the counters
-    prev_intent_info=incIntents(prev_intent_info,intents)
+    prev_intent_info = incIntents(prev_intent_info, intents)
 
     collec_admin_stats.update_one(
         {"statName": statName},
@@ -786,7 +828,6 @@ def test_response():
     return jsonify({"success": True, "message": JOBOT_response})
 
 
-
 def find_best_job(field):
     collection = get_collection_by_field(field)
 
@@ -839,6 +880,7 @@ def find_best_city(field):
     # Print the top 5 companies
     for result in results:
         print(result["_id"], result["count"])
+
 
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
