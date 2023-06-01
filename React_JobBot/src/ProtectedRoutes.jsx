@@ -5,7 +5,7 @@ import { useUser } from "./UserProvider.js";
 
 const ProtectedRoutes = ({setUserType}) => {
   const {userType} = useUser();
-  return userType !== "" ? <Outlet /> : <Login  setUserType={setUserType}/>;
+  return Object.keys(userType).length !== 0 ? <Outlet /> : <Login  setUserType={setUserType}/>;
 };
 
 export default ProtectedRoutes;

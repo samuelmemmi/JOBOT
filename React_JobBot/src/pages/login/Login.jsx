@@ -35,22 +35,12 @@ export default function Login({setUserType}) {
           if (response.data.message === "Admin login success"){
             // setUserType("admin")$$$$$$$$$$$$$$$$$$$
             setUserType({type:"admin",details:{userName: userName,password: Password,}})
-            navigate("/./homePageAdmin", {
-              state: {
-                userName: userName,
-                password: Password,
-              },
-            });
+            navigate("/./homePageAdmin");
           }
           else {
             // setUserType("user")$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
             setUserType({type:"client",details:{userName: userName,password: Password,}})
-            navigate("/./homePage", {
-              state: {
-                userName: userName,
-                password: Password,
-              },
-            });
+            navigate("/./homePage");
           }
         }
         else {
