@@ -32,7 +32,7 @@ class LoginRegisterTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['message'], 'Your new user is created')
 
-    def test_register_invalid_credentials(self):
+    def test_register_invalid(self):
         response = self.app.post('/register', data=json.dumps({"user_name": "", "password": ""}),
                                  content_type='application/json')
         data = json.loads(response.data)

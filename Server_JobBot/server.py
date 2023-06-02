@@ -67,6 +67,7 @@ SECRET_KEY = 'secret-key-'
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
 
+
 def get_collection_by_field(field):
     # connection to the MongoDB database
     cluster = MongoClient(MONGODB_CONNECTION_STRING)
@@ -438,26 +439,25 @@ def get_jobs_from_chatGpt(unique_jobs, experience_education):
             jobs_string = getJobString(unique_jobs[i], index) + getJobString(unique_jobs[i + 1], index + 1)
         else:
 
-            jobs_string = getJobString(unique_jobs[i],index)
-        question = getQuestionForGPT(experience_education,jobs_string)
+            jobs_string = getJobString(unique_jobs[i], index)
+        question = getQuestionForGPT(experience_education, jobs_string)
 
         try:
             response_gpt = chatgptConnection(question)
-            if i+1<lengt:
-                potential_jobs=[unique_jobs[i],unique_jobs[i+1]]
-                appendApprovedJobs(potential_jobs,index,response_gpt,gpt_list)
+            if i + 1 < lengt:
+                potential_jobs = [unique_jobs[i], unique_jobs[i + 1]]
+                appendApprovedJobs(potential_jobs, index, response_gpt, gpt_list)
                 if (i + 1 != (lengt - 1)):
-                    time.sleep(MAX_SECONDS_FOR_SLEEPING) 
+                    time.sleep(MAX_SECONDS_FOR_SLEEPING)
             else:
-                potential_jobs=[unique_jobs[i]]
-                appendApprovedJobs(potential_jobs,index,response_gpt,gpt_list)
-                if (i != (lengt - 1)) :
+                potential_jobs = [unique_jobs[i]]
+                appendApprovedJobs(potential_jobs, index, response_gpt, gpt_list)
+                if (i != (lengt - 1)):
                     time.sleep(MAX_SECONDS_FOR_SLEEPING)
             index += 2
         except:
             print("An exception has occurred in gpt api connection!")
             return unique_jobs
-
 
     # if there are more than 6 jobs in unique_jobs we also send to client from the seventh job onwards
     j = MAX_JOBS_FOR_GPT
@@ -813,7 +813,7 @@ def test_response():
     # identify intents using chatGPT
     intents = identify_intent(feedback, INTENTS_TO_CHECK)
 
-    if intents==-1:
+    if intents == -1:
         return jsonify({"success": True, "message": JOBOT_RESPONSE_FOR_FEEDBACK_2})
 
     # add the new feedback to the list of feedbacks in db
@@ -837,7 +837,5 @@ def test_response():
     return jsonify({"success": True, "message": JOBOT_response})
 
 
-
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
-

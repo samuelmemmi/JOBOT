@@ -21,16 +21,17 @@ class CompanyFilterTestCase(unittest.TestCase):
             {"_id": 6, "job": "QA Engineer", "company": "Deloitte", "city": "Tel Aviv",
              "description": "Job description 6"},
         ]
+        self.cities = ["Netanya", "Tel Aviv"]
+        self.other_list = OTHER_LIST_ENGINEER
 
     def test_is_company_eligible_true(self):
         titles = ["Software Engineer", "QA Engineer"]
         companies = ["Google", "Deloitte"]
-        cities = ["Netanya", "Tel Aviv"]
-        other_list = OTHER_LIST_ENGINEER
+
         document = {"_id": 1, "job": "Software Engineer", "company": "Google", "city": "Netanya",
                     "description": "Job description 1"}
 
-        result = ICE(document, titles, companies, cities, other_list)
+        result = ICE(document, titles, companies, self.cities, self.other_list)
         self.assertTrue(result)
 
     def test_is_company_eligible_other_true(self):
@@ -38,31 +39,26 @@ class CompanyFilterTestCase(unittest.TestCase):
                     "description": "Job description 2"}
         titles = ["Other"]
         companies = ["Microsoft"]
-        cities = ["Netanya", "Tel Aviv"]
-        other_list = OTHER_LIST_ENGINEER
 
-        result = ICE(document, titles, companies, cities, other_list)
+        result = ICE(document, titles, companies, self.cities, self.other_list)
         self.assertTrue(result)
 
     def test_is_company_eligible_false(self):
         titles = ["Software Engineer", "QA Engineer"]
         companies = ["Google", "Deloitte"]
-        cities = ["Netanya", "Tel Aviv"]
-        other_list = OTHER_LIST_ENGINEER
+
         document = {"_id": 3, "job": "Software Engineer", "company": "Adidas", "city": "Netanya",
                     "description": "Job description 3"}
 
-        result = ICE(document, titles, companies, cities, other_list)
+        result = ICE(document, titles, companies, self.cities, self.other_list)
         self.assertFalse(result)
 
     def test_filter_jobs_company(self):
         list_jobs = []
         titles = ["Software Engineer", "QA Engineer", "Other"]
         companies = ["Google", "Deloitte", "Microsoft"]
-        cities = ["Netanya", "Tel Aviv"]
-        other_list = OTHER_LIST_ENGINEER
 
-        result = FJC(self.documents, list_jobs, titles, companies, cities, other_list,
+        result = FJC(self.documents, list_jobs, titles, companies, self.cities, self.other_list,
                      [])
         expected_result = [
             {"_id": 1, "job": "Software Engineer", "company": "Google", "city": "Netanya",
