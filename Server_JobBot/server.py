@@ -683,7 +683,11 @@ def identify_intent(response, intents):
 
 
 # pass on intents in db and update the counters
-def incIntents(intents_stats, intents):
+def incIntents(intents_stats,intents):
+    if intents_stats is None:
+        intents_stats={}
+    if intents is None:
+        intents=[]
     for intent in intents:
         if intent in intents_stats:
             intents_stats[intent] = intents_stats[intent] + 1

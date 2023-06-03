@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { createRoot } from 'react-dom/client';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
-import './JobsPage.css';
 import starImage from './star.avif';
-import {CardsTable} from "./CardsTable.jsx"
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LaunchIcon from '@mui/icons-material/Launch';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useUser } from "../../UserProvider.js"
 
+import {CardsTable} from "./CardsTable.jsx"
+import ErrorMessages from "../chatBotLogic/components/Options/ErrorMessages"
+
+import './JobsPage.css';
 
 
 
@@ -23,7 +26,7 @@ function OfferedJobs(props) {
 
   const [jobs, setJobs] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-
+  const [isServerDown, setIsServerDown] = useState(false);
   useEffect(() => {
     fetchjobs();
   }, []);
@@ -36,7 +39,9 @@ function OfferedJobs(props) {
         setIsLoading(true)
       })
       .catch(error => {
-        console.error('Error fetching jobs:', error);
+        setIsServerDown(true)
+        createRoot(document.getElementById("offeredejobsfail")).render(<ErrorMessages />);
+        console.error('Error fetching jobs:', error.message);
       });
     }else{
       axios.post('/selectededjobs', { clientDetails })
@@ -45,7 +50,9 @@ function OfferedJobs(props) {
         setIsLoading(true)
       })
       .catch(error => {
-        console.error('Error fetching jobs:', error);
+        setIsServerDown(true)
+        createRoot(document.getElementById("offeredejobsfail")).render(<ErrorMessages />);
+        console.error('Error fetching jobs:', error.message);
       });
     }
 
@@ -77,19 +84,21 @@ function OfferedJobs(props) {
 
   return (
     <div>
-      {!isLoading ? (
-        <div className="loading"><CircularProgress /></div>
-      ) : (
-        <div>
-          {jobs&&jobs.length > 0 ? (
-            <div>
-            <CardsTable data={dataAsCards} />
-            </div>
+      {!isServerDown?(
+          (!isLoading) ? (
+            <div className="loading"><CircularProgress /></div>
           ) : (
-            <p style={{display: 'flex',justifyContent: 'center',alignItems: 'center',marginTop: "2rem"}}>No jobs found.</p>
-          )}
-        </div>
-      )}
+            <div>
+              {jobs&&jobs.length > 0 ? (
+                <div>
+                <CardsTable data={dataAsCards} />
+                </div>
+              ) : (
+                <p style={{display: 'flex',justifyContent: 'center',alignItems: 'center',marginTop: "2rem"}}>No jobs found.</p>
+              )}
+            </div>
+          )
+      ):(<div id="offeredejobsfail" style={{display: 'flex',justifyContent: 'center',alignItems: 'center',marginTop: "2rem"}}></div>)}
     </div>
   );
 }

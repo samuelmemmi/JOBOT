@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createRoot } from 'react-dom/client';
 import axios from 'axios';
 import './JobsPage.css';
 import starImage from './star.avif';
@@ -10,12 +11,17 @@ import { blue } from '@mui/material/colors';
 import Typography from "@mui/material/Typography";
 import CircularProgress from '@mui/material/CircularProgress';
 
+import ErrorMessages from "../chatBotLogic/components/Options/ErrorMessages"
+
+
 function JobsPage() {
   const [jobs, setJobs] = useState([]);
   const [companySearchQuery, setCompanySearchQuery] = useState('');
   const [jobTitleSearchQuery, setJobTitleSearchQuery] = useState('');
   const [citySearchQuery, setCitySearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isServerDown, setIsServerDown] = useState(false);
+
 
 
   useEffect(() => {
@@ -30,6 +36,8 @@ function JobsPage() {
         }
       })
       .catch(error => {
+        setIsServerDown(true)
+        createRoot(document.getElementById("jobsfail")).render(<ErrorMessages />);
         console.log('Error fetching jobs:', error.message);
       });
   }, []);
@@ -66,88 +74,45 @@ function JobsPage() {
 //component={'span'}
   return (
     <div>
-      {/* <h1 className="title">JOBOT Jobs</h1> */}
       <Typography variant='h4' align="center" m={2} fontFamily="Serif">JOBOT Jobs</Typography>
-      {/* <p className="loading">Loading...</p> */}
-      { isLoading ? <div className="loading"><CircularProgress /></div>:(
-      <div>
-      <div className="w-50 d-flex mx-auto align-items-center justify-cotnent-center">
-            <input
-              type="text"
-              placeholder="Search jobs by company name"
-              value={companySearchQuery}
-              onChange={event => setCompanySearchQuery(event.target.value)}
-              className="search-input"
-            />
-            <input
-              type="text"
-              placeholder="Search jobs by title"
-              value={jobTitleSearchQuery}
-              onChange={event => setJobTitleSearchQuery(event.target.value)}
-              className="search-input"
-            />
-            <input
-              type="text"
-              placeholder="Search jobs by city"
-              value={citySearchQuery}
-              onChange={event => setCitySearchQuery(event.target.value)}
-              className="search-input"
-            />
-      </div>
-      <div>
-      {filteredJobs.length === 0 ? (
-        <p className="no-jobs-found" style={{display: 'flex',justifyContent: 'center',alignItems: 'center',marginTop: "2rem"}}>No jobs found.</p>
-      ) : (
-        <CardsTable data={dataAsCards} />
-      )}
-      </div>
-      </div>) }
-      {/* {isLoading ? (
-        <p className="loading">Loading...</p>
-      ) : (
-        <div className="jobs-page">
-          <div className="search-container">
-            <input
-              type="text"
-              placeholder="Search jobs by company name"
-              value={companySearchQuery}
-              onChange={event => setCompanySearchQuery(event.target.value)}
-              className="search-input"
-            />
-            <input
-              type="text"
-              placeholder="Search jobs by title"
-              value={jobTitleSearchQuery}
-              onChange={event => setJobTitleSearchQuery(event.target.value)}
-              className="search-input"
-            />
-            <input
-              type="text"
-              placeholder="Search jobs by city"
-              value={citySearchQuery}
-              onChange={event => setCitySearchQuery(event.target.value)}
-              className="search-input"
-            />
+      {!isServerDown?(
+        isLoading ? <div className="loading"><CircularProgress /></div>:(
+          <div>
+          <div className="w-50 d-flex mx-auto align-items-center justify-cotnent-center">
+                <input
+                  type="text"
+                  placeholder="Search jobs by company name"
+                  value={companySearchQuery}
+                  onChange={event => setCompanySearchQuery(event.target.value)}
+                  className="search-input"
+                />
+                <input
+                  type="text"
+                  placeholder="Search jobs by title"
+                  value={jobTitleSearchQuery}
+                  onChange={event => setJobTitleSearchQuery(event.target.value)}
+                  className="search-input"
+                />
+                <input
+                  type="text"
+                  placeholder="Search jobs by city"
+                  value={citySearchQuery}
+                  onChange={event => setCitySearchQuery(event.target.value)}
+                  className="search-input"
+                />
           </div>
-          <ul className="jobs-list">
-            {filteredJobs.map((job, index) => (
-              <li key={index} className="job-item">
-                <h2 className="company-name">{job.company}</h2>
-                <p className="job-title">{job.job}</p>
-                <p className="job-location">{job.city}</p>
-                {job.rating&&<p className="job-rating"><span><img className="star" src={starImage} alt="Star" /></span> {job.rating}</p>}
-                <p className="job-date">{job.date}</p>
-                <p className="job-link">
-                  <a href={job.link} target="_blank" rel="noopener noreferrer">
-                    {job.link}
-                  </a>
-                </p>
-                <p className="job-description">{job.description}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )} */}
+          <div>
+          {filteredJobs.length === 0 ? (
+            <p className="no-jobs-found" style={{display: 'flex',justifyContent: 'center',alignItems: 'center',marginTop: "2rem"}}>No jobs found.</p>
+          ) : (
+            <CardsTable data={dataAsCards} />
+          )}
+          </div>
+        </div>)
+      ):(
+        <div id="jobsfail" style={{display: 'flex',justifyContent: 'center',alignItems: 'center',marginTop: "2rem"}}></div>
+      )}
+
     </div>
 
   );

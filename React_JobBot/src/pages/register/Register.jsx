@@ -1,10 +1,13 @@
 import React from "react";
+import { createRoot } from 'react-dom/client';
 // import "./register.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 // import { useHistory } from 'react-router-dom';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import ErrorMessages from "../chatBotLogic/components/Options/ErrorMessages"
+
 
 export default function Register() {
   let navigate = useNavigate();
@@ -35,6 +38,7 @@ export default function Register() {
         }
       })
       .catch((err) => {
+        createRoot(document.getElementById("registerfail")).render(<ErrorMessages />);
         console.log(err.message);
       });
   };

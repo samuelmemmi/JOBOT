@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createRoot } from 'react-dom/client';
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 
@@ -7,6 +8,7 @@ import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
 import CircularProgress from '@mui/material/CircularProgress';
 
+import ErrorMessages from "../chatBotLogic/components/Options/ErrorMessages"
 import './UsersPage.css';
 
 function UsersPage() {
@@ -14,6 +16,7 @@ function UsersPage() {
   const [isLoading, setIsLoading] = useState(false);
   let navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState(0);
+  const [isServerDown, setIsServerDown] = useState(false);
 
   useEffect(() => {
     axios.post('/viewusers')
@@ -26,6 +29,8 @@ function UsersPage() {
         }
       })
       .catch(error => {
+        setIsServerDown(true)
+        createRoot(document.getElementById("usersfail")).render(<ErrorMessages />);
         console.log('Error fetching jobs:', error.message);
       });
   }, []);
@@ -47,40 +52,44 @@ function UsersPage() {
   return (
     <div>
     <Typography variant='h4' align="center" m={2} fontFamily="Serif">Users</Typography>
-    {(isLoading)?(
-      <div>
-      <Tabs value={selectedTab} onChange={handleTabChange} centered>
-        <Tab label="Admin Users" />
-        <Tab label="Non-Admin Users" />
-      </Tabs>
-
-      {selectedTab === 0 && (
-        <div className="w-100 d-flex flex-column justify-content-center align-items-center mt-2 wider-box">
-          <ul className="w-50 d-flex flex-column justify-content-center align-items-center mt-2 wider-box">
-            {adminUsers.map(user => (
-              <li className="user-item" key={user.user_name}>
-                <p>{user.user_name}</p>
-                <p>{user.password}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {selectedTab === 1 && (
-        <div className="w-100 d-flex flex-column justify-content-center align-items-center mt-2 wider-box">
-          <ul className="w-50 d-flex flex-column justify-content-center align-items-center mt-2 wider-box">
-            {nonAdminUsers.map(user => (
-              <li className="user-item" id="user-item" key={user.user_name} onClick={() => handleHistory(user)}>
-                <p>{user.user_name}</p>
-                <p>{user.password}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-    ):(<div className="loading"><CircularProgress /></div>)}
+    {!isServerDown?(
+          (isLoading)?(
+            <div>
+            <Tabs value={selectedTab} onChange={handleTabChange} centered>
+              <Tab label="Admin Users" />
+              <Tab label="Non-Admin Users" />
+            </Tabs>
+      
+            {selectedTab === 0 && (
+              <div className="w-100 d-flex flex-column justify-content-center align-items-center mt-2 wider-box">
+                <ul className="w-50 d-flex flex-column justify-content-center align-items-center mt-2 wider-box">
+                  {adminUsers.map(user => (
+                    <li className="user-item" key={user.user_name}>
+                      <p>{user.user_name}</p>
+                      <p>{user.password}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+      
+            {selectedTab === 1 && (
+              <div className="w-100 d-flex flex-column justify-content-center align-items-center mt-2 wider-box">
+                <ul className="w-50 d-flex flex-column justify-content-center align-items-center mt-2 wider-box">
+                  {nonAdminUsers.map(user => (
+                    <li className="user-item" id="user-item" key={user.user_name} onClick={() => handleHistory(user)}>
+                      <p>{user.user_name}</p>
+                      <p>{user.password}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+          ):(<div className="loading"><CircularProgress /></div>)
+    ):(
+      <div id="usersfail" style={{display: 'flex',justifyContent: 'center',alignItems: 'center',marginTop: "2rem"}}></div>
+    )}
     </div>
   );
 }

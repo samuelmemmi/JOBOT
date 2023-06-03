@@ -1,4 +1,8 @@
 import React from "react";
+import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
+
+
 // import "./login.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -6,7 +10,7 @@ import axios from "axios";
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import { useUser } from "../../UserProvider";
-
+import ErrorMessages from "../chatBotLogic/components/Options/ErrorMessages"
 
 export default function Login({setUserType}) {
   //const {setUserType} = useUser()
@@ -49,6 +53,7 @@ export default function Login({setUserType}) {
         }
       })
       .catch((err) => {
+        createRoot(document.getElementById("loginfail")).render(<ErrorMessages />);
         console.log(err.message);
       });
   };
