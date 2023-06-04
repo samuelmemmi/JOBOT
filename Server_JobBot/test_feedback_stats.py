@@ -1,7 +1,6 @@
 import pytest
 from server import incIntents
 
-# null vs. []or{}
 def test_inc_intents():
     assert incIntents(None, None) == {}
     assert incIntents({}, []) == {}

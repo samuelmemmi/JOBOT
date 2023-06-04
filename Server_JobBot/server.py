@@ -172,6 +172,10 @@ def what_field(field):
 
 
 def getCitiesFromAreas(areas, areas_to_remove):
+    if areas is None:
+        areas=[]
+    if areas_to_remove is None:
+        areas_to_remove=[]
     res = []
     if "All" in areas:
         res += list(set(CITIES_AND_AREAS["All"]) - set(areas_to_remove))
@@ -233,6 +237,21 @@ def filter_jobs_company(new_documents, list_jobs, titles, companies, cities, oth
 
     return list_jobs
 
+# search in client histories his experiance & education in the selected field
+def find_experinace_education_in_history(user,field):
+    experi_educa = "-"
+    if user is None:
+        return experi_educa
+    if "history" in user:
+        histories_list = user["history"]
+        # go through the list of histories starting from the most recent history to the oldest
+        for history in reversed(histories_list):
+            # print(history['field'])
+            if ("field" in history) and ("experiance & education" in history) and history["field"] == field:
+                experi_educa = history["experiance & education"]
+                if experi_educa != "-":
+                    break
+    return experi_educa
 
 def help_get_first_jobs_from_gpt(request_details, unique_jobs):
     # connection to the MongoDB database
@@ -241,17 +260,8 @@ def help_get_first_jobs_from_gpt(request_details, unique_jobs):
                    "password": request_details["client details"]["password"]}
     user = collection.find_one(userDetails)
 
-    # search in client histories if there are his experiance & education in the selected field
-    experi_educa = "-"
-    if "history" in user:
-        histories_list = user["history"]
-        # go through the list of histories starting from the most recent history to the oldest
-        for history in reversed(histories_list):
-            # print(history['field'])
-            if history["field"] == request_details["field"]:
-                experi_educa = history["experiance & education"]
-                if experi_educa != "-":
-                    break
+    # search in client histories his experiance & education in the selected field
+    experi_educa = find_experinace_education_in_history(user,request_details["field"])
 
     # call chatgpt with the experiance & education we found
     gpt_list = unique_jobs

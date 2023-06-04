@@ -1,4 +1,3 @@
-
 import server
 
 def find_best_job(field):
