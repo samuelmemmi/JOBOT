@@ -58,8 +58,7 @@ class CompanyFilterTestCase(unittest.TestCase):
         titles = ["Software Engineer", "QA Engineer", "Other"]
         companies = ["Google", "Deloitte", "Microsoft"]
 
-        result = FJC(self.documents, list_jobs, titles, companies, self.cities, self.other_list,
-                     [])
+        result = FJC(self.documents, list_jobs, titles, companies, self.cities, self.other_list,[])
         expected_result = [
             {"_id": 1, "job": "Software Engineer", "company": "Google", "city": "Netanya",
              "description": "Job description 1"},

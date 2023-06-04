@@ -1,5 +1,7 @@
 import React from "react";
 import {useState,useEffect} from "react";
+import { Link } from 'react-router-dom';
+
 
 import "./Options.css";
 
@@ -8,7 +10,7 @@ const MoreInfo = (props) => {
     function moreInfo(){
         return (
             <div>
-                For more information click <a href="../../../about">here</a>
+                For more information click <Link to="../../../about">here</Link>
             </div>
             );
     }
@@ -16,7 +18,7 @@ const MoreInfo = (props) => {
     function selfJobSearch(){
         return (
             <div>
-                To self job search click <a href="/jobs">here</a>
+                To self job search click <Link to="/jobs">here</Link>
             </div>
             );
     }

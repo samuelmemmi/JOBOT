@@ -3,18 +3,6 @@ import {useState,useEffect} from "react";
 
 import JobCard from "./JobCard.jsx"
 
-// const doubleArray = (arr) => {
-//   return arr.map((e) => e * 2)
-// }
-
-// const filterArray = (arr, id) => {
-//   return arr.filter((e) => e.id !== id)
-// }
-
-// const sumArray = (arr, initialValue) => {
-//   return arr.reduce(((e, accu) => accu + e), initialValue)
-// }
-
 export const filterObjectsById = (objects, selectedObjects) => {
   let filteredObjects=[];
   objects.map((obj)=>{

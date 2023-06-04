@@ -35,7 +35,7 @@ export default function Header({userType}) {
         </ListItem>
       </div>
 
-
+      {/* setUserType({type:"admin",details:{userName: userName,password: Password,}}) */}
         {/* {userType["type"] === "admin" ? 
         <div className="d-flex justify-content-right">
           <Button style={{color:"#F1F6F9"}}>ADMIN</Button>
@@ -50,7 +50,7 @@ export default function Header({userType}) {
           <Button style={{color:"#F1F6F9"}}>USER</Button>
         </div>
         : null}
-         {userType["type"] === null ? 
+         {Object.keys(userType).length == 0 ? 
         <div className="d-flex justify-content-right">
           <Button style={{color:"#F1F6F9"}}>not logged in</Button>
           <Button style={{color:"#F1F6F9"}}>not logged in</Button>
