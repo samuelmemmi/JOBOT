@@ -53,6 +53,29 @@ def find_best_city(field):
     for result in results:
         print(result["_id"], result["count"])
 
+def update_all_feedbacks_in_DB():
+    cluster = MongoClient(MONGODB_CONNECTION_STRING)
+    db = cluster[CLUSTER_NAME]
+    collec_users = db["users"]
+
+    feedbacks = []
+    for user in collec_users.find():
+        if "history" in user:
+            for history in user['history']:
+                # print(history)
+                if history['feedback on termination'] != "-":
+                    feedbacks.append(history['feedback on termination'])
+    # print(feedbacks)
+
+    collec_admin_stats = db["admin_statistics"]
+
+    collec_admin_stats.update_one(
+        {"statName": "feedback"},
+        {"$set": {"all feedbacks": feedbacks}}
+    )
+
+    document = collec_admin_stats.find_one({"statName": "feedback"})
+    print(document)
 
 if __name__ == "__main__":
     find_best_title("healthcare_full_time")

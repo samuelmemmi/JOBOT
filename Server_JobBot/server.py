@@ -135,7 +135,7 @@ def logout():
 
 # route for updating the decision tree
 @app.route("/write-json", methods=["POST"])
-def writeJson():
+def write_json():
     # get the updated decision tree
     json_data = request.json
     # write it to a json file
@@ -146,11 +146,11 @@ def writeJson():
 
 # route for getting cities
 @app.route("/cities", methods=["POST"])
-def getCities():
+def get_cities():
     areas = request.json.get("areas")
     areas_to_remove = ["Central", "North", "Northern", "South", "Southern", "Israel"]
     # TODO: Check for edge cases! something + "All" as unit test
-    res = getCitiesFromAreas(areas, areas_to_remove)
+    res = get_cities_from_areas(areas, areas_to_remove)
     return jsonify({"success": True, "cities": res})
 
 
@@ -171,7 +171,7 @@ def what_field(field):
     return other_list, field
 
 
-def getCitiesFromAreas(areas, areas_to_remove):
+def get_cities_from_areas(areas, areas_to_remove):
     if areas is None:
         areas=[]
     if areas_to_remove is None:
@@ -293,7 +293,7 @@ def get_first_jobs():
             title[i] = TITLE_MAPPINGS[title[i]]
 
     areas = request_details["areas"]
-    citiesByAreas = getCitiesFromAreas(areas, [])
+    citiesByAreas = get_cities_from_areas(areas, [])
     # connection to the MongoDB database
     cluster = MongoClient(MONGODB_CONNECTION_STRING)
     db = cluster[CLUSTER_NAME]
@@ -399,13 +399,13 @@ def help_get_first_jobs(new_documents, list_jobs, titles, companies, cities, oth
     return unique_jobs
 
 
-def getJobString(job, index):
+def get_job_string(job, index):
     job_string = "This is the " + str(index) + " job\n" + "job title: " + job['job'] + \
                  ", job description: " + job['description'] + "\n"
     return job_string
 
 
-def getQuestionForGPT(experience_education, jobs_string):
+def get_question_for_GPT(experience_education, jobs_string):
     question = "I have a person who his experience and education are: '" + experience_education + "'" \
                                                                                                   ". Are the " \
                                                                                                   "description jobs " \
@@ -416,14 +416,14 @@ def getQuestionForGPT(experience_education, jobs_string):
     return question
 
 
-def appendApprovedJobs(potential_jobs, index, response_gpt, gpt_list):
+def append_approved_jobs(potential_jobs, index, response_gpt, gpt_list):
     for job in potential_jobs:
         if (str(index) + ": Yes") in response_gpt:
             gpt_list.append(job)
         index += 1
 
 
-def chatgptConnection(question):
+def chatgpt_connection(question):
     API_KEY = key.api_key
     openai.api_key = API_KEY
     chat_log = [{"role": "user", "content": question}]
@@ -446,22 +446,22 @@ def get_jobs_from_chatGpt(unique_jobs, experience_education):
     lengt = int((temp_len / 2) * 2)
     for i in range(0, lengt, 2):
         if i + 1 < lengt:
-            jobs_string = getJobString(unique_jobs[i], index) + getJobString(unique_jobs[i + 1], index + 1)
+            jobs_string = get_job_string(unique_jobs[i], index) + get_job_string(unique_jobs[i + 1], index + 1)
         else:
 
-            jobs_string = getJobString(unique_jobs[i], index)
-        question = getQuestionForGPT(experience_education, jobs_string)
+            jobs_string = get_job_string(unique_jobs[i], index)
+        question = get_question_for_GPT(experience_education, jobs_string)
 
         try:
-            response_gpt = chatgptConnection(question)
+            response_gpt = chatgpt_connection(question)
             if i + 1 < lengt:
                 potential_jobs = [unique_jobs[i], unique_jobs[i + 1]]
-                appendApprovedJobs(potential_jobs, index, response_gpt, gpt_list)
+                append_approved_jobs(potential_jobs, index, response_gpt, gpt_list)
                 if (i + 1 != (lengt - 1)):
                     time.sleep(MAX_SECONDS_FOR_SLEEPING)
             else:
                 potential_jobs = [unique_jobs[i]]
-                appendApprovedJobs(potential_jobs, index, response_gpt, gpt_list)
+                append_approved_jobs(potential_jobs, index, response_gpt, gpt_list)
                 if (i != (lengt - 1)):
                     time.sleep(MAX_SECONDS_FOR_SLEEPING)
             index += 2
@@ -506,7 +506,7 @@ def get_second_jobs():
         citiesByAreas = second_list["cities"]
     else:
         areas = second_list["areas"]
-        citiesByAreas = getCitiesFromAreas(areas, [])
+        citiesByAreas = get_cities_from_areas(areas, [])
 
     if "job Requirements" in second_list:
         requirements = second_list["job Requirements"]
@@ -678,7 +678,7 @@ def identify_intent(response, intents):
                                                   "#: Yes', If this intent fits and 'intent #: No' else. "
 
     try:
-        response_gpt = chatgptConnection(question)
+        response_gpt = chatgpt_connection(question)
         for i in range(len(intents)):
             if (str(i + 1) + ": Yes") in response_gpt:
                 relevant_intents.append(intents[i])
@@ -693,7 +693,7 @@ def identify_intent(response, intents):
 
 
 # pass on intents in db and update the counters
-def incIntents(intents_stats,intents):
+def inc_intents(intents_stats,intents):
     if intents_stats is None:
         intents_stats={}
     if intents is None:
@@ -727,7 +727,7 @@ def save_intents_in_DB(intents, statName):
         prev_intent_info = document["stat"]
 
     # pass on intents in db and update the counters
-    prev_intent_info = incIntents(prev_intent_info, intents)
+    prev_intent_info = inc_intents(prev_intent_info, intents)
 
     collec_admin_stats.update_one(
         {"statName": statName},
@@ -737,14 +737,14 @@ def save_intents_in_DB(intents, statName):
         print(x)
 
 
-def getStatsFromDB(statName):
+def get_stats_from_DB(statName):
     collec_admin_stats = get_collection_by_field("admin_statistics")
     document = collec_admin_stats.find_one({"statName": statName})
     del document["_id"]
     return document
 
 
-def calculateGeneralStats(subjects):
+def calculate_general_stats(subjects):
     cluster = MongoClient(MONGODB_CONNECTION_STRING)
     db = cluster[CLUSTER_NAME]
     collec_users = db["users"]
@@ -778,46 +778,21 @@ def calculateGeneralStats(subjects):
     )
 
 
-def updateAllfeedbacksInDB():
-    cluster = MongoClient(MONGODB_CONNECTION_STRING)
-    db = cluster[CLUSTER_NAME]
-    collec_users = db["users"]
-
-    feedbacks = []
-    for user in collec_users.find():
-        if "history" in user:
-            for history in user['history']:
-                # print(history)
-                if history['feedback on termination'] != "-":
-                    feedbacks.append(history['feedback on termination'])
-    # print(feedbacks)
-
-    collec_admin_stats = db["admin_statistics"]
-
-    collec_admin_stats.update_one(
-        {"statName": "feedback"},
-        {"$set": {"all feedbacks": feedbacks}}
-    )
-
-    document = collec_admin_stats.find_one({"statName": "feedback"})
-    print(document)
-
-
 # route for getting statistics
 @app.route("/getStatistics", methods=["POST"])
-def getStatistics():
+def get_statistics():
     goal = request.json.get("goal")
     # print(goal)
     if goal == "view_general_stats":
-        document = getStatsFromDB("general_statistics")
+        document = get_stats_from_DB("general_statistics")
         return jsonify({"success": True, "message": document})
     elif goal == "calculate_general_stats":
         subjects = ["areas", "job Types", "field", "experience level"]
-        calculateGeneralStats(subjects)
-        updatedDocument = getStatsFromDB("general_statistics")
+        calculate_general_stats(subjects)
+        updatedDocument = get_stats_from_DB("general_statistics")
         return jsonify({"success": True, "message": updatedDocument})
     elif goal == "view_feedback":
-        document = getStatsFromDB("feedback")
+        document = get_stats_from_DB("feedback")
         return jsonify({"success": True, "message": document})
 
 
