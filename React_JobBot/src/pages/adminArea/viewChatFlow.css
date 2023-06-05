@@ -105,4 +105,8 @@
     border-radius: 500px;
     display: inline;
   }
+
+  .export-button{
+    margin-left: 20px;
+  }
   

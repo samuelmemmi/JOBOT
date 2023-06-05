@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import "./statistics.css"
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -18,6 +17,9 @@ import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
 // import PendingIcon from '@mui/icons-material/Pending';
 import CircularProgress from '@mui/material/CircularProgress';
+import { createRoot } from 'react-dom/client';
+import "./statistics.css"
+import ErrorMessages from "../chatBotLogic/components/Options/ErrorMessages"
 
 
 ChartJS.register(
@@ -80,6 +82,7 @@ const Statistics = () => {
     const [feebackDataPie, setFeebackDataPie] = useState({});
     const [isPie, setIsPie] = useState(false);
     const [isClicked,setIsClicked]=useState(false)
+    const [isServerDown, setIsServerDown] = useState(false);
     // const [buttonCount, setButtonCount] = useState(0);
 
 
@@ -164,6 +167,8 @@ const Statistics = () => {
           }
         })
         .catch((err) => {
+          setIsServerDown(true)
+          createRoot(document.getElementById("statisticsfail")).render(<ErrorMessages />);
           console.log("Error getting statistics: ", err.message);
         });
     }
@@ -209,7 +214,9 @@ const Statistics = () => {
       {/* <h1>Statistics</h1> */}
       <Typography variant='h4' align="center" m={2} fontFamily="Serif">Statistics</Typography>
       <p className="sentence">The statistics here refer to the total number of <strong>chats</strong> made with JOBOT by the website's users</p>
-      <  BasicTabs/>
+      {!isServerDown?(<  BasicTabs/>):(
+        <div id="statisticsfail" style={{display: 'flex',justifyContent: 'center',alignItems: 'center',marginTop: "2rem"}}></div>
+      )}
     </div>
   );
 };

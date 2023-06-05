@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import Typography from "@mui/material/Typography";
+import { createRoot } from 'react-dom/client';
 
 import chatFlow from "../chatBotLogic/convert_tree_to_json";
 import "./viewChatFlow.css"
+import ErrorMessages from "../chatBotLogic/components/Options/ErrorMessages"
 
 function ViewChatFlow() {
   // const [myObject, setMyObject] = useState(require('../chatBotLogic/decisionTree.json'));
@@ -22,10 +24,13 @@ function ViewChatFlow() {
           console.log(response.data.message);
         })
         .catch((error) => {
+          setIsServerDown(true)
+          createRoot(document.getElementById("viewchatflowfail")).render(<ErrorMessages />);
           console.error(error.response.data.error);
         });
         return obje
     }});
+  const [isServerDown, setIsServerDown] = useState(false);
 
   function RenderObject({ object }) {
     const [editing, setEditing] = useState(false);
@@ -84,6 +89,8 @@ function ViewChatFlow() {
       console.log(response.data.message);
     })
     .catch((error) => {
+      setIsServerDown(true)
+      createRoot(document.getElementById("viewchatflowfail")).render(<ErrorMessages />);
       console.error(error.response.data.error);
     });
   };
@@ -91,8 +98,13 @@ function ViewChatFlow() {
   return (
     <div className="pedigree-tree">
       <Typography variant='h4' align="center" m={2} fontFamily="Serif">Decision Tree of the Chat Bot</Typography>
-      <RenderObject object={myObject}/>
-      <button onClick={exportObject} style={{'margin-left': '20px'}}>Export</button>
+      {!isServerDown?(
+        <>
+        <RenderObject object={myObject}/>
+        <button className="export-button" onClick={exportObject} >Export</button>
+        </>
+      ):(null)}
+      <div id="viewchatflowfail" style={{display: 'flex',justifyContent: 'center',alignItems: 'center',marginTop: "2rem"}}></div>
     </div>
   );
 }

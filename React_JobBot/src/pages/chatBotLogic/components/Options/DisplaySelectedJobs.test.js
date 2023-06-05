@@ -1,5 +1,5 @@
-//import {filterObjectsById} from "./DisplaySelectedJobs"
-const { filterObjectsById } = require("./DisplaySelectedJobs");
+import { filterObjectsById } from "./DisplaySelectedJobs";
+// const { filterObjectsById } = require("./DisplaySelectedJobs");
 
 test("Checking filterObjectsById with empty object", () => {
   expect(filterObjectsById([{ _id: 1 }, { _id: 2 }], [1])).toBe([{ _id: 1 }]);
