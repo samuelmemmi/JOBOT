@@ -3,9 +3,9 @@ import Login from "./pages/login/Login.jsx";
 import { useUser } from "./UserProvider.js";
 
 
-const ProtectedRoutes = ({setUserType}) => {
+const ProtectedRoutes = ({updateUsertype}) => {
   const {userType} = useUser();
-  return Object.keys(userType).length !== 0 ? <Outlet /> : <Login  setUserType={setUserType}/>;
+  return Object.keys(userType).length !== 0 ? <Outlet /> : <Login  updateUsertype={updateUsertype}/>;
 };
 
 export default ProtectedRoutes;

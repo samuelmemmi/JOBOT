@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const Logout = ({setUserType}) => {
+const Logout = ({updateUsertype}) => {
   const [loggedOut, setLoggedOut] = useState(false);
   const navigate = useNavigate();
 
   const handleLogout = () => {
     // setUserType("")$$$$$$$$$$$$$$$$$$$$
     console.log("A")
-    setUserType({})
+    updateUsertype({})
     console.log("B")
     axios.post('/logout')
       .then(response => {

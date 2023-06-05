@@ -12,7 +12,7 @@ import Button from '@mui/material/Button';
 import { useUser } from "../../UserProvider";
 import ErrorMessages from "../chatBotLogic/components/Options/ErrorMessages"
 
-export default function Login({setUserType}) {
+export default function Login({updateUsertype}) {
   //const {setUserType} = useUser()
   // const history = useHistory();
   let navigate = useNavigate();
@@ -20,7 +20,6 @@ export default function Login({setUserType}) {
     navigate("/./register");
   };
 
-  console.log(setUserType)
 
   const moveToChat = () => {
     var userName = document.getElementById("LoginUserName").value;
@@ -38,12 +37,12 @@ export default function Login({setUserType}) {
         if (response.data.success) {
           if (response.data.message === "Admin login success"){
             // setUserType("admin")$$$$$$$$$$$$$$$$$$$
-            setUserType({type:"admin",details:{userName: userName,password: Password,}})
+            updateUsertype({type:"admin",details:{userName: userName,password: Password,}})
             navigate("/./homePageAdmin");
           }
           else {
             // setUserType("user")$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-            setUserType({type:"client",details:{userName: userName,password: Password,}})
+            updateUsertype({type:"client",details:{userName: userName,password: Password,}})
             navigate("/./homePage");
           }
         }

@@ -1,16 +1,27 @@
-import {createContext, useContext, useState} from "react"
+import { createContext, useContext, useState } from "react";
 
-export const UserContext = createContext(null)
+export const UserContext = createContext(null);
 
-export const UserProvider = ({children}) => {
-    // const [userType, setUserType] = useState("")$$$$$$$$$$$$$$
-    const [userType, setUserType] = useState({})
+export const UserProvider = ({ children }) => {
+  // const [userType, setUserType] = useState("")$$$$$$$$$$$$$$
+  const [userType, setUserType] = useState(() => {
+    const storedUserType = localStorage.getItem("userType");
+    if (storedUserType) {
+      return JSON.parse(storedUserType);
+    }
+    return {};
+  });
 
-    return (
-        <UserContext.Provider value={{userType, setUserType}}>
-            {children}
-        </UserContext.Provider>
-    )
-}
+  const updateUsertype = (newUserType) => {
+    setUserType(newUserType);
+    localStorage.setItem("userType", JSON.stringify(newUserType));
+  };
 
-export const useUser = () => useContext(UserContext)
+  return (
+    <UserContext.Provider value={{ userType, updateUsertype }}>
+      {children}
+    </UserContext.Provider>
+  );
+};
+
+export const useUser = () => useContext(UserContext);

@@ -21,25 +21,30 @@ import Header from "./pages/Header.jsx";
 import { UserProvider } from "./UserProvider.js";
 import { useUser } from "./UserProvider.js"
 import ProtectedRoutes from "./ProtectedRoutes.jsx"
+import {useEffect} from 'react'
 
 
 function Main() {
-  const { userType, setUserType} = useUser();
+  const { userType, updateUsertype} = useUser();
+  
+  
+
+  
 
   return (
     <div className="d-flex flex-column">
     <Header userType={userType}/>
     <Routes>
-      <Route path="/" element={<Login setUserType={setUserType}/>} />
+      <Route path="/" element={<Login updateUsertype={updateUsertype}/>} />
       <Route path="/register" element={<Register />} />
-      <Route element={<ProtectedRoutes setUserType={setUserType}/>}>
+      <Route element={<ProtectedRoutes updateUsertype={updateUsertype}/>}>
         <Route path="/startChat" element={<StartChat />}/>
         <Route path="/viewChatFlow" element={<ViewChatFlow />}/>
         <Route path="/homePage" element={<HomeClient />}/>
         <Route path="/homePageAdmin" element={<HomeAdmin />}/>
         <Route path="/jobs" element={<JobsPage />}/>
         <Route path="/users" element={<UsersPage />}/>
-        <Route path="/logout" element={<Logout setUserType={setUserType}/>}/>
+        <Route path="/logout" element={<Logout updateUsertype={updateUsertype}/>}/>
         <Route path="/details" element={<UserDetails />}/>
         <Route path="/history" element={<ClientHistory />}/>
         <Route path="/statistics" element={<Statistics />}/>
