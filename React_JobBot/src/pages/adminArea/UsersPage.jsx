@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { createRoot } from 'react-dom/client';
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
-
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
@@ -30,7 +28,6 @@ function UsersPage() {
       })
       .catch(error => {
         setIsServerDown(true)
-        createRoot(document.getElementById("usersfail")).render(<ErrorMessages />);
         console.log('Error fetching jobs:', error.message);
       });
   }, []);
@@ -88,8 +85,8 @@ function UsersPage() {
           </div>
           ):(<div className="loading"><CircularProgress /></div>)
     ):(
-      <div id="usersfail" style={{display: 'flex',justifyContent: 'center',alignItems: 'center',marginTop: "2rem"}}></div>
-    )}
+      <div style={{display: 'flex',justifyContent: 'center',alignItems: 'center',marginTop: "2rem"}}> <ErrorMessages /></div>
+      )}
     </div>
   );
 }

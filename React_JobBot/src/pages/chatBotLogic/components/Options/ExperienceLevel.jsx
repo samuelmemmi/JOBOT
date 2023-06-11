@@ -11,7 +11,6 @@ const ExperienceLevel = (props) => {
   useEffect(()=>{setOptions(props.node.getNextResponse().options)},[]);//maybe props.node_if_options>0
 
   const handleOptionChange = (event) => {
-    // setSelectedOption(event.target.value);
     setSelectedOption(event.target.value);
   };
 

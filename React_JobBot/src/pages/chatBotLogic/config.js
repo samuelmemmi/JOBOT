@@ -9,7 +9,7 @@ import Companies from "./components/Options/Companies";
 import Areas from "./components/Options/Areas";
 import JobTypes from "./components/Options/JobTypes";
 import Jobs from "./components/Options/Jobs";
-import EmailDisplay from "./components/Options/EmailDisplay";
+import DisplayEmail from "./components/Options/DisplayEmail";
 import DisplaySelectedJobs from "./components/Options/DisplaySelectedJobs";
 import AccuracyLevels from "./components/Options/AccuracyLevels";
 import MoreInfo from "./components/Options/MoreInfo";
@@ -30,10 +30,6 @@ const config = {
     }),
   ],
 
-  // state: {
-  //   nodes: [dec_tree],
-  // },
-
   widgets: [
     {
       widgetName: "fieldOptions",
@@ -41,9 +37,6 @@ const config = {
       props: {
         node:dec_tree
       }
-      // mapStateToProps: [
-      //   "nodes",
-      // ]
     },
     {
       widgetName: "approval",
@@ -51,9 +44,6 @@ const config = {
       props: {
         node:dec_tree
       }
-      // mapStateToProps: [
-      //   "nodes",
-      // ]
     },
     {
       widgetName: "jobTitles",
@@ -91,8 +81,8 @@ const config = {
       }
     },
     {
-      widgetName: "emailDisplay",
-      widgetFunc: (props) => <EmailDisplay {...props} />,
+      widgetName: "displayEmail",
+      widgetFunc: (props) => <DisplayEmail {...props} />,
       props: {
         node:dec_tree
       }

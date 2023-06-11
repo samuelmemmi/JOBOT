@@ -1,32 +1,26 @@
+import { Link } from 'react-router-dom';
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import IconButton from "@mui/material/IconButton";
-// import FolderIcon from "@mui/icons-material/Folder";
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
-import { Link } from 'react-router-dom';
-import { useLocation } from 'react-router-dom';
+
 import { useUser } from "../../UserProvider"
 
 
 export default function Home() {
-    const location = useLocation();
     const { userType } = useUser()
     const clientDetails = userType.details
     console.log(clientDetails)
     
-    
-      const dense = false;
-      const secondary = true;
-    
       return (
         <div style={{height: "92vh"}} className="w-100 d-flex flex-column justify-content-center align-items-center pb-5">
             <h1 style={{color: "#309CFF"}}>Welcome!</h1>
-        <List dense={dense} className="m-3">
+        <List dense={false} className="m-3">
           <ListItem>
             <IconButton component={Link} to="/startChat" state={clientDetails}>
               <ListItemIcon >

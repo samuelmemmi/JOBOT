@@ -1,20 +1,17 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import Typography from "@mui/material/Typography";
-import { createRoot } from 'react-dom/client';
 
 import chatFlow from "../chatBotLogic/convert_tree_to_json";
-import "./viewChatFlow.css"
 import ErrorMessages from "../chatBotLogic/components/Options/ErrorMessages"
+import "./viewChatFlow.css"
 
 function ViewChatFlow() {
-  // const [myObject, setMyObject] = useState(require('../chatBotLogic/decisionTree.json'));
   const [myObject, setMyObject] = useState(()=>{
     try {
       var obje = require('../chatBotLogic/decisionTree.json');
       return obje;
     } catch (error) {
-      //console.error(`Error loading data: ${error}`);
       obje = chatFlow;
       axios.post('/write-json', obje, {
           headers: {
@@ -25,7 +22,6 @@ function ViewChatFlow() {
         })
         .catch((error) => {
           setIsServerDown(true)
-          createRoot(document.getElementById("viewchatflowfail")).render(<ErrorMessages />);
           console.error(error.response.data.error);
         });
         return obje
@@ -78,9 +74,6 @@ function ViewChatFlow() {
   }
 
   const exportObject = () => {
-    // const json = JSON.stringify(myObject);
-    // console.log(json);
-
     axios.post('/write-json', myObject, {
       headers: {
       'Content-type': 'application/json; charset=UTF-8' } 
@@ -90,7 +83,6 @@ function ViewChatFlow() {
     })
     .catch((error) => {
       setIsServerDown(true)
-      createRoot(document.getElementById("viewchatflowfail")).render(<ErrorMessages />);
       console.error(error.response.data.error);
     });
   };
@@ -103,12 +95,11 @@ function ViewChatFlow() {
         <RenderObject object={myObject}/>
         <button className="export-button" onClick={exportObject} >Export</button>
         </>
-      ):(null)}
-      <div id="viewchatflowfail" style={{display: 'flex',justifyContent: 'center',alignItems: 'center',marginTop: "2rem"}}></div>
+      ):(<div style={{display: 'flex',justifyContent: 'center',alignItems: 'center',marginTop: "2rem"}}> <ErrorMessages /></div>)}
     </div>
   );
 }
 
-export default ViewChatFlow;//FINALLLLLL
+export default ViewChatFlow;
 
 

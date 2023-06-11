@@ -3,7 +3,6 @@ import { createContext, useContext, useState } from "react";
 export const UserContext = createContext(null);
 
 export const UserProvider = ({ children }) => {
-  // const [userType, setUserType] = useState("")$$$$$$$$$$$$$$
   const [userType, setUserType] = useState(() => {
     const storedUserType = localStorage.getItem("userType");
     if (storedUserType) {

@@ -22,8 +22,6 @@ class MessageParser {
       document.documentElement.style.setProperty('--button-visibility', 'hidden');
       this.props.head.setSavedInDB({...this.props.head.getSavedInDB(),"feedback on termination":message})
       //call server
-      //message:string
-
       axios.post("/getIsFeedback", {
         message: message
       }, {
@@ -33,7 +31,6 @@ class MessageParser {
       .then((response) => {
         if (response.data.success) {
           console.log("Server returned bot response:", response.data.message);
-          //קריאה לסיום
           this.actionProvider.responseToFeedback(this.props.head, message, response.data.message)
           this.actionProvider.selfSearch(this.props.head, {flag:"feedback"});
           
@@ -42,12 +39,6 @@ class MessageParser {
         }
       })
       .catch((err) => {
-        // const message = this.createChatBotMessage(err.message,
-        //   {
-        //     widget: "errorMessages",
-        //   });
-        // this.addMessageToState(message,this.props.head);
-
         this.actionProvider.errorMessages(this.props.head,err.message)
         console.log("Error getting bot response: ", err.message);
       });

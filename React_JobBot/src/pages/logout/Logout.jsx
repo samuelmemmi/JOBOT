@@ -7,10 +7,7 @@ const Logout = ({updateUsertype}) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // setUserType("")$$$$$$$$$$$$$$$$$$$$
-    console.log("A")
     updateUsertype({})
-    console.log("B")
     axios.post('/logout')
       .then(response => {
         if (response.data.success) {
@@ -18,7 +15,7 @@ const Logout = ({updateUsertype}) => {
         }
       })
       .catch(error => {
-        // Handle error (e.g. display error message)
+        console.log(error.message);
       });
   };
 

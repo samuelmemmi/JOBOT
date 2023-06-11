@@ -1,5 +1,6 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
+
 import Login from "./pages/login/Login.jsx";
 import Register from "./pages/register/Register.jsx";
 import StartChat from "./pages/chatBotLogic/StartChat.jsx"
@@ -15,22 +16,15 @@ import Statistics from "./pages/adminArea/Statistics.jsx";
 import ConversationsPage from "./pages/adminArea/ConversationsPage.jsx";
 import OfferedJobs from "./pages/adminArea/OfferedJobs.jsx";
 import About from "./pages/clientArea/About.jsx";
-
-// import ProtectedRoutes from "./ProtectedRoutes.jsx";
 import Header from "./pages/Header.jsx";
 import { UserProvider } from "./UserProvider.js";
 import { useUser } from "./UserProvider.js"
 import ProtectedRoutes from "./ProtectedRoutes.jsx"
-import {useEffect} from 'react'
 
 
 function Main() {
   const { userType, updateUsertype} = useUser();
   
-  
-
-  
-
   return (
     <div className="d-flex flex-column">
     <Header userType={userType}/>
@@ -67,24 +61,3 @@ function App() {
 }
 
 export default App;
-
-/*
-  <Routes>
-    <Route path="/" element={<Login />} />
-    <Route element={<ProtectedRoutes />}>
-      <Route path="/register" element={<Register />} />
-      <Route path="/startChat" element={<StartChat />}/>
-      <Route path="/viewChatFlow" element={<ViewChatFlow />}/>
-      <Route path="/homePage" element={<HomeClient />}/>
-      <Route path="/homePageAdmin" element={<HomeAdmin />}/>
-      <Route path="/jobs" element={<JobsPage />}/>
-      <Route path="/users" element={<UsersPage />}/>
-      <Route path="/logout" element={<Logout />}/>
-      <Route path="/details" element={<UserDetails />}/>
-      <Route path="/history" element={<ClientHistory />}/>
-      <Route path="/statistics" element={<Statistics />}/>
-      <Route path="/conversations" element={<ConversationsPage />}/>
-      <Route path="/offeredJobs" element={<OfferedJobs />}/>
-    </Route>
-  </Routes>
-*/

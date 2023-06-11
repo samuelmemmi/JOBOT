@@ -10,22 +10,11 @@
     margin-bottom: 20px;
   }
   
-  /* .users-list {
-    list-style: none;
-    align-items: center;
-    align-content: center;
-    justify-content: center;
-    width: 80%;
-    margin: 0;
-    padding: 0;
-  } */
-  
   .user-item {
     display: flex;
     flex-direction: column;
     align-items: center;
     border: 1px solid lightgray;
-    /* background-color: #E1FED0; F9FDF7 */
     border-radius: 5px;
     padding: 10px;
     margin-bottom: 10px;
@@ -39,13 +28,4 @@
     background-color: #F1F6F9;
   }
   
-  /* .user-name {
-    font-size: 28px;
-    margin-bottom: 10px;
-  }
-  
-  .user-password {
-    font-size: 24px;
-    margin-bottom: 10px;
-  } */
   

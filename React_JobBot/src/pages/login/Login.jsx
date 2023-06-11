@@ -1,20 +1,14 @@
 import React from "react";
-import ReactDOM from 'react-dom';
-import { createRoot } from 'react-dom/client';
-
-
-// import "./login.css";
+import { useState} from "react"
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-// import { useHistory } from 'react-router-dom';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import { useUser } from "../../UserProvider";
+
 import ErrorMessages from "../chatBotLogic/components/Options/ErrorMessages"
 
 export default function Login({updateUsertype}) {
-  //const {setUserType} = useUser()
-  // const history = useHistory();
+  const [isServerDown, setIsServerDown] = useState(false)
   let navigate = useNavigate();
   const routeChange = () => {
     navigate("/./register");
@@ -22,6 +16,7 @@ export default function Login({updateUsertype}) {
 
 
   const moveToChat = () => {
+    setIsServerDown(false)
     var userName = document.getElementById("LoginUserName").value;
     var Password = document.getElementById("LoginPassword").value;
     
@@ -36,12 +31,10 @@ export default function Login({updateUsertype}) {
       .then((response) => {
         if (response.data.success) {
           if (response.data.message === "Admin login success"){
-            // setUserType("admin")$$$$$$$$$$$$$$$$$$$
             updateUsertype({type:"admin",details:{userName: userName,password: Password,}})
             navigate("/./homePageAdmin");
           }
           else {
-            // setUserType("user")$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
             updateUsertype({type:"client",details:{userName: userName,password: Password,}})
             navigate("/./homePage");
           }
@@ -52,7 +45,7 @@ export default function Login({updateUsertype}) {
         }
       })
       .catch((err) => {
-        createRoot(document.getElementById("loginfail")).render(<ErrorMessages />);
+        setIsServerDown(true)
         console.log(err.message);
       });
   };
@@ -101,12 +94,7 @@ export default function Login({updateUsertype}) {
           id="LoginPassword"
         />
         </div>
-        <div 
-        style={{
-          //backgroundColor: "red"
-        }}
-        className="w-100 d-flex flex-row justify-content-between mt-4 ">
-
+        <div className="w-100 d-flex flex-row justify-content-between mt-4 ">
         <Button 
         sx={{
           backgroundColor: "#8AFA63",
@@ -123,6 +111,9 @@ export default function Login({updateUsertype}) {
       </div>
       <br/>
       <div id="loginfail"></div>
+      {isServerDown ?
+        <ErrorMessages /> : null  
+      }
     </div>
   );
 }

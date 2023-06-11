@@ -1,16 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import { createRoot } from 'react-dom/client';
 import axios from 'axios';
-// import './ConversationsPage.css';
-// import ChatMsg from '@mui-treasury/components/chatMsg/ChatMsg';
 import CircularProgress from '@mui/material/CircularProgress';
+
 import ErrorMessages from "../chatBotLogic/components/Options/ErrorMessages"
 
-
 function ConversationsPage(props) {
-  // const location = useLocation();
-  // const clientDetails = location.state;
   const clientDetails=props.propValue
   console.log(clientDetails);
 
@@ -32,7 +26,6 @@ function ConversationsPage(props) {
       })
       .catch(error => {
         setIsServerDown(true)
-        createRoot(document.getElementById("conversationsfail")).render(<ErrorMessages />);
         console.error('Error fetching history:', error.message);
       });
   };
@@ -48,7 +41,6 @@ function ConversationsPage(props) {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        // height: '100vh',
       }}>
         <div>
           {historyItem.map((messageObj, index) => {
@@ -86,7 +78,9 @@ function ConversationsPage(props) {
       </div>):(<p style={{display: 'flex',justifyContent: 'center',alignItems: 'center',marginTop: "2rem"}}>No history item found.</p>)
       )
       ):
-      (<div id="conversationsfail" style={{display: 'flex',justifyContent: 'center',alignItems: 'center',marginTop: "2rem"}}></div>)
+      (
+        <div style={{display: 'flex',justifyContent: 'center',alignItems: 'center',marginTop: "2rem"}}> <ErrorMessages /></div>
+      )
       }
     </div>
   );

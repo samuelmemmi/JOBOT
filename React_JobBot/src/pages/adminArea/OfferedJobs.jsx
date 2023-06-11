@@ -1,23 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { createRoot } from 'react-dom/client';
-import { useLocation } from 'react-router-dom';
 import axios from 'axios';
-import starImage from './star.avif';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LaunchIcon from '@mui/icons-material/Launch';
 import CircularProgress from '@mui/material/CircularProgress';
-import { useUser } from "../../UserProvider.js"
+import starImage from './star.avif';
 
 import {CardsTable} from "./CardsTable.jsx"
 import ErrorMessages from "../chatBotLogic/components/Options/ErrorMessages"
-
 import './JobsPage.css';
 
 
 
 function OfferedJobs(props) {
-  // const location = useLocation();
-  // const clientDetails = location.state;
   const state=props.propValue
   const clientDetails = state.clientDetails;
   console.log(clientDetails);
@@ -40,7 +34,6 @@ function OfferedJobs(props) {
       })
       .catch(error => {
         setIsServerDown(true)
-        createRoot(document.getElementById("offeredejobsfail")).render(<ErrorMessages />);
         console.error('Error fetching jobs:', error.message);
       });
     }else{
@@ -51,7 +44,6 @@ function OfferedJobs(props) {
       })
       .catch(error => {
         setIsServerDown(true)
-        createRoot(document.getElementById("offeredejobsfail")).render(<ErrorMessages />);
         console.error('Error fetching jobs:', error.message);
       });
     }
@@ -98,7 +90,7 @@ function OfferedJobs(props) {
               )}
             </div>
           )
-      ):(<div id="offeredejobsfail" style={{display: 'flex',justifyContent: 'center',alignItems: 'center',marginTop: "2rem"}}></div>)}
+      ):(<div style={{display: 'flex',justifyContent: 'center',alignItems: 'center',marginTop: "2rem"}}> <ErrorMessages /></div>)}
     </div>
   );
 }

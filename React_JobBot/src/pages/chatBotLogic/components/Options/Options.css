@@ -33,35 +33,16 @@
   }
 
   .listOptions{
-    /* display:inline;
-    justify-content: left;
-    align-items: right; זמני*/
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    /* width: 30%; */
-    /* text-align: left; */
-    /* font-size: 20px; */
-
   }
-
-  
-  /* .listOptions {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }*/
 
    .listOptions label { /*כאן שמתי הערה כדי למרכז*/
     width: 46%;
     text-align: left;
   } 
-
-  /* .job{
-    height: 30%;
-  } */
 
   .job-title-font{
     font-size: 20px;

@@ -11,13 +11,11 @@ import {
 } from 'chart.js';
 import {ArcElement } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
-// import * as React from "react";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
-// import PendingIcon from '@mui/icons-material/Pending';
 import CircularProgress from '@mui/material/CircularProgress';
-import { createRoot } from 'react-dom/client';
+
 import "./statistics.css"
 import ErrorMessages from "../chatBotLogic/components/Options/ErrorMessages"
 
@@ -34,7 +32,6 @@ ChartJS.register(
 
 
 function parseStatisticsData(res){
-    // console.log(res["stat"])
     let labels = Object.keys(res["stat"])
     let values = Object.values(res["stat"])
     let statName=res["statName"]
@@ -73,17 +70,13 @@ function TabPanel(props) {
   );
 }
 
-
-
 const Statistics = () => {
-    // const [feedbackStats,setFeedbackStats]=useState({})
     const [generalStats,setGeneralStats]=useState({})
     const [list, setList] = useState([]);
     const [feebackDataPie, setFeebackDataPie] = useState({});
     const [isPie, setIsPie] = useState(false);
     const [isClicked,setIsClicked]=useState(false)
     const [isServerDown, setIsServerDown] = useState(false);
-    // const [buttonCount, setButtonCount] = useState(0);
 
 
 
@@ -168,7 +161,6 @@ const Statistics = () => {
         })
         .catch((err) => {
           setIsServerDown(true)
-          createRoot(document.getElementById("statisticsfail")).render(<ErrorMessages />);
           console.log("Error getting statistics: ", err.message);
         });
     }
@@ -211,12 +203,10 @@ const Statistics = () => {
 
     return (
     <div>
-      {/* <h1>Statistics</h1> */}
       <Typography variant='h4' align="center" m={2} fontFamily="Serif">Statistics</Typography>
       <p className="sentence">The statistics here refer to the total number of <strong>chats</strong> made with JOBOT by the website's users</p>
       {!isServerDown?(<  BasicTabs/>):(
-        <div id="statisticsfail" style={{display: 'flex',justifyContent: 'center',alignItems: 'center',marginTop: "2rem"}}></div>
-      )}
+        <div style={{display: 'flex',justifyContent: 'center',alignItems: 'center',marginTop: "2rem"}}> <ErrorMessages /></div> )}
     </div>
   );
 };

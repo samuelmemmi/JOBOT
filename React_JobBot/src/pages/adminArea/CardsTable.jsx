@@ -17,23 +17,6 @@ export const CardsTable = ({data}) => {
         const startIndex = (currentPage - 1) * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
         const currentPageData = data.slice(startIndex, endIndex)
-        //let tableData = []
-
-        // for (let i = 0; i < currentPageData.length; i++) {
-        //     let job = currentPageData[i]
-        //     tableData.push(
-        //         <TableRow key={i}>
-        //             <TableCell>
-        //                 <CollapsableCard
-        //                     content={job.content.job}
-        //                     collapsableContent={job.collapsableContent.rating}
-        //                 />
-        //             </TableCell>
-        //         </TableRow>
-        //     )
-        // }
-        
-
         return currentPageData
     }
 
@@ -54,7 +37,6 @@ export const CardsTable = ({data}) => {
                                             flexDirection: 'column',
                                             alignItems: "center",
                                             justifyContent: "Center",
-                                            // margin: "0 2rem",
                                             width: "100%"
                                         }}
                                         content={job.content}

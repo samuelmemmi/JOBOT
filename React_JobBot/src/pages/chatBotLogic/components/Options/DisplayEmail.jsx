@@ -3,15 +3,14 @@ import {useState,useEffect} from "react";
 
 import "./Options.css";
 
-const JobTitles = (props) => {
+const DisplayEmail = (props) => {
   const [options, setOptions] = useState([]);
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [submitted,setSubmitted]=useState(true);
 
   useEffect(
     ()=>{
-        var selectedField=props.node.getSelected().field;
-        setOptions(props.node.getNextResponse().options[0][selectedField])
+      setOptions(props.node.getNextResponse().options)
     }
     ,[]);//maybe props.node_if_options>0
 
@@ -30,11 +29,14 @@ const JobTitles = (props) => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log("Selected Options: ", selectedOptions);
+    console.log("Selected Options1: ", selectedOptions);
     // handle submission logic
     setSubmitted(false);
-    props.actionProvider.handleJobTitle(props.node,selectedOptions);
-    
+    if(selectedOptions.includes("Just keep going")){
+      props.actionProvider.handleDisplayEmail(props.node,["Just keep going"]);
+    }else{
+      props.actionProvider.handleDisplayEmail(props.node,selectedOptions);
+    }
   };
 
   return (
@@ -48,7 +50,8 @@ const JobTitles = (props) => {
             className="checkbox"
             type="checkbox"
             value={opt}
-            onChange={handleOptionChange} />
+            onChange={handleOptionChange}
+            disabled={(opt!=="Just keep going")&&selectedOptions.includes("Just keep going")} />
             {opt}
           </label>);
         },[])
@@ -60,4 +63,8 @@ const JobTitles = (props) => {
   );
 };
 
-export default JobTitles;
+export default DisplayEmail;
+
+
+
+

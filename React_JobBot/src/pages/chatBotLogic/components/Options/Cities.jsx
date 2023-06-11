@@ -2,12 +2,14 @@ import axios from "axios";
 import React from "react";
 import {useState,useEffect} from "react";
 
+import ErrorMessages from "./ErrorMessages"
 import "./Options.css";
 
-const EmailDisplay = (props) => {
+const Cities = (props) => {
   const [options, setOptions] = useState([]);
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [submitted,setSubmitted]=useState(true);
+  const [isServerDown, setIsServerDown] = useState(false);
 
   //set the updated existing cities from the jobs DB
   useEffect(
@@ -26,6 +28,7 @@ const EmailDisplay = (props) => {
         }
       })
       .catch((err) => {
+        setIsServerDown(true)
         console.log("Error getting cities", err.message);
       });
     }
@@ -84,7 +87,8 @@ const EmailDisplay = (props) => {
   );
 
   return (
-    <form onSubmit={handleSubmit}>
+    <div>
+    {(!isServerDown)?(<form onSubmit={handleSubmit}>
       <label>
         <div style={{ display: 'flex' }}>
         {
@@ -94,10 +98,14 @@ const EmailDisplay = (props) => {
       </label>
       <br />
       <button type="submit" className="option-button" disabled={!isFormValid()}>Submit</button>
-    </form>
+    </form>):
+    (
+      <div style={{display: 'flex',justifyContent: 'center',alignItems: 'center',marginTop: "2rem"}}> <ErrorMessages /></div>
+    )}
+    </div>
   );
 
 };
 
-export default EmailDisplay;
+export default Cities;
 

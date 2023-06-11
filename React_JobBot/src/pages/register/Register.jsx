@@ -1,21 +1,23 @@
 import React from "react";
-import { createRoot } from 'react-dom/client';
-// import "./register.css";
+import { useState} from "react"
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-// import { useHistory } from 'react-router-dom';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+
 import ErrorMessages from "../chatBotLogic/components/Options/ErrorMessages"
 
 
 export default function Register() {
+  const [isServerDown, setIsServerDown] = useState(false)
+
   let navigate = useNavigate();
   const routeChange = () => {
     navigate("/.");
   };
 
   const RegisterAccount = () => {
+    setIsServerDown(false)
     var userName = document.getElementById("RegisterUserName").value;
     var Password = document.getElementById("RegisterPassword").value;
     
@@ -38,7 +40,7 @@ export default function Register() {
         }
       })
       .catch((err) => {
-        createRoot(document.getElementById("registerfail")).render(<ErrorMessages />);
+        setIsServerDown(true)
         console.log(err.message);
       });
   };
@@ -87,12 +89,7 @@ export default function Register() {
           id="RegisterPassword"
         />
         </div>
-        <div 
-        style={{
-          //backgroundColor: "red"
-        }}
-        className="w-100 d-flex flex-row justify-content-between mt-4 ">
-
+        <div className="w-100 d-flex flex-row justify-content-between mt-4 ">
         <Button 
         sx={{
           backgroundColor: "#8AFA63",
@@ -110,6 +107,9 @@ export default function Register() {
       <br/>
       <div id="registerfail"></div>
       <div id="registersuccess"></div>
+      {isServerDown ?
+        <ErrorMessages /> : null  
+      }
     </div>
   );
 }

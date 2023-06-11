@@ -23,7 +23,6 @@ export class FetchText {
     try {
       this.head = require("./decisionTree.json");
     } catch (error) {
-      //console.error(`Error loading data: ${error}`);
       this.head = chatFlow;
       axios
         .post("/write-json", this.head, {

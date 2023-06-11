@@ -1,4 +1,3 @@
-// import '../../../adminArea/JobsPage.css';
 import starImage from '../../../adminArea/star.avif';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LaunchIcon from '@mui/icons-material/Launch';

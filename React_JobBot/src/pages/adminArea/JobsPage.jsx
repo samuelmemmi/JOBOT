@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { createRoot } from 'react-dom/client';
 import axios from 'axios';
-import './JobsPage.css';
-import starImage from './star.avif';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LaunchIcon from '@mui/icons-material/Launch';
-import {CollapsableCard} from "./CollapsableCard.jsx"
-import {CardsTable} from "./CardsTable.jsx"
-import { blue } from '@mui/material/colors';
 import Typography from "@mui/material/Typography";
 import CircularProgress from '@mui/material/CircularProgress';
+import starImage from './star.avif';
 
+import {CardsTable} from "./CardsTable.jsx"
 import ErrorMessages from "../chatBotLogic/components/Options/ErrorMessages"
+import './JobsPage.css';
 
 
 function JobsPage() {
@@ -21,8 +18,6 @@ function JobsPage() {
   const [citySearchQuery, setCitySearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isServerDown, setIsServerDown] = useState(false);
-
-
 
   useEffect(() => {
     setIsLoading(true)
@@ -37,7 +32,6 @@ function JobsPage() {
       })
       .catch(error => {
         setIsServerDown(true)
-        createRoot(document.getElementById("jobsfail")).render(<ErrorMessages />);
         console.log('Error fetching jobs:', error.message);
       });
   }, []);
@@ -71,7 +65,7 @@ function JobsPage() {
       collapsableContent: collapsed(job)
     }
   })
-//component={'span'}
+
   return (
     <div>
       <Typography variant='h4' align="center" m={2} fontFamily="Serif">JOBOT Jobs</Typography>
@@ -110,7 +104,7 @@ function JobsPage() {
           </div>
         </div>)
       ):(
-        <div id="jobsfail" style={{display: 'flex',justifyContent: 'center',alignItems: 'center',marginTop: "2rem"}}></div>
+        <div style={{display: 'flex',justifyContent: 'center',alignItems: 'center',marginTop: "2rem"}}> <ErrorMessages /></div>
       )}
 
     </div>
