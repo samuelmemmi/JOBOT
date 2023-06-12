@@ -126,6 +126,55 @@ def insert_db(collec, file):
             collection.insert_many(da)
 
 
+def delete_duplicate_db():
+    cluster = MongoClient("mongodb+srv://samuelmemmi:1234@cluster0.e4sf8mm.mongodb.net/?retryWrites=true"
+                          "&w=majority")
+    db = cluster["chatbot"]
+
+    # List all collections in the database
+    collections = db.list_collection_names()
+
+    # Iterate over each collection
+    for collection_name in collections:
+        collection = db[collection_name]
+
+        # Use aggregation to find and delete duplicates
+        pipeline = [
+            {
+                '$group': {
+                    '_id': {
+                        'company': '$company',
+                        'job': '$job',
+                        'city': '$city'
+                    },
+                    'duplicates': {'$addToSet': '$_id'},
+                    'count': {'$sum': 1}
+                }
+            },
+            {
+                '$match': {
+                    'count': {'$gt': 1}
+                }
+            },
+            {
+                '$project': {
+                    'duplicates': 1
+                }
+            }
+        ]
+
+        duplicate_groups = list(collection.aggregate(pipeline))
+
+        # Delete the duplicate documents
+        for group in duplicate_groups:
+            duplicate_id = group['duplicates'][0]  # Get the ID of the first document
+            collection.delete_one({'_id': duplicate_id})
+
+        print(f'Duplicate deleted successfully in collection: {collection_name}')
+
+    print('Duplicates deletion process completed.')
+
+
 if __name__ == "__main__":
     """scrap("marketing_full_time1")
     scrap("marketing_full_time2")
@@ -311,4 +360,60 @@ if __name__ == "__main__":
 
     fil21 = ["QA Engineer.json", "Network Engineer.json", "Software Engineer.json"]
     merge_json_files(fil21, "job_engineer.json")
-    insert_db("engineer_full_time", "job_engineer")"""
+    insert_db("engineer_full_time", "job_engineer")
+
+    scrap("marketing_full_time3")
+    insert_db("marketing_full_time", "marketing_full_time3")
+    scrap("marketing_full_time4")
+    insert_db("marketing_full_time", "marketing_full_time4")
+
+    scrap("healthcare_full_time3")
+    insert_db("healthcare_full_time", "healthcare_full_time3")
+    scrap("healthcare_full_time4")
+    insert_db("healthcare_full_time", "healthcare_full_time4")
+
+    scrap("humanresources_full_time3")
+    insert_db("humanresources_full_time", "humanresources_full_time3")
+    scrap("humanresources_full_time4")
+    insert_db("humanresources_full_time", "humanresources_full_time4")
+
+    scrap("design_full_time3")
+    insert_db("design_full_time", "design_full_time3")
+    scrap("design_full_time4")
+    insert_db("design_full_time", "design_full_time4")
+
+    scrap("engineer_full_time3")
+    insert_db("engineer_full_time", "engineer_full_time3")
+    scrap("engineer_full_time4")
+    insert_db("engineer_full_time", "engineer_full_time4")
+
+    scrap("finance_full_time3")
+    insert_db("finance_full_time", "finance_full_time3")
+    scrap("finance_full_time4")
+    insert_db("finance_full_time", "finance_full_time4")
+
+    scrap("marketing_senior4")
+    insert_db("marketing_senior", "marketing_senior4")
+
+    scrap("healthcare_junior2")
+    insert_db("healthcare_junior", "healthcare_junior2")
+    scrap("healthcare_senior4")
+    insert_db("healthcare_senior", "healthcare_senior4")
+
+    scrap("humanresources_junior2")
+    insert_db("humanresources_junior", "humanresources_junior2")
+    scrap("humanresources_senior4")
+    insert_db("humanresources_senior", "humanresources_senior4")
+
+    scrap("design_senior4")
+    insert_db("design_senior", "design_senior4")
+
+    scrap("engineer_junior4")
+    insert_db("engineer_junior", "engineer_junior4")
+    scrap("engineer_senior4")
+    insert_db("engineer_senior", "engineer_senior4")
+
+    scrap("finance_junior3")
+    insert_db("finance_junior", "finance_junior3")
+    scrap("finance_senior4")
+    insert_db("finance_senior", "finance_senior4")"""
