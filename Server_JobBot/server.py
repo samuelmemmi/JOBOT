@@ -173,9 +173,9 @@ def what_field(field):
 
 def get_cities_from_areas(areas, areas_to_remove):
     if areas is None:
-        areas=[]
+        areas = []
     if areas_to_remove is None:
-        areas_to_remove=[]
+        areas_to_remove = []
     res = []
     if "All" in areas:
         res += list(set(CITIES_AND_AREAS["All"]) - set(areas_to_remove))
@@ -237,8 +237,9 @@ def filter_jobs_company(new_documents, list_jobs, titles, companies, cities, oth
 
     return list_jobs
 
+
 # search in client histories his experiance & education in the selected field
-def find_experinace_education_in_history(user,field):
+def find_experinace_education_in_history(user, field):
     experi_educa = "-"
     if user is None:
         return experi_educa
@@ -253,6 +254,7 @@ def find_experinace_education_in_history(user,field):
                     break
     return experi_educa
 
+
 def help_get_first_jobs_from_gpt(request_details, unique_jobs):
     # connection to the MongoDB database
     collection = get_collection_by_field("users")
@@ -261,7 +263,7 @@ def help_get_first_jobs_from_gpt(request_details, unique_jobs):
     user = collection.find_one(userDetails)
 
     # search in client histories his experiance & education in the selected field
-    experi_educa = find_experinace_education_in_history(user,request_details["field"])
+    experi_educa = find_experinace_education_in_history(user, request_details["field"])
 
     # call chatgpt with the experiance & education we found
     gpt_list = unique_jobs
@@ -693,11 +695,11 @@ def identify_intent(response, intents):
 
 
 # pass on intents in db and update the counters
-def inc_intents(intents_stats,intents):
+def inc_intents(intents_stats, intents):
     if intents_stats is None:
-        intents_stats={}
+        intents_stats = {}
     if intents is None:
-        intents=[]
+        intents = []
     for intent in intents:
         if intent in intents_stats:
             intents_stats[intent] = intents_stats[intent] + 1
