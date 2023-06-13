@@ -1,8 +1,37 @@
 from bs4 import BeautifulSoup
 import json
 import requests
-import pymongo
 from pymongo import MongoClient
+
+# Define job categories and their corresponding filenames
+JOB_CATEGORIES = {
+    'marketing_full_time': ['marketing_full_time1', 'marketing_full_time2', 'marketing_full_time3'],
+    'marketing_junior': ['marketing_junior1', 'marketing_junior2'],
+    'marketing_senior': ['marketing_senior1', 'marketing_senior2', 'marketing_senior3'],
+    'healthcare_full_time': ['healthcare_full_time1', 'healthcare_full_time2', 'healthcare_full_time3'],
+    'healthcare_junior': ['healthcare_junior'],
+    'healthcare_senior': ['healthcare_senior1', 'healthcare_senior2', 'healthcare_senior3'],
+    'humanresources_full_time': ['humanresources_full_time1', 'humanresources_full_time2'],
+    'humanresources_senior': ['humanresources_senior1', 'humanresources_senior2'],
+    'design_full_time': ['design_full_time1', 'design_full_time2', 'design_full_time3'],
+    'design_senior': ['design_senior1', 'design_senior2', 'design_senior3'],
+    'engineer_full_time': ['engineer_full_time1', 'engineer_full_time2', 'engineer_full_time3'],
+    'engineer_junior': ['engineer_junior1', 'engineer_junior2', 'engineer_junior3'],
+    'engineer_senior': ['engineer_senior1', 'engineer_senior2', 'engineer_senior3'],
+    'finance_full_time': ['finance_full_time1', 'finance_full_time2', 'finance_full_time3'],
+    'finance_junior': ['finance_junior1', 'finance_junior2'],
+    'finance_senior': ['finance_senior1', 'finance_senior2', 'finance_senior3']
+}
+
+# Additional job categories
+ADDITIONAL_JOBS = {
+    'job_marketing': ["Product Marketing", "Data Analyst", "Marketing Designer"],
+    'job_healthcare': ["Medical Assistant", "Health representative", "Production Scientist"],
+    'job_humanresources': ["Digital Key Account", "Global HR Planning & Operations", "Talent Acquisition Specialist"],
+    'job_design': ["Designer", "Chip Design Architect", "Front End Developer"],
+    'job_engineer': ["QA Engineer", "Network Engineer", "Software Engineer"],
+    'job_finance': ["VP Finance", "Business Development", "Finance Controller"]
+}
 
 
 def scrap(name):
@@ -175,245 +204,36 @@ def delete_duplicate_db():
     print('Duplicates deletion process completed.')
 
 
+# Function to perform scraping
+def scrape_jobs(job_list):
+    for job in job_list:
+        scrap(job)
+
+
+# Function to merge JSON files
+def merge_files(file_list, output_filename):
+    merge_json_files(file_list, output_filename)
+
+
+# Function to insert into the database
+def insert_into_db(job_category, db_namee):
+    insert_db(job_category, db_namee)
+
+
 if __name__ == "__main__":
-    """scrap("marketing_full_time1")
-    scrap("marketing_full_time2")
-    scrap("marketing_full_time3")
-    scrap("marketing_part_time")
-    scrap("marketing_intern")
-    scrap("marketing_junior1")
-    scrap("marketing_junior2")
-    scrap("marketing_senior1")
-    scrap("marketing_senior2")
-    scrap("marketing_senior3")
-    scrap("healthcare_full_time1")
-    scrap("healthcare_full_time2")
-    scrap("healthcare_full_time3")
-    scrap("healthcare_part_time")
-    scrap("healthcare_intern")
-    scrap("healthcare_junior")
-    scrap("healthcare_senior1")
-    scrap("healthcare_senior2")
-    scrap("healthcare_senior3")
-    scrap("humanresources_full_time1")
-    scrap("humanresources_full_time2")
-    scrap("humanresources_part_time")
-    scrap("humanresources_intern")
-    scrap("humanresources_junior")
-    scrap("humanresources_senior1")
-    scrap("humanresources_senior2")
-    scrap("design_full_time1")
-    scrap("design_full_time2")
-    scrap("design_full_time3")
-    scrap("design_part_time")
-    scrap("design_intern")
-    scrap("design_junior")
-    scrap("design_senior1")
-    scrap("design_senior2")
-    scrap("design_senior3")
-    scrap("engineer_full_time1")
-    scrap("engineer_full_time2")
-    scrap("engineer_full_time3")
-    scrap("engineer_part_time")
-    scrap("engineer_intern")
-    scrap("engineer_junior1")
-    scrap("engineer_junior2")
-    scrap("engineer_junior3")
-    scrap("engineer_senior1")
-    scrap("engineer_senior2")
-    scrap("engineer_senior3")
-    scrap("finance_full_time1")
-    scrap("finance_full_time2")
-    scrap("finance_full_time3")
-    scrap("finance_part_time")
-    scrap("finance_intern")
-    scrap("finance_junior1")
-    scrap("finance_junior2")
-    scrap("finance_senior1")
-    scrap("finance_senior2")
-    scrap("finance_senior3")
+    # Scraping and merging files for each job category
+    for category, files in JOB_CATEGORIES.items():
+        scrape_jobs(files)
+        merge_files([f + '.json' for f in files], category + '.json')
+        insert_into_db(category, category)
 
-    fil1 = ['design_full_time1.json', 'design_full_time2.json', 'design_full_time3.json']
-    merge_json_files(fil1, 'design_full_time.json')
+    full_time_keys = [key for key, value in JOB_CATEGORIES.items() if 'full_time' in key]
 
-    fil2 = ['design_senior1.json', 'design_senior2.json', 'design_senior3.json']
-    merge_json_files(fil2, 'design_senior.json')
+    i = 0
 
-    fil3 = ['engineer_full_time1.json', 'engineer_full_time2.json', 'engineer_full_time3.json']
-    merge_json_files(fil3, 'engineer_full_time.json')
-
-    fil4 = ['engineer_junior1.json', 'engineer_junior2.json', 'engineer_junior3.json']
-    merge_json_files(fil4, 'engineer_junior.json')
-
-    fil5 = ['engineer_senior1.json', 'engineer_senior2.json', 'engineer_senior3.json']
-    merge_json_files(fil5, 'engineer_senior.json')
-
-    fil6 = ['finance_full_time1.json', 'finance_full_time2.json', 'finance_full_time3.json']
-    merge_json_files(fil6, 'finance_full_time.json')
-
-    fil7 = ['finance_junior1.json', 'finance_junior2.json']
-    merge_json_files(fil7, 'finance_junior.json')
-
-    fil8 = ['finance_senior1.json', 'finance_senior2.json', 'finance_senior3.json']
-    merge_json_files(fil8, 'finance_senior.json')
-
-    fil9 = ['healthcare_full_time1.json', 'healthcare_full_time2.json', 'healthcare_full_time3.json']
-    merge_json_files(fil9, 'healthcare_full_time.json')
-
-    fil10 = ['healthcare_senior1.json', 'healthcare_senior2.json', 'healthcare_senior3.json']
-    merge_json_files(fil10, 'healthcare_senior.json')
-
-    fil11 = ['humanresources_full_time1.json', 'humanresources_full_time2.json']
-    merge_json_files(fil11, 'humanresources_full_time.json')
-
-    fil12 = ['humanresources_senior1.json', 'humanresources_senior2.json']
-    merge_json_files(fil12, 'humanresources_senior.json')
-
-    fil13 = ['marketing_full_time1.json', 'marketing_full_time2.json', 'marketing_full_time3.json']
-    merge_json_files(fil13, 'marketing_full_time.json')
-
-    fil14 = ['marketing_junior1.json', 'marketing_junior2.json']
-    merge_json_files(fil14, 'marketing_junior.json')
-
-    fil15 = ['marketing_senior1.json', 'marketing_senior2.json', 'marketing_senior3.json']
-    merge_json_files(fil15, 'marketing_senior.json')
-
-    insert_db('design_full_time', 'design_full_time')
-    insert_db('design_intern', 'design_intern')
-    insert_db('design_junior', 'design_junior')
-    insert_db('design_part_time', 'design_part_time')
-    insert_db('design_senior', 'design_senior')
-
-    insert_db('marketing_full_time', 'marketing_full_time')
-    insert_db('marketing_intern', 'marketing_intern')
-    insert_db('marketing_junior', 'marketing_junior')
-    insert_db('marketing_part_time', 'marketing_part_time')
-    insert_db('marketing_senior', 'marketing_senior')
-
-    insert_db('healthcare_full_time', 'healthcare_full_time')
-    insert_db('healthcare_intern', 'healthcare_intern')
-    insert_db('healthcare_junior', 'healthcare_junior')
-    insert_db('healthcare_part_time', 'healthcare_part_time')
-    insert_db('healthcare_senior', 'healthcare_senior')
-
-    insert_db('humanresources_full_time', 'humanresources_full_time')
-    insert_db('humanresources_intern', 'humanresources_intern')
-    insert_db('humanresources_junior', 'humanresources_junior')
-    insert_db('humanresources_part_time', 'humanresources_part_time')
-    insert_db('humanresources_senior', 'humanresources_senior')
-
-    insert_db('engineer_full_time', 'engineer_full_time')
-    insert_db('engineer_intern', 'engineer_intern')
-    insert_db('engineer_junior', 'engineer_junior')
-    insert_db('engineer_part_time', 'engineer_part_time')
-    insert_db('engineer_senior', 'engineer_senior')
-
-    insert_db('finance_full_time','finance_full_time')
-    insert_db('finance_intern','finance_intern')
-    insert_db('finance_junior','finance_junior')
-    insert_db('finance_part_time','finance_part_time')
-    insert_db('finance_senior','finance_senior')
-
-    scrap("Medical Assistant")
-    scrap("Health representative")
-    scrap("Production Scientist")
-
-    scrap("Product Marketing")
-    scrap("Data Analyst")
-    scrap("Marketing Designer")
-
-    scrap("Designer")
-    scrap("Chip Design Architect")
-    scrap("Front End Developer")
-
-    scrap("Digital Key Account")
-    scrap("Global HR Planning & Operations")
-    scrap("Talent Acquisition Specialist")
-
-    scrap("VP Finance")
-    scrap("Business Development")
-    scrap("Finance Controller")
-    
-    scrap("QA Engineer")
-    scrap("Network Engineer")
-    scrap("Software Engineer")
-
-    fil16 = ["Medical Assistant.json", "Health representative.json", "Production Scientist.json"]
-    merge_json_files(fil16, "job_healthcare.json")
-    insert_db("healthcare_full_time", "job_healthcare")
-
-    fil17 = ["Product Marketing.json", "Data Analyst.json", "Marketing Designer.json"]
-    merge_json_files(fil17, "job_marketing.json")
-    insert_db("marketing_full_time", "job_marketing")
-
-    fil18 = ["Designer.json", "Chip Design Architect.json", "Front End Developer.json"]
-    merge_json_files(fil18, "job_design.json")
-    insert_db("design_full_time", "job_design")
-
-    fil19 = ["Digital Key Account.json", "Global HR Planning & Operations.json", "Talent Acquisition Specialist.json"]
-    merge_json_files(fil19, "job_humanresources.json")
-    insert_db("humanresources_full_time", "job_humanresources")
-
-    fil20 = ["VP Finance.json", "Business Development.json", "Finance Controller.json"]
-    merge_json_files(fil20, "job_finance.json")
-    insert_db("finance_full_time", "job_finance")
-
-    fil21 = ["QA Engineer.json", "Network Engineer.json", "Software Engineer.json"]
-    merge_json_files(fil21, "job_engineer.json")
-    insert_db("engineer_full_time", "job_engineer")
-
-    scrap("marketing_full_time3")
-    insert_db("marketing_full_time", "marketing_full_time3")
-    scrap("marketing_full_time4")
-    insert_db("marketing_full_time", "marketing_full_time4")
-
-    scrap("healthcare_full_time3")
-    insert_db("healthcare_full_time", "healthcare_full_time3")
-    scrap("healthcare_full_time4")
-    insert_db("healthcare_full_time", "healthcare_full_time4")
-
-    scrap("humanresources_full_time3")
-    insert_db("humanresources_full_time", "humanresources_full_time3")
-    scrap("humanresources_full_time4")
-    insert_db("humanresources_full_time", "humanresources_full_time4")
-
-    scrap("design_full_time3")
-    insert_db("design_full_time", "design_full_time3")
-    scrap("design_full_time4")
-    insert_db("design_full_time", "design_full_time4")
-
-    scrap("engineer_full_time3")
-    insert_db("engineer_full_time", "engineer_full_time3")
-    scrap("engineer_full_time4")
-    insert_db("engineer_full_time", "engineer_full_time4")
-
-    scrap("finance_full_time3")
-    insert_db("finance_full_time", "finance_full_time3")
-    scrap("finance_full_time4")
-    insert_db("finance_full_time", "finance_full_time4")
-
-    scrap("marketing_senior4")
-    insert_db("marketing_senior", "marketing_senior4")
-
-    scrap("healthcare_junior2")
-    insert_db("healthcare_junior", "healthcare_junior2")
-    scrap("healthcare_senior4")
-    insert_db("healthcare_senior", "healthcare_senior4")
-
-    scrap("humanresources_junior2")
-    insert_db("humanresources_junior", "humanresources_junior2")
-    scrap("humanresources_senior4")
-    insert_db("humanresources_senior", "humanresources_senior4")
-
-    scrap("design_senior4")
-    insert_db("design_senior", "design_senior4")
-
-    scrap("engineer_junior4")
-    insert_db("engineer_junior", "engineer_junior4")
-    scrap("engineer_senior4")
-    insert_db("engineer_senior", "engineer_senior4")
-
-    scrap("finance_junior3")
-    insert_db("finance_junior", "finance_junior3")
-    scrap("finance_senior4")
-    insert_db("finance_senior", "finance_senior4")"""
+    # Scraping, merging, and inserting for additional job categories
+    for db_name, jobs in ADDITIONAL_JOBS.items():
+        scrape_jobs(jobs)
+        merge_files([j + '.json' for j in jobs], db_name + '.json')
+        insert_into_db(full_time_keys[i], db_name)
+        i += 1

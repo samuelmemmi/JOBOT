@@ -238,8 +238,8 @@ def filter_jobs_company(new_documents, list_jobs, titles, companies, cities, oth
     return list_jobs
 
 
-# search in client histories his experiance & education in the selected field
-def find_experinace_education_in_history(user, field):
+# search in client histories his experience & education in the selected field
+def find_experience_education_in_history(user, field):
     experi_educa = "-"
     if user is None:
         return experi_educa
@@ -263,7 +263,7 @@ def help_get_first_jobs_from_gpt(request_details, unique_jobs):
     user = collection.find_one(userDetails)
 
     # search in client histories his experiance & education in the selected field
-    experi_educa = find_experinace_education_in_history(user, request_details["field"])
+    experi_educa = find_experience_education_in_history(user, request_details["field"])
 
     # call chatgpt with the experiance & education we found
     gpt_list = unique_jobs
@@ -459,12 +459,12 @@ def get_jobs_from_chatGpt(unique_jobs, experience_education):
             if i + 1 < lengt:
                 potential_jobs = [unique_jobs[i], unique_jobs[i + 1]]
                 append_approved_jobs(potential_jobs, index, response_gpt, gpt_list)
-                if (i + 1 != (lengt - 1)):
+                if i + 1 != (lengt - 1):
                     time.sleep(MAX_SECONDS_FOR_SLEEPING)
             else:
                 potential_jobs = [unique_jobs[i]]
                 append_approved_jobs(potential_jobs, index, response_gpt, gpt_list)
-                if (i != (lengt - 1)):
+                if i != (lengt - 1):
                     time.sleep(MAX_SECONDS_FOR_SLEEPING)
             index += 2
         except:
