@@ -17,7 +17,7 @@ var areas = {
         (jobTypes = {
           title: "next question",
           text: "Select a job type",
-          options: ["Full_time", "Part_time"],
+          options: ["Full time", "Part time"],
           children: [
             {
               title: "jobs scanning",
@@ -42,7 +42,7 @@ var areas = {
                               children: [
                                 (goodBy2 = {
                                   title: "goodbye",
-                                  text: "It was a pleasure to assist you. Thank you!",
+                                  text: "It was a pleasure to assist you. Thank you! \u{1F600}",
                                 }),
                               ],
                             }),
@@ -78,7 +78,7 @@ var areas = {
                                         },
                                         (successfulEnding = {
                                           title: "user selected at least 1 job",
-                                          text: "Wonderful, how would you like to continue? (Multiple choice)",
+                                          text: "Wonderful \u{1F600} How would you like to continue? (Multiple choice)",
                                           options: [
                                             "Display my choices again",
                                             "Email them to me",
@@ -211,7 +211,7 @@ var chatFlow = {
           children: [
             (goodBy1 = {
               title: "user agreed to save his details",
-              text: "Thank you for visiting our site.",
+              text: "Thank you for visiting our site. \u{1F600}",
             }),
             { ...goodBy1, title: "user refused to save his details" },
           ],

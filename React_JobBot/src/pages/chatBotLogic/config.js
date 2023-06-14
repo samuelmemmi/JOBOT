@@ -26,7 +26,7 @@ const config = {
     createChatBotMessage(dec_tree.getNextResponse().text),
     createChatBotMessage(dec_tree.getNextResponse().children[0].text, {
       widget: "fieldOptions",
-      // delay:2000
+      delay:2000
     }),
   ],
 

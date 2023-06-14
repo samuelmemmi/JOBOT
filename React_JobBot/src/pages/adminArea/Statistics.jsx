@@ -128,6 +128,7 @@ const Statistics = () => {
             <TabPanel value={value} index={1}>
             {(isPie)?(
                 <div className="feedbacPie">
+                <p className='d-flex justify-content-center align-items-center'>Why don't you want offers anymore?</p>
                 <Pie data={feebackDataPie} />
                 </div>
             ):("")}

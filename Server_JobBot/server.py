@@ -32,6 +32,8 @@ GENERAL_STATS = {"areas": {"South": 0, "North": 0, "Central": 0}, "job Types": {
 JOBOT_RESPONSE_FOR_FEEDBACK_1 = "I'm glad to hear you found a job"
 JOBOT_RESPONSE_FOR_FEEDBACK_2 = "Thanks for the feedback. We are always looking for ways to improve our services."
 INTENTS_TO_CHECK = ["I found enough jobs here", "I prefer self job search", "I'm interested in a shorter process"]
+SUBJECTS_FOR_GENERAL_STATS= ["areas", "job Types", "field", "experience level"]
+
 
 MAX_SECONDS_FOR_SLEEPING = 20  # 12
 
@@ -742,7 +744,11 @@ def save_intents_in_DB(intents, statName):
 def get_stats_from_DB(statName):
     collec_admin_stats = get_collection_by_field("admin_statistics")
     document = collec_admin_stats.find_one({"statName": statName})
-    del document["_id"]
+    if (document is None) and statName=="general_statistics":
+        calculate_general_stats(SUBJECTS_FOR_GENERAL_STATS)
+        get_stats_from_DB("general_statistics")
+    else:
+        del document["_id"]
     return document
 
 
@@ -776,7 +782,8 @@ def calculate_general_stats(subjects):
     collec_admin_stats = db["admin_statistics"]
     collec_admin_stats.update_one(
         {"statName": "general_statistics"},
-        {"$set": {"stat": genaralStat, "update date": today, "users number": users_len}}
+        {"$set": {"stat": genaralStat, "update date": today, "users number": users_len}},
+        upsert=True
     )
 
 
@@ -789,8 +796,7 @@ def get_statistics():
         document = get_stats_from_DB("general_statistics")
         return jsonify({"success": True, "message": document})
     elif goal == "calculate_general_stats":
-        subjects = ["areas", "job Types", "field", "experience level"]
-        calculate_general_stats(subjects)
+        calculate_general_stats(SUBJECTS_FOR_GENERAL_STATS)
         updatedDocument = get_stats_from_DB("general_statistics")
         return jsonify({"success": True, "message": updatedDocument})
     elif goal == "view_feedback":

@@ -6,6 +6,7 @@ import IconButton from "@mui/material/IconButton";
 import InfoIcon from '@mui/icons-material/Info';
 import JobotLogoPNG from "./JOBOT.png";
 import { Button } from '@mui/material';
+import HomeIcon from '@mui/icons-material/Home';
 
 export default function Header({userType}) {
   const navigate = useNavigate()
@@ -23,8 +24,25 @@ export default function Header({userType}) {
          />
          </Button>
       </div>
-      <div>
+      <div className="d-flex align-items-center">
        <ListItem>
+            <IconButton onClick={() => {
+                if (!userType || Object.keys(userType).length === 0) {
+                  navigate("/")
+                } else {
+                  userType.type === "admin" ?  navigate("/homePageAdmin") :  navigate("/homePage")
+                }
+            }}>
+              <ListItemIcon>
+                <HomeIcon color="primary" fontSize="large"/>
+              </ListItemIcon>
+            </IconButton>
+            <ListItemText
+              primary={false}
+              secondary={false}
+            />
+        </ListItem>
+        <ListItem>
             <IconButton component={Link} to="/about">
               <ListItemIcon>
                 <InfoIcon color="primary" fontSize="large"/>

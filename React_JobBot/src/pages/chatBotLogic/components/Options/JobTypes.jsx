@@ -5,7 +5,7 @@ import "./Options.css";
 
 const JobTypes = (props) => {
   const [options, setOptions] = useState([]);
-  const [selectedOption, setSelectedOption] = useState("Full_time");
+  const [selectedOption, setSelectedOption] = useState("Full time");
   const [submitted,setSubmitted]=useState(false);
 
   useEffect(()=>{setOptions(props.node.getNextResponse().options)},[]);
@@ -18,7 +18,13 @@ const JobTypes = (props) => {
     event.preventDefault();
     // handle submission logic
     setSubmitted(true);
-    props.actionProvider.handleJobType(props.node,[selectedOption])
+    let selectedJobType;
+    if (selectedOption==="Full time"){
+      selectedJobType="Full_time"
+    }else{
+      selectedJobType="Part_time"
+    }
+    props.actionProvider.handleJobType(props.node,[selectedJobType])
   };
 
   return (
