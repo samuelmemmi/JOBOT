@@ -165,7 +165,8 @@ def what_field(field):
         "human resources": ("humanresources", OTHER_LIST_HUMAN),
         "finance & accounting": ("finance", OTHER_LIST_FINANCE),
         "engineering": ("engineer", OTHER_LIST_ENGINEER),
-        "healthcare": ("Healthcare", OTHER_LIST_HEALTHCARE)
+        "healthcare": ("Healthcare", OTHER_LIST_HEALTHCARE),
+        "marketing":("Marketing",OTHER_LIST_MARKETING)
     }
     lowercase_field = field.lower()
     if lowercase_field in field_mappings:
@@ -738,7 +739,8 @@ def save_intents_in_DB(intents, statName):
 
     collec_admin_stats.update_one(
         {"statName": statName},
-        {"$set": {"stat": prev_intent_info, "update date": today, "users number": users_len}}
+        {"$set": {"stat": prev_intent_info, "update date": today, "users number": users_len}},
+        upsert=True
     )
     for x in collec_admin_stats.find():
         print(x)
@@ -750,6 +752,9 @@ def get_stats_from_DB(statName):
     if (document is None) and statName=="general_statistics":
         calculate_general_stats(SUBJECTS_FOR_GENERAL_STATS)
         get_stats_from_DB("general_statistics")
+    elif((document is None) and statName=="feedback"):
+        collec_admin_stats.insert_one({"statName": statName, "stat": {"I found enough jobs here":0, "I prefer self job search":0, "I'm interested in a shorter process":0}, "update date": "", "users number": 0})
+        get_stats_from_DB("feedback")
     else:
         del document["_id"]
     return document
@@ -816,15 +821,6 @@ def test_response():
 
     if intents == -1:
         return jsonify({"success": True, "message": JOBOT_RESPONSE_FOR_FEEDBACK_2})
-
-    # add the new feedback to the list of feedbacks in db
-    collec_admin_stats = get_collection_by_field("admin_statistics")
-    document = collec_admin_stats.find_one({"statName": "feedback"})
-    document["all feedbacks"].append(feedback)
-    collec_admin_stats.update_one(
-        {"statName": "feedback"},
-        {"$set": {"all feedbacks": document["all feedbacks"]}}
-    )
 
     # save the identified intents in DB
     save_intents_in_DB(intents, "feedback")

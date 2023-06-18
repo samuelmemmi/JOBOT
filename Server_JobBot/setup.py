@@ -71,14 +71,15 @@ def update_all_feedbacks_in_DB():
 
     collec_admin_stats.update_one(
         {"statName": "feedback"},
-        {"$set": {"all feedbacks": feedbacks}}
+        {"$set": {"all feedbacks": feedbacks}},
+        upsert=True
     )
 
     document = collec_admin_stats.find_one({"statName": "feedback"})
     print(document)
 
 if __name__ == "__main__":
-    find_best_title("healthcare_full_time")
+    # find_best_title("healthcare_full_time")
     # find_best_title("marketing_full_time")
     # find_best_title("finance_full_time")
     # find_best_title("design_full_time")
