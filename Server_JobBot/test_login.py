@@ -1,7 +1,7 @@
 import unittest
 from flask import Flask, json
 from server import app
-
+from server import delete_user_from_db
 
 class LoginRegisterTestCase(unittest.TestCase):
 
@@ -31,6 +31,8 @@ class LoginRegisterTestCase(unittest.TestCase):
         self.assertTrue(data['success'])
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['message'], 'Your new user is created')
+        delete_user_from_db("newuser","newpassword")
+
 
     def test_register_invalid(self):
         response = self.app.post('/register', data=json.dumps({"user_name": "", "password": ""}),

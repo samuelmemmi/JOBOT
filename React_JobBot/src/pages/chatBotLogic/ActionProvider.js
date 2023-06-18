@@ -42,25 +42,25 @@ class ActionProvider {
     node.setSavedInDB(history);
 
     //call server to save the history data
-    // axios
-    //   .post(
-    //     "/clienthistory",
-    //     {
-    //       history: history,
-    //     },
-    //     {
-    //       headers: {
-    //         "Content-type": "application/json; charset=UTF-8",
-    //       },
-    //     }
-    //   )
-    //   .then((response) => {
-    //     console.log(response.data.message);
-    //     console.log("save data in DB ", history);
-    //   })
-    //   .catch((error) => {
-    //     console.error(error.response.data.error);
-    //   });
+    axios
+      .post(
+        "/clienthistory",
+        {
+          history: history,
+        },
+        {
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+          },
+        }
+      )
+      .then((response) => {
+        console.log(response.data.message);
+        console.log("save data in DB ", history);
+      })
+      .catch((error) => {
+        console.error(error.response.data.error);
+      });
   };
 
   // if there is an error in server display error message

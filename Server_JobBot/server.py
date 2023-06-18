@@ -68,14 +68,17 @@ SECRET_KEY = 'secret-key-'
 # set up server
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
-
-
+    
 def get_collection_by_field(field):
     # connection to the MongoDB database
     cluster = MongoClient(MONGODB_CONNECTION_STRING)
     db = cluster[CLUSTER_NAME]
     collection = db[field]
     return collection
+
+def delete_user_from_db(user_name,password):
+    collection = get_collection_by_field("users")
+    user = collection.delete_one({"user_name": user_name, "password": password})
 
 
 # route for login
