@@ -20,7 +20,7 @@ const ExpandMore = styled((props) => {
 }));
 
 
-
+//card wich holds the details of job
 export const CollapsableCard = ({content, collapsableContent, style}) => {
 
     const [expanded, setExpanded] = useState(false)

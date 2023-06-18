@@ -530,6 +530,7 @@ class ActionProvider {
     }
   }
 
+  //return only the jobs that client selected during the chat with JOBOT
   filterObjectsById(objects, selectedObjects) {
     let filteredObjects = [];
     objects.map((obj) => {
@@ -547,6 +548,7 @@ class ActionProvider {
       displayedJobs,
       selectedJobs
     );
+    //build the message we want to send to client email
     const message = selectedJobsDetails
       .map((job) => {
         let details = "";
@@ -577,10 +579,6 @@ class ActionProvider {
           details += `Elapsed time since update: ${job.date}\n`;
         }
 
-        // if (job.description) {
-        //   details += `Description: ${job.description}\n`;
-        // }
-
         return details;
       })
       .join("\n\n");
@@ -598,7 +596,7 @@ class ActionProvider {
     });
     node.setHistoryChat([
       ...node.getHistoryChat(),
-      { user: email },
+      { user: [email] },
       { bot: [txt1, txt2] },
     ]);
     node.setNextResponse(node.getNextResponse().children[0].children[0]);

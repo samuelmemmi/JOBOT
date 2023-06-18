@@ -19,6 +19,7 @@ function JobsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isServerDown, setIsServerDown] = useState(false);
 
+  //fetch the jobs from db through server
   useEffect(() => {
     setIsLoading(true)
     axios.post('/viewjobs')
@@ -36,12 +37,14 @@ function JobsPage() {
       });
   }, []);
 
+  //filter the jobs that fit to user request in the search boxes
   const filteredJobs = jobs.filter(job =>
     job.company.toLowerCase().includes(companySearchQuery.toLowerCase()) &&
     job.job.toLowerCase().includes(jobTitleSearchQuery.toLowerCase()) &&
     job.city.toLowerCase().includes(citySearchQuery.toLowerCase())
   );
 
+  //return the hidden details of job like rating,link,etc..
   function collapsed(job){
     return (<div style={{textAlign:"center"}} >
     {job.rating&&<p className="job-rating"><span><img className="star" src={starImage} alt="Star" /></span> {job.rating}</p>}
@@ -56,6 +59,7 @@ function JobsPage() {
     </div>)
   }
 
+  //return all details of job
   const dataAsCards = filteredJobs.map((job, index) => {
     return {
       content: <div style={{textAlign:"center"}}>

@@ -17,10 +17,10 @@ function ConversationsPage(props) {
     fetchHistory();
   }, []);
 
+  //fetch from server the content of history according to the client details
   const fetchHistory = () => {
     axios.post('/viewhistory', { clientDetails })
       .then(response => {
-        console.log("david ",response.data.content)
         setHistoryItem(response.data.content);
         setResult(true)
       })
@@ -30,6 +30,7 @@ function ConversationsPage(props) {
       });
   };
 
+  //if finish fetching history from server display the results
   return (
     <div className="conversations-page">
       {!isServerDown?(
@@ -66,7 +67,7 @@ function ConversationsPage(props) {
                     boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
                   }}
                 >
-                  {messages.map((message, idx) => (
+                  {messages&&messages.map((message, idx) => (
                     <p key={idx}>{message}</p>
                   ))}
                 </div>

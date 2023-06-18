@@ -17,6 +17,7 @@ export default function Home() {
     const clientDetails = userType.details
     console.log(clientDetails)
     
+    //list the menu of client area with using mui designed icons
       return (
         <div style={{height: "92vh"}} className="w-100 d-flex flex-column justify-content-center align-items-center pb-5">
             <h1 style={{color: "#309CFF"}}>Welcome!</h1>

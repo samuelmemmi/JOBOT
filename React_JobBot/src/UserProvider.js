@@ -13,6 +13,7 @@ export const UserProvider = ({ children }) => {
 
   const updateUsertype = (newUserType) => {
     setUserType(newUserType);
+    //update the user details in localStorage
     localStorage.setItem("userType", JSON.stringify(newUserType));
   };
 

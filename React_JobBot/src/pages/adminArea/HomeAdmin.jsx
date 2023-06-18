@@ -19,11 +19,8 @@ export default function HomeAdmin() {
     const adminDetails = userType.details
     console.log(adminDetails)
 
-    
-    
-      const dense = false;
-      const secondary = true;
-    
+    const dense = false;
+    //list the menu of admin area with using mui designed icons
       return (
         <div style={{height: "92vh"}} className="w-100 d-flex flex-column justify-content-center align-items-center pb-5">
             <h1 style={{color: "#309CFF"}}>Welcome Admin!</h1>

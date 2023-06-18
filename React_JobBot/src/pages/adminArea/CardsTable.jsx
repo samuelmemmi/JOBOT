@@ -13,6 +13,7 @@ export const CardsTable = ({data}) => {
         setCurrentPage(page)
     }
 
+    //return list of jobs which will display in the current page
     const generateTableData = (data) => {
         const startIndex = (currentPage - 1) * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
@@ -22,6 +23,7 @@ export const CardsTable = ({data}) => {
 
     const tableData = generateTableData(data);
 
+    //display each job details (in the current jobs page) in two parts of visible and hidden
     return (
         <div className="w-50 d-flex flex-column mx-auto align-items-center justify-cotnent-center">
             <TableContainer>

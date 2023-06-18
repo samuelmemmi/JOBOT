@@ -22,12 +22,16 @@ function ClientHistory() {
   const location = useLocation();
   const clientDetails = location.state;
   console.log(clientDetails);
+  
+  //all tabs which holds last chat details of the client
   function BasicTabs() {
     const [value, setValue] = React.useState(0);
       
     const handleChange = (event, newValue) => {
       setValue(newValue);
     };
+
+    //display 3 tabs: last chat content, offered jobs and selected jobs
     return (
       <>
       <Typography variant='h4' align="center" m={2} fontFamily="Serif">History of {clientDetails.userName}</Typography>
