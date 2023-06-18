@@ -759,15 +759,15 @@ def calculate_general_stats(subjects):
     users_len = len(list(collec_users.find())) - NUMBER_OF_ADMINS
 
     today = str(date.today())
-
+    # for eact user (client) go over all his selected features during all chats with JOBOT
     genaralStat = copy.deepcopy(GENERAL_STATS)
     for subject in subjects:
         for user in collec_users.find():
             if "history" in user:
                 for history in user['history']:
                     if subject != "field":
-                        # print(history['selected features'])
                         if subject in history['selected features']:
+                            # increase the count of each feature that appeared in history
                             for cat in history['selected features'][subject]:
                                 if cat == "All":
                                     genaralStat[subject]["South"] += 1
@@ -779,6 +779,7 @@ def calculate_general_stats(subjects):
                         cat = history['selected features'][subject]
                         genaralStat[subject][cat] += 1
 
+    # update the db with the results
     collec_admin_stats = db["admin_statistics"]
     collec_admin_stats.update_one(
         {"statName": "general_statistics"},

@@ -7,6 +7,7 @@ import ErrorMessages from "../chatBotLogic/components/Options/ErrorMessages"
 import "./viewChatFlow.css"
 
 function ViewChatFlow() {
+  //load the decision tree of JOBOT
   const [myObject, setMyObject] = useState(()=>{
     try {
       var obje = require('../chatBotLogic/decisionTree.json');
@@ -28,6 +29,7 @@ function ViewChatFlow() {
     }});
   const [isServerDown, setIsServerDown] = useState(false);
 
+  //display node of message with option of editing content
   function RenderObject({ object }) {
     const [editing, setEditing] = useState(false);
     const [text, setText] = useState(object.text);
@@ -60,6 +62,7 @@ function ViewChatFlow() {
           </button>)}
           </li>
           <div>
+            {/* display next children if 'Expand' button is clicked */}
           {!collapsed && (
             <div>
               {object.children&&object.children.length>0&&(object.children.map((child,index) => (
@@ -73,6 +76,7 @@ function ViewChatFlow() {
     );
   }
 
+  //update the decision tree file with the changes admin did
   const exportObject = () => {
     axios.post('/write-json', myObject, {
       headers: {

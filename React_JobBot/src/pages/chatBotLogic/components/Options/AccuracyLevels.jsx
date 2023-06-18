@@ -29,9 +29,6 @@ const AccuracyLevels = (props) => {
     // handle submission logic
     setSubmitted(false);
     if(selectedOptions.includes("Other")){
-      //קריאה לסיום
-      // props.actionProvider.selfSearch(props.node,["Other"]);
-
       //set the accuracy node
       props.node.setAccuracyNode({...props.node.getNextResponse()})
       //set in history list
@@ -55,7 +52,6 @@ const AccuracyLevels = (props) => {
         {options.map((opt,index) =>{
           return(
           <label key={index}>
-            {/* <br /> */}
             <input
             className="checkbox"
             type="checkbox"

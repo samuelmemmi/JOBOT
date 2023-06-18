@@ -7,13 +7,18 @@ class ActionProvider {
     this.setState = setStateFunc;
   }
 
+  //function calling server to store chat details in DB
   saveHistoryInDB = (node) => {
     node.getSelected()["displayed jobs"] &&
       delete node.getSelected()["displayed jobs"];
+
     const current = new Date();
+
     const date = `${current.getDate()}/${
       current.getMonth() + 1
     }/${current.getFullYear()}`;
+
+    //summarize all data into history object
     var history = {
       ...node.getSavedInDB(),
       "client details": node.getRegistrationDetails(),
@@ -34,25 +39,31 @@ class ActionProvider {
       "selected features": node.getSelected(),
       date: date,
     };
-    // console.log("save data in DB ",history)
     node.setSavedInDB(history);
 
-    //call server with 'history' var
-    // axios.post('/clienthistory', {
-    //   history: history
-    // }, {
-    //   headers: {
-    //   'Content-type': 'application/json; charset=UTF-8' }
-    // })
-    // .then((response) => {
-    //   console.log(response.data.message);
-    //   console.log("save data in DB ",history)
-    // })
-    // .catch((error) => {
-    //   console.error(error.response.data.error);
-    // });
+    //call server to save the history data
+    // axios
+    //   .post(
+    //     "/clienthistory",
+    //     {
+    //       history: history,
+    //     },
+    //     {
+    //       headers: {
+    //         "Content-type": "application/json; charset=UTF-8",
+    //       },
+    //     }
+    //   )
+    //   .then((response) => {
+    //     console.log(response.data.message);
+    //     console.log("save data in DB ", history);
+    //   })
+    //   .catch((error) => {
+    //     console.error(error.response.data.error);
+    //   });
   };
 
+  // if there is an error in server display error message
   errorMessages = (node, errorMessage) => {
     const message = this.createChatBotMessage(errorMessage, {
       widget: "errorMessages",
@@ -60,7 +71,9 @@ class ActionProvider {
     this.addMessageToState(message, node);
   };
 
+  //finish the chat with option of self job search
   selfSearch = (node, Freetxt) => {
+    //display link to self job search page
     var txt1 = node.getNextResponse().children[0].text;
     const message1 = this.createChatBotMessage(txt1, {
       widget: "moreInfo",
@@ -90,15 +103,17 @@ class ActionProvider {
         { bot: [txt1, txt2] },
       ]);
     }
-    console.log("history ", node.getHistoryChat());
+
     node.setIsFeedback(0);
     this.addMessageToState(message2, node);
     this.saveHistoryInDB(node);
   };
 
+  //display bot response after client's feedback
   responseToFeedback = (node, feedback, JOBOTresponse) => {
     const message = this.createChatBotMessage(JOBOTresponse);
     this.addMessageToState(message, node);
+    //store the messages and the selected answers
     node.setHistoryChat([
       ...node.getHistoryChat(),
       { user: [feedback] },
@@ -108,11 +123,13 @@ class ActionProvider {
   };
 
   handleField = (node, opt) => {
-    // console.log("Thank you god!",node.getRegistrationDetails())
+    //go to the job titles question
     var txt = node.getNextResponse().children[0].children[1].text;
     const message = this.createChatBotMessage(txt, {
       widget: "jobTitles",
     });
+
+    //store the messages and the selected answers
     node.setSelected({ ...node.getSelected(), field: opt });
     node.setHistoryChat([
       ...node.getHistoryChat(),
@@ -125,16 +142,18 @@ class ActionProvider {
       { user: [opt] },
       { bot: [txt] },
     ]);
-    console.log("how ", node.getHistoryChat());
+    //go to the next node in the decision tree
     node.setNextResponse(node.getNextResponse().children[0].children[1]);
     this.addMessageToState(message, node);
   };
 
   handleOtherField = (node, opt) => {
+    //go to the next question
     var txt = node.getNextResponse().children[0].children[0].text;
     const message = this.createChatBotMessage(txt, {
       widget: "approval",
     });
+    //store the messages and the selected answers
     node.setSelected({ ...node.getSelected(), field: opt });
     node.setHistoryChat([
       ...node.getHistoryChat(),
@@ -147,7 +166,7 @@ class ActionProvider {
       { user: [opt] },
       { bot: [txt] },
     ]);
-    console.log("how ", node.getHistoryChat());
+    //go to the next node in the decision tree
     node.setNextResponse(node.getNextResponse().children[0].children[0]);
     this.addMessageToState(message, node);
   };
@@ -159,13 +178,14 @@ class ActionProvider {
       const message = this.createChatBotMessage(txt, {
         widget: "moreInfo",
       });
+
+      //store the messages and the selected answers
       node.setSelected({ ...node.getSelected(), approval: opt });
       node.setHistoryChat([
         ...node.getHistoryChat(),
         { user: [opt] },
         { bot: [txt] },
       ]);
-      console.log("history ", node.getHistoryChat());
       this.addMessageToState(message, node);
       if (opt === "Yes") {
         this.saveHistoryInDB(node);
@@ -183,7 +203,6 @@ class ActionProvider {
           { user: [opt] },
           { bot: [txt] },
         ]);
-        console.log("history ", node.getHistoryChat());
         this.addMessageToState(message, node);
         this.saveHistoryInDB(node);
       }
@@ -210,7 +229,6 @@ class ActionProvider {
           { user: [opt] },
           { bot: [txt] },
         ]);
-        console.log("history ", node.getHistoryChat());
         node.setIsFeedback(1);
         node.setNextResponse(node.getNextResponse().children[0]);
         this.addMessageToState(message, node);
@@ -233,7 +251,6 @@ class ActionProvider {
       { user: opts },
       { bot: [txt] },
     ]);
-    console.log("how ", node.getHistoryChat());
     node.setNextResponse(node.getNextResponse().children[0]);
     this.addMessageToState(message, node);
   };
@@ -253,7 +270,6 @@ class ActionProvider {
       { user: opts },
       { bot: [txt1, txt2] },
     ]);
-    console.log("how ", node.getHistoryChat());
     node.setNextResponse(node.getNextResponse().children[0].children[0]);
     this.addMessageToState(message2, node);
   };
@@ -273,7 +289,6 @@ class ActionProvider {
       { user: opts },
       { bot: [txt1, txt2] },
     ]);
-    console.log("how ", node.getHistoryChat());
     node.setNextResponse(node.getNextResponse().children[0].children[0]);
     this.addMessageToState(message2, node);
   }
@@ -339,7 +354,6 @@ class ActionProvider {
               ...node.getSelected(),
               "displayed jobs": response.data.list_jobs,
             });
-            console.log("history ", node.getHistoryChat());
             node.setNextResponse(
               node.getNextResponse().children[0].children[0]
             );
@@ -352,7 +366,6 @@ class ActionProvider {
               { user: opts },
               { bot: [txt1, txt2] },
             ]);
-            console.log("history ", node.getHistoryChat());
             node.setNextResponse(
               node.getNextResponse().children[0].children[0]
             );
@@ -442,7 +455,6 @@ class ActionProvider {
         { user: opts },
         { bot: [txt] },
       ]);
-      console.log("I chose jobs  ", node.getSelectedJobs());
       node.setNextResponse(node.getNextResponse().children[1]);
       this.addMessageToState(message, node);
     }
@@ -460,7 +472,6 @@ class ActionProvider {
         { user: opts },
         { bot: [txt] },
       ]);
-      console.log("history ", node.getHistoryChat());
       node.setNextResponse(node.getNextResponse().children[0]);
       this.addMessageToState(message, node);
     }
@@ -480,7 +491,6 @@ class ActionProvider {
         { user: opts },
         { bot: [txt1, txt2] },
       ]);
-      console.log("history ", node.getHistoryChat());
       node.setNextResponse(node.getNextResponse().children[1].children[0]);
       this.addMessageToState(message2, node);
     }
@@ -495,7 +505,6 @@ class ActionProvider {
         { user: opts },
         { bot: [txt] },
       ]);
-      console.log("history ", node.getHistoryChat());
       node.setNextResponse(node.getNextResponse().children[2]);
       this.addMessageToState(message, node);
     }
@@ -516,7 +525,6 @@ class ActionProvider {
         { user: opts },
         { bot: [txt1, txt2] },
       ]);
-      console.log("history ", node.getHistoryChat());
       node.setNextResponse(node.getNextResponse().children[2]);
       this.addMessageToState(message2, node);
     }
@@ -585,7 +593,6 @@ class ActionProvider {
     this.addMessageToState(message1, node);
 
     var txt2 = node.getNextResponse().children[0].children[0].text;
-    console.log("text after ", node.getNextResponse().text);
     const message2 = this.createChatBotMessage(txt2, {
       widget: "approval",
     });
@@ -594,7 +601,6 @@ class ActionProvider {
       { user: email },
       { bot: [txt1, txt2] },
     ]);
-    console.log("history ", node.getHistoryChat());
     node.setNextResponse(node.getNextResponse().children[0].children[0]);
     this.addMessageToState(message2, node);
   };
@@ -610,7 +616,6 @@ class ActionProvider {
         { user: email },
         { bot: [txt] },
       ]);
-      console.log("history ", node.getHistoryChat());
       node.setNextResponse(node.getNextResponse().children[0].children[0]);
       this.addMessageToState(message, node);
     } else {
@@ -644,8 +649,11 @@ class ActionProvider {
   }
 
   handleAccuracyLevel(node, opts) {
+    //reset the node in the decision tree
     var tempNodeObject = { ...node.getAccuracyNode() };
     node.setNextResponse(tempNodeObject);
+
+    // go to the question regarding to the accuracy level
     if (opts.includes("Experience level")) {
       this.experienceWidget(node);
     } else if (opts.includes("Desired city")) {
@@ -674,7 +682,6 @@ class ActionProvider {
     }
     node.setSelected({ ...node.getSelected(), "experience level": opts });
     node.setHistoryChat([...node.getHistoryChat(), { user: opts }]);
-    console.log("history in hanExp ", node.getHistoryChat());
     //remove 'Experience level' from the selected accuracy levels and handle additional widgets of accuracy levels
     node.setAccuracyOptions(
       node
@@ -685,13 +692,13 @@ class ActionProvider {
   }
 
   cityWidget(node) {
+    //display all cities in the selected areas
     var txt = node.getNextResponse().children[1].text;
     const message = this.createChatBotMessage(txt, {
       widget: "cities",
     });
     node.setHistoryChat([...node.getHistoryChat(), { bot: [txt] }]);
     node.setNextResponse(node.getNextResponse().children[1]);
-    console.log("history in cityWidget ", node.getHistoryChat());
     this.addMessageToState(message, node);
   }
 
@@ -701,7 +708,6 @@ class ActionProvider {
     }
     node.setSelected({ ...node.getSelected(), cities: opts });
     node.setHistoryChat([...node.getHistoryChat(), { user: opts }]);
-    console.log("history in hanCities ", node.getHistoryChat());
     //remove 'Desired city' from the selected accuracy levels and handle additional widgets of accuracy levels
     node.setAccuracyOptions(
       node
@@ -716,7 +722,6 @@ class ActionProvider {
     const message = this.createChatBotMessage(txt);
     node.setHistoryChat([...node.getHistoryChat(), { bot: [txt] }]);
     node.setNextResponse(node.getNextResponse().children[1]);
-    console.log("history in requirementsWidget ", node.getHistoryChat());
     node.setIsRequirements(1);
     this.addMessageToState(message, node);
   }
@@ -730,14 +735,11 @@ class ActionProvider {
 
     node.setSelected({ ...node.getSelected(), "job Requirements": msg });
     node.setHistoryChat([...node.getHistoryChat(), { user: [msg] }]);
-    console.log("history in handleRequirements ", node.getHistoryChat());
-    console.log("selected in handleRequirements ", node.getSelected());
     var txt = node.getNextResponse().children[0].text;
     const message = this.createChatBotMessage(txt, {
       widget: "accuracyLevel",
     });
     node.setHistoryChat([...node.getHistoryChat(), { bot: [txt] }]);
-    console.log("history ", node.getHistoryChat());
     node.setNextResponse(node.getNextResponse().children[0]);
     this.addMessageToState(message, node);
   }
@@ -749,10 +751,6 @@ class ActionProvider {
     });
     node.setHistoryChat([...node.getHistoryChat(), { bot: [txt] }]);
     node.setNextResponse(node.getNextResponse().children[3]);
-    console.log(
-      "history in jobTitleTypingWidgetTyping ",
-      node.getHistoryChat()
-    );
     this.addMessageToState(message, node);
   }
   handleJobTitleTyping(node, msg) {
@@ -763,8 +761,6 @@ class ActionProvider {
       node.setSelected({ ...node.getSelected(), "additional job title": msg });
     }
     node.setHistoryChat([...node.getHistoryChat(), { user: [msg] }]);
-    console.log("history in handleIsJobTitleTyping ", node.getHistoryChat());
-    console.log("selected in handleIsJobTitleTyping ", node.getSelected());
     //remove 'Job title' from the selected accuracy levels and handle additional widgets of accuracy levels
     node.setAccuracyOptions(
       node
@@ -781,7 +777,6 @@ class ActionProvider {
     this.addMessageToState(message1, node);
 
     //server calculating jobs...
-    console.log("new selected ", node.getSelected());
     var responses = {
       ...node.getSelected(),
       "client details": node.getRegistrationDetails(),
@@ -820,7 +815,6 @@ class ActionProvider {
             });
           }
 
-          //UNIT TEST//
           //continute
           if (response.data.list_jobs.length !== 0) {
             if (response.data.list_jobs.length > 1) {
@@ -843,10 +837,6 @@ class ActionProvider {
                 { bot: [txt1, txt3] },
               ]);
             }
-            console.log(
-              "history in accurate jobs handle ",
-              node.getHistoryChat()
-            );
             node.setNextResponse(
               node.getNextResponse().children[0].children[0]
             );
@@ -858,7 +848,6 @@ class ActionProvider {
               ...node.getHistoryChat(),
               { bot: [txt1, txt2] },
             ]);
-            console.log("history ", node.getHistoryChat());
             node.setNextResponse(
               node.getNextResponse().children[0].children[0]
             );

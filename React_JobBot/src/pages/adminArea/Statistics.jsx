@@ -78,14 +78,13 @@ const Statistics = () => {
     const [isClicked,setIsClicked]=useState(false)
     const [isServerDown, setIsServerDown] = useState(false);
 
-
-
-
     useEffect( ()=>{
+      //fetch the statistics from server
          fetchStatistics("view_general_stats")
          fetchStatistics("view_feedback")
     },[]);
 
+    // displaying the general and feedbacks pies
     function BasicTabs() {
         const [value, setValue] = React.useState(0);
       
@@ -103,6 +102,7 @@ const Statistics = () => {
           </div>
             
             <TabPanel value={value} index={0}>
+              {/* if the general pies exist display them */}
             {(isPie)?(<div className='alldata'>
               <div className='wrapper2 d-flex justify-content-center align-items-center'>
                   <button className="update-button" onClick={handleButtonClick} disabled={isClicked}>Update Statistics</button>
@@ -126,6 +126,7 @@ const Statistics = () => {
             </div>):<div className="loading"><CircularProgress /></div>}
             </TabPanel>
             <TabPanel value={value} index={1}>
+            {/* if the feedback pie exist display it*/}
             {(isPie)?(
                 <div className="feedbacPie">
                 <p className='d-flex justify-content-center align-items-center'>Why don't you want offers anymore?</p>
@@ -166,6 +167,7 @@ const Statistics = () => {
         });
     }
 
+    // enter the statistics data into the pie template
     function getPieData(results){
       const dataPie = {
           labels: results["stats"]["labels"],

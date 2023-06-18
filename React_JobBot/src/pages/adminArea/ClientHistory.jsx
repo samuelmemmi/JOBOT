@@ -8,7 +8,6 @@ import ConversationsPage from './ConversationsPage'
 import OfferedJobs from './OfferedJobs'
 
 
-
 function TabPanel(props) {
   const { children, value, index } = props;
 

@@ -8,7 +8,7 @@ const Approval = (props) => {
   const [selectedOption, setSelectedOption] = useState("Yes");
   const [submitted,setSubmitted]=useState(false);
 
-  useEffect(()=>{setOptions(props.node.getNextResponse().options)},[]);//maybe props.node_if_options>0
+  useEffect(()=>{setOptions(props.node.getNextResponse().options)},[]);
 
   const handleOptionChange = (event) => {
     setSelectedOption(event.target.value);
@@ -28,7 +28,6 @@ const Approval = (props) => {
         {options.map((opt,index) =>{
           return(
           <label key={index}>
-            {/* <br /> */}
             <input
             type="radio"
             value={opt}

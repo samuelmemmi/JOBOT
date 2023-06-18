@@ -16,15 +16,15 @@ function OfferedJobs(props) {
   const clientDetails = state.clientDetails;
   console.log(clientDetails);
 
-  
-
   const [jobs, setJobs] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isServerDown, setIsServerDown] = useState(false);
+
   useEffect(() => {
     fetchjobs();
   }, []);
 
+  //fetch the jobs from server
   const fetchjobs = () => {
     if(state.jobs=="displayed"){
       axios.post('/offeredjobs', { clientDetails })
@@ -50,6 +50,7 @@ function OfferedJobs(props) {
 
   };
 
+  //return the hidden job details
   function collapsed(job){
     return (<div style={{textAlign:"center"}} >
     {job.rating&&<p className="job-rating"><span><img className="star" src={starImage} alt="Star" /></span> {job.rating}</p>}
@@ -64,6 +65,7 @@ function OfferedJobs(props) {
     </div>)
   }
 
+  //return all details of job
   const dataAsCards = jobs.map((job, index) => {
     return {
       content: <div style={{textAlign:"center"}}>

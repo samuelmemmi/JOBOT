@@ -9,7 +9,7 @@ const Areas = (props) => {
   const [submitted,setSubmitted]=useState(true);
 
 
-  useEffect(()=>{setOptions(props.node.getNextResponse().options)},[]);//maybe props.node_if_options>0
+  useEffect(()=>{setOptions(props.node.getNextResponse().options)},[]);
 
 
   const handleOptionChange = (event) => {
@@ -44,7 +44,6 @@ const Areas = (props) => {
         {options.map((opt,index) =>{
           return(
           <label key={index}>
-            {/* <br /> */}
             <input
             type="checkbox"
             value={opt}

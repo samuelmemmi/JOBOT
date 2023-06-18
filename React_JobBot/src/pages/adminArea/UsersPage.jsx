@@ -16,6 +16,7 @@ function UsersPage() {
   const [selectedTab, setSelectedTab] = useState(0);
   const [isServerDown, setIsServerDown] = useState(false);
 
+  //load the users list from server
   useEffect(() => {
     axios.post('/viewusers')
       .then(response => {
@@ -39,6 +40,7 @@ function UsersPage() {
     setSelectedTab(newValue);
   };
 
+  //if clicked on user details go to user history page
   function handleHistory(user){
     var details={userName:user.user_name,password:user.password}
     navigate("/./history", {
@@ -57,6 +59,7 @@ function UsersPage() {
               <Tab label="Non-Admin Users" />
             </Tabs>
       
+            {/* if the first tab selected list admin users */}
             {selectedTab === 0 && (
               <div className="w-100 d-flex flex-column justify-content-center align-items-center mt-2 wider-box">
                 <ul className="w-50 d-flex flex-column justify-content-center align-items-center mt-2 wider-box">
@@ -70,6 +73,7 @@ function UsersPage() {
               </div>
             )}
       
+            {/* if the second tab selected list non-admin users */}
             {selectedTab === 1 && (
               <div className="w-100 d-flex flex-column justify-content-center align-items-center mt-2 wider-box">
                 <ul className="w-50 d-flex flex-column justify-content-center align-items-center mt-2 wider-box">

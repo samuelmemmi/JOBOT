@@ -325,12 +325,4 @@ var chatFlow = {
   ],
 };
 
-// function writeDecisionTreeJSON(){
-//   const FileSystem = require("fs");
-//   FileSystem.writeFile('React_JobBot/src/pages/chatBotLogic/decisionTree.json', JSON.stringify(chatFlow), (err) => {
-//      if (err) throw err;
-//    });
-// }
-// writeDecisionTreeJSON();
-
 export default chatFlow;

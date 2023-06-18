@@ -16,7 +16,6 @@ export class FetchText {
     this.isJobAccuracy = 0;
     this.isRequirements = 0;
     this.savedInDB = {};
-    ///////חייב לשמור את פרטי המשרות שהלקוח סך הכל בחר בDB
   }
 
   intialHead() {
